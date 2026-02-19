@@ -168,12 +168,11 @@ fn cmd_setup() -> Result<()> {
     let already_existed = config_path.exists();
     let mut config = Config::load()?;
 
-    // Auto-detect editor if not already configured
-    if config.editor.command.is_none() {
-        if let Some((name, cmd)) = detect_editor() {
-            eprintln!("Detected editor: {name}");
-            config.editor.command = Some(cmd);
-        }
+    let detected = detect_all_editors();
+    match prompt_editor(&detected) {
+        Ok(Some(cmd)) => config.editor.command = Some(cmd),
+        Ok(None) => {}
+        Err(e) => eprintln!("Warning: could not read editor choice: {e}"),
     }
 
     config.save()?;
@@ -193,8 +192,8 @@ fn cmd_setup() -> Result<()> {
     Ok(())
 }
 
-/// Probe PATH for known editors; return (display name, config command) for the first found.
-fn detect_editor() -> Option<(&'static str, String)> {
+/// Probe PATH for all known editors; return (display name, config command) for each found.
+fn detect_all_editors() -> Vec<(&'static str, &'static str)> {
     let candidates: &[(&str, &str)] = &[
         ("Cursor",       "cursor ."),
         ("VS Code",      "code ."),
@@ -203,13 +202,54 @@ fn detect_editor() -> Option<(&'static str, String)> {
         ("Neovim",       "nvim ."),
         ("Vim",          "vim ."),
     ];
-    for &(name, cmd) in candidates {
-        let binary = cmd.split_whitespace().next().unwrap();
-        if which(binary) {
-            return Some((name, cmd.to_string()));
-        }
+    candidates.iter()
+        .filter(|&&(_, cmd)| which(cmd.split_whitespace().next().unwrap()))
+        .copied()
+        .collect()
+}
+
+/// Present an interactive editor selection menu and return the chosen command.
+fn prompt_editor(detected: &[(&str, &str)]) -> Result<Option<String>> {
+    use std::io::{BufRead, Write};
+
+    eprintln!("\nSelect your default editor:");
+    for (i, (name, _)) in detected.iter().enumerate() {
+        eprintln!("  {}. {}", i + 1, name);
     }
-    None
+    let custom_idx = detected.len() + 1;
+    eprintln!("  {custom_idx}. Enter a custom command");
+    eprintln!("  0. Skip (no editor configured)");
+    eprint!("Choice [{}]: ", if detected.is_empty() { 0 } else { 1 });
+    std::io::stderr().flush().ok();
+
+    let stdin = std::io::stdin();
+    let mut line = String::new();
+    stdin.lock().read_line(&mut line)?;
+    let trimmed = line.trim();
+
+    let choice: usize = if trimmed.is_empty() {
+        if detected.is_empty() { 0 } else { 1 }
+    } else {
+        trimmed.parse().unwrap_or(usize::MAX)
+    };
+
+    if choice == 0 {
+        return Ok(None);
+    }
+    if choice <= detected.len() {
+        return Ok(Some(detected[choice - 1].1.to_string()));
+    }
+    if choice == custom_idx {
+        eprint!("Enter editor command (e.g. \"hx .\"): ");
+        std::io::stderr().flush().ok();
+        let mut custom = String::new();
+        stdin.lock().read_line(&mut custom)?;
+        let cmd = custom.trim().to_string();
+        return Ok(if cmd.is_empty() { None } else { Some(cmd) });
+    }
+
+    eprintln!("Invalid choice, skipping editor configuration.");
+    Ok(None)
 }
 
 /// Return true if `binary` is found anywhere in PATH.
