@@ -1,6 +1,6 @@
-# runner
+# worktree
 
-A CLI tool that opens GitHub issues as git worktree workspaces. Paste a GitHub issue URL (or use a `worktree://` deep link) and `runner` clones the repo as a bare clone, creates a dedicated worktree branch, and opens it in your editor, terminal, or file explorer.
+A CLI tool that opens GitHub issues as git worktree workspaces. Paste a GitHub issue URL (or use a `worktree://` deep link) and `worktree` clones the repo as a bare clone, creates a dedicated worktree branch, and opens it in your editor, terminal, or file explorer.
 
 ## Install
 
@@ -8,19 +8,27 @@ A CLI tool that opens GitHub issues as git worktree workspaces. Paste a GitHub i
 cargo install --path .
 ```
 
+Then run first-time setup:
+
+```sh
+worktree setup
+```
+
+This detects your editor, writes the default config, and registers the `worktree://` URL scheme handler — all in one step.
+
 ## Usage
 
 ### Open a workspace
 
 ```sh
 # GitHub issue URL
-runner open https://github.com/owner/repo/issues/42
+worktree open https://github.com/owner/repo/issues/42
 
 # Shorthand
-runner open owner/repo#42
+worktree open owner/repo#42
 
 # worktree:// deep link (used by browser extensions / integrations)
-runner open "worktree://open?owner=owner&repo=repo&issue=42"
+worktree open "worktree://open?owner=owner&repo=repo&issue=42"
 ```
 
 Flags to control what gets opened (override config):
@@ -35,11 +43,11 @@ Flags to control what gets opened (override config):
 ### Configuration
 
 ```sh
-runner config init          # write default config to disk
-runner config show          # print current config
-runner config path          # print config file path
-runner config set <key> <value>
-runner config get <key>
+worktree config init          # write default config to disk
+worktree config show          # print current config
+worktree config path          # print config file path
+worktree config set <key> <value>
+worktree config get <key>
 ```
 
 Config keys:
@@ -54,8 +62,8 @@ Config keys:
 
 The config file lives at:
 
-- **macOS/Linux:** `~/.config/runner/config.toml`
-- **Windows:** `%APPDATA%\runner\config.toml`
+- **macOS/Linux:** `~/.config/worktree/config.toml`
+- **Windows:** `%APPDATA%\worktree\config.toml`
 
 Example `config.toml`:
 
@@ -74,12 +82,12 @@ terminal = false
 
 ### worktree:// URL scheme
 
-Register `runner` as the system handler for `worktree://` links so they open automatically from the browser:
+Register `worktree` as the system handler for `worktree://` links so they open automatically from the browser:
 
 ```sh
-runner daemon install    # register the URL scheme handler
-runner daemon uninstall  # unregister it
-runner daemon status     # check whether it's registered
+worktree daemon install    # register the URL scheme handler
+worktree daemon uninstall  # unregister it
+worktree daemon status     # check whether it's registered
 ```
 
 Platform details:

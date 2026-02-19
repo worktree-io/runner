@@ -10,7 +10,7 @@ use worktree_io::{
 };
 
 #[derive(Parser)]
-#[command(name = "runner", about = "Open GitHub issues as git worktree workspaces")]
+#[command(name = "worktree", about = "Open GitHub issues as git worktree workspaces")]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -52,6 +52,9 @@ enum Commands {
         #[command(subcommand)]
         action: DaemonAction,
     },
+
+    /// Run first-time setup: detect editor, write config, register URL scheme
+    Setup,
 }
 
 #[derive(Subcommand)]
@@ -98,6 +101,8 @@ fn main() -> Result<()> {
         Commands::Config { action } => cmd_config(action)?,
 
         Commands::Daemon { action } => cmd_daemon(action)?,
+
+        Commands::Setup => cmd_setup()?,
     }
 
     Ok(())
@@ -190,4 +195,72 @@ fn cmd_daemon(action: DaemonAction) -> Result<()> {
         DaemonAction::Status => println!("{}", daemon::status()?),
     }
     Ok(())
+}
+
+fn cmd_setup() -> Result<()> {
+    let config_path = Config::path()?;
+    let already_existed = config_path.exists();
+    let mut config = Config::load()?;
+
+    // Auto-detect editor if not already configured
+    if config.editor.command.is_none() {
+        if let Some((name, cmd)) = detect_editor() {
+            eprintln!("Detected editor: {name}");
+            config.editor.command = Some(cmd);
+            config.open.editor = true;
+            config.open.terminal = false;
+        }
+    }
+
+    config.save()?;
+    if already_existed {
+        eprintln!("Updated config at {}", config_path.display());
+    } else {
+        eprintln!("Created config at {}", config_path.display());
+    }
+
+    // Register URL scheme handler (warn but don't abort on failure)
+    match daemon::install() {
+        Ok(()) => {}
+        Err(e) => eprintln!("Warning: could not register URL scheme handler: {e}"),
+    }
+
+    eprintln!("\nSetup complete! Run: worktree open <github-issue-url>");
+    Ok(())
+}
+
+/// Probe PATH for known editors; return (display name, config command) for the first found.
+fn detect_editor() -> Option<(&'static str, String)> {
+    let candidates: &[(&str, &str)] = &[
+        ("Cursor",       "cursor ."),
+        ("VS Code",      "code ."),
+        ("Zed",          "zed ."),
+        ("Sublime Text", "subl ."),
+        ("Neovim",       "nvim ."),
+        ("Vim",          "vim ."),
+    ];
+    for &(name, cmd) in candidates {
+        let binary = cmd.split_whitespace().next().unwrap();
+        if which(binary) {
+            return Some((name, cmd.to_string()));
+        }
+    }
+    None
+}
+
+/// Return true if `binary` is found anywhere in PATH.
+fn which(binary: &str) -> bool {
+    std::env::var_os("PATH")
+        .map(|path| {
+            std::env::split_paths(&path).any(|dir| {
+                let candidate = dir.join(binary);
+                candidate.is_file() || {
+                    #[cfg(target_os = "windows")]
+                    { dir.join(format!("{binary}.exe")).is_file() }
+                    #[cfg(not(target_os = "windows"))]
+                    { false }
+                }
+            })
+        })
+        .unwrap_or(false)
 }

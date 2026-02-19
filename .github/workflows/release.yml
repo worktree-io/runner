@@ -15,20 +15,20 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            artifact: runner-linux-x86_64.tar.gz
+            artifact: worktree-linux-x86_64.tar.gz
           - os: ubuntu-latest
             target: aarch64-unknown-linux-gnu
-            artifact: runner-linux-aarch64.tar.gz
+            artifact: worktree-linux-aarch64.tar.gz
             use_cross: true
           - os: macos-latest
             target: x86_64-apple-darwin
-            artifact: runner-macos-x86_64.tar.gz
+            artifact: worktree-macos-x86_64.tar.gz
           - os: macos-latest
             target: aarch64-apple-darwin
-            artifact: runner-macos-aarch64.tar.gz
+            artifact: worktree-macos-aarch64.tar.gz
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            artifact: runner-windows-x86_64.zip
+            artifact: worktree-windows-x86_64.zip
 
     steps:
       - uses: actions/checkout@v4
@@ -55,12 +55,12 @@ jobs:
 
       - name: Package (Unix)
         if: runner.os != 'Windows'
-        run: tar czf ${{ matrix.artifact }} -C target/${{ matrix.target }}/release runner
+        run: tar czf ${{ matrix.artifact }} -C target/${{ matrix.target }}/release worktree
 
       - name: Package (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: Compress-Archive -Path target\${{ matrix.target }}\release\runner.exe -DestinationPath ${{ matrix.artifact }}
+        run: Compress-Archive -Path target\${{ matrix.target }}\release\worktree.exe -DestinationPath ${{ matrix.artifact }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -85,11 +85,11 @@ jobs:
         with:
           generate_release_notes: true
           files: |
-            runner-linux-x86_64.tar.gz
-            runner-linux-aarch64.tar.gz
-            runner-macos-x86_64.tar.gz
-            runner-macos-aarch64.tar.gz
-            runner-windows-x86_64.zip
+            worktree-linux-x86_64.tar.gz
+            worktree-linux-aarch64.tar.gz
+            worktree-macos-x86_64.tar.gz
+            worktree-macos-aarch64.tar.gz
+            worktree-windows-x86_64.zip
 
   publish:
     name: Publish to crates.io

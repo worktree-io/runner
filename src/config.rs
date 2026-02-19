@@ -68,7 +68,7 @@ impl Config {
     pub fn path() -> Result<PathBuf> {
         let config_dir = dirs::config_dir()
             .context("Could not determine config directory")?;
-        Ok(config_dir.join("runner").join("config.toml"))
+        Ok(config_dir.join("worktree").join("config.toml"))
     }
 
     pub fn load() -> Result<Self> {
