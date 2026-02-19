@@ -1,5 +1,7 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
+#[cfg(target_os = "macos")]
+use dirs;
 
 use worktree_io::{
     config::Config,
@@ -127,21 +129,39 @@ fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result<()>
     Ok(())
 }
 
-/// Map a symbolic editor name to a launch command, or return the value as-is
+/// Map a symbolic editor/terminal name to a launch command, or return the value as-is
 /// if it is not a known symbol (treating it as a raw command string).
 fn resolve_editor_command(name: &str) -> String {
     let candidates: &[(&str, &str)] = &[
-        ("cursor", "cursor ."),
-        ("code",   "code ."),
-        ("zed",    "zed ."),
-        ("subl",   "subl ."),
-        ("nvim",   "nvim ."),
-        ("vim",    "vim ."),
+        ("cursor",   "cursor ."),
+        ("code",     "code ."),
+        ("zed",      "zed ."),
+        ("subl",     "subl ."),
+        ("nvim",     "nvim ."),
+        ("vim",      "vim ."),
+        ("iterm",           "open -a iTerm ."),
+        ("iterm2",          "open -a iTerm ."),
+        ("warp",            "open -a Warp ."),
+        ("ghostty",         "open -a Ghostty ."),
+        ("alacritty",       "alacritty --working-directory ."),
+        ("kitty",           "kitty --directory ."),
+        ("wezterm",         "wezterm start --cwd ."),
+        ("wt",              "wt -d ."),
+        ("windowsterminal", "wt -d ."),
     ];
     for &(sym, cmd) in candidates {
         if name.eq_ignore_ascii_case(sym) {
             return cmd.to_string();
         }
+    }
+    // "terminal" resolves to the native OS terminal
+    if name.eq_ignore_ascii_case("terminal") {
+        #[cfg(target_os = "macos")]
+        return "open -a Terminal .".to_string();
+        #[cfg(target_os = "windows")]
+        return "wt -d .".to_string();
+        #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+        return "xterm".to_string();
     }
     // Not a recognised symbolic name — treat as a raw command string
     name.to_string()
@@ -214,9 +234,11 @@ fn cmd_setup() -> Result<()> {
     Ok(())
 }
 
-/// Probe PATH for all known editors; return (display name, config command) for each found.
+/// Probe PATH (and, on macOS, /Applications) for all known editors and terminals.
+/// Returns (display name, config command) for each found.
 fn detect_all_editors() -> Vec<(&'static str, &'static str)> {
-    let candidates: &[(&str, &str)] = &[
+    // Editors detected via PATH binary
+    let path_candidates: &[(&str, &str)] = &[
         ("Cursor",       "cursor ."),
         ("VS Code",      "code ."),
         ("Zed",          "zed ."),
@@ -224,17 +246,64 @@ fn detect_all_editors() -> Vec<(&'static str, &'static str)> {
         ("Neovim",       "nvim ."),
         ("Vim",          "vim ."),
     ];
-    candidates.iter()
+    let mut found: Vec<(&str, &str)> = path_candidates.iter()
         .filter(|&&(_, cmd)| which(cmd.split_whitespace().next().unwrap()))
         .copied()
-        .collect()
+        .collect();
+
+    // Terminals detected via PATH binary (cross-platform)
+    let terminal_path_candidates: &[(&str, &str)] = &[
+        ("Alacritty",    "alacritty --working-directory ."),
+        ("Kitty",        "kitty --directory ."),
+        ("WezTerm",      "wezterm start --cwd ."),
+    ];
+    for &(name, cmd) in terminal_path_candidates {
+        if which(cmd.split_whitespace().next().unwrap()) {
+            found.push((name, cmd));
+        }
+    }
+
+    // macOS: terminals installed as .app bundles (not on PATH)
+    #[cfg(target_os = "macos")]
+    {
+        // Terminal.app ships with every macOS install
+        found.push(("Terminal", "open -a Terminal ."));
+
+        let app_candidates: &[(&str, &str, &str)] = &[
+            ("iTerm2",  "open -a iTerm .",   "iTerm"),
+            ("Warp",    "open -a Warp .",    "Warp"),
+            ("Ghostty", "open -a Ghostty .", "Ghostty"),
+        ];
+        for &(name, cmd, app) in app_candidates {
+            if macos_app_exists(app) {
+                found.push((name, cmd));
+            }
+        }
+    }
+
+    // Windows Terminal
+    #[cfg(target_os = "windows")]
+    if which("wt") {
+        found.push(("Windows Terminal", "wt -d ."));
+    }
+
+    found
+}
+
+/// Check whether `AppName.app` is installed in /Applications or ~/Applications on macOS.
+#[cfg(target_os = "macos")]
+fn macos_app_exists(app_name: &str) -> bool {
+    let system = std::path::Path::new("/Applications").join(format!("{app_name}.app"));
+    let user = dirs::home_dir()
+        .map(|h| h.join("Applications").join(format!("{app_name}.app")));
+    system.exists() || user.map_or(false, |p| p.exists())
 }
 
 /// Present an interactive editor selection menu and return the chosen command.
 fn prompt_editor(detected: &[(&str, &str)]) -> Result<Option<String>> {
     use std::io::{BufRead, Write};
 
-    eprintln!("\nSelect your default editor:");
+    eprintln!("\nSelect your default editor or terminal:");
     for (i, (name, _)) in detected.iter().enumerate() {
         eprintln!("  {}. {}", i + 1, name);
     }
