@@ -30,12 +30,31 @@ fn run_shell_command(cmd: &str) -> Result<()> {
     let program = parts.remove(0);
     Command::new(&program)
         .args(&parts)
+        .env("PATH", augmented_path())
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .spawn()
         .with_context(|| format!("Failed to spawn {program}"))?;
     Ok(())
+}
+
+/// Return a PATH that includes common binary directories that GUI-launched
+/// processes (e.g. via AppleScript `do shell script`) typically lack.
+fn augmented_path() -> String {
+    let current = std::env::var("PATH").unwrap_or_default();
+    let extras = [
+        "/usr/local/bin",
+        "/opt/homebrew/bin",
+        "/opt/homebrew/sbin",
+    ];
+    let mut parts: Vec<&str> = extras.iter().copied().collect();
+    for p in current.split(':').filter(|s| !s.is_empty()) {
+        if !parts.contains(&p) {
+            parts.push(p);
+        }
+    }
+    parts.join(":")
 }
 
 /// Very simple whitespace-based command splitter that respects double-quoted strings.
