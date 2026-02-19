@@ -1,12 +1,12 @@
 [package]
-name = "runner"
+name = "worktree-io"
 version = "0.1.0"
 edition = "2021"
 description = "A CLI tool to open GitHub issues as git worktree workspaces"
 license = "MIT"
 
 [lib]
-name = "runner"
+name = "worktree_io"
 path = "src/lib.rs"
 
 [[bin]]

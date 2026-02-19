@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
-use runner::{
+use worktree_io::{
     config::Config,
     daemon,
     issue::IssueRef,
