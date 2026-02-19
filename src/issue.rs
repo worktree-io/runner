@@ -10,13 +10,20 @@ pub struct DeepLinkOptions {
     pub editor: Option<String>,
 }
 
-/// A reference to a GitHub issue that identifies a workspace.
+/// A reference to an issue that identifies a workspace.
 #[derive(Debug, Clone, PartialEq)]
 pub enum IssueRef {
     GitHub {
         owner: String,
         repo: String,
         number: u64,
+    },
+    /// A Linear issue identified by its UUID, paired with the GitHub repo that
+    /// hosts the code for that project.
+    Linear {
+        owner: String,
+        repo: String,
+        id: String,
     },
 }
 
@@ -25,7 +32,9 @@ impl IssueRef {
     /// - `https://github.com/owner/repo/issues/42`
     /// - `worktree://open?owner=X&repo=Y&issue=42`
     /// - `worktree://open?url=<encoded-github-url>`
+    /// - `worktree://open?owner=X&repo=Y&linear_id=<uuid>`
     /// - `owner/repo#42`
+    /// - `owner/repo@<linear-uuid>`
     pub fn parse(s: &str) -> Result<Self> {
         let s = s.trim();
 
@@ -40,7 +49,7 @@ impl IssueRef {
             return Self::parse_github_url(s);
         }
 
-        // Try owner/repo#N shorthand
+        // Try owner/repo#N shorthand or owner/repo@<uuid>
         if let Some(result) = Self::try_parse_shorthand(s) {
             return result;
         }
@@ -50,7 +59,9 @@ impl IssueRef {
              Supported formats:\n\
              - https://github.com/owner/repo/issues/42\n\
              - worktree://open?owner=owner&repo=repo&issue=42\n\
-             - owner/repo#42"
+             - worktree://open?owner=owner&repo=repo&linear_id=<uuid>\n\
+             - owner/repo#42\n\
+             - owner/repo@<linear-uuid>"
         )
     }
 
@@ -69,6 +80,7 @@ impl IssueRef {
         let mut owner = None;
         let mut repo = None;
         let mut issue_num = None;
+        let mut linear_id = None;
         let mut url_param = None;
         let mut editor = None;
 
@@ -81,6 +93,13 @@ impl IssueRef {
                         val.parse::<u64>()
                             .with_context(|| format!("Invalid issue number: {val}"))?,
                     );
+                }
+                "linear_id" => {
+                    let id = val.into_owned();
+                    if !is_uuid(&id) {
+                        bail!("Invalid Linear issue UUID: {id}");
+                    }
+                    linear_id = Some(id);
                 }
                 "url" => {
                     // query_pairs() already percent-decodes the value for us
@@ -95,6 +114,17 @@ impl IssueRef {
 
         if let Some(url_str) = url_param {
             return Ok((Self::parse_github_url(&url_str)?, opts));
+        }
+
+        if let Some(id) = linear_id {
+            return Ok((
+                Self::Linear {
+                    owner: owner.context("Missing 'owner' query param")?,
+                    repo: repo.context("Missing 'repo' query param")?,
+                    id,
+                },
+                opts,
+            ));
         }
 
         Ok((
@@ -133,7 +163,24 @@ impl IssueRef {
     }
 
     fn try_parse_shorthand(s: &str) -> Option<Result<Self>> {
-        // Format: owner/repo#42
+        // Format: owner/repo#42  or  owner/repo@<linear-uuid>
+        if let Some((repo_part, id)) = s.split_once('@') {
+            let (owner, repo) = repo_part.split_once('/')?;
+            if owner.is_empty() || repo.is_empty() {
+                return Some(Err(anyhow::anyhow!("Invalid shorthand format: {s}")));
+            }
+            if !is_uuid(id) {
+                return Some(Err(anyhow::anyhow!(
+                    "Invalid Linear issue UUID in shorthand: {id}"
+                )));
+            }
+            return Some(Ok(Self::Linear {
+                owner: owner.to_string(),
+                repo: repo.to_string(),
+                id: id.to_string(),
+            }));
+        }
+
         let (repo_part, num_str) = s.split_once('#')?;
         let (owner, repo) = repo_part.split_once('/')?;
 
@@ -157,6 +204,7 @@ impl IssueRef {
     pub fn workspace_dir_name(&self) -> String {
         match self {
             Self::GitHub { number, .. } => format!("issue-{number}"),
+            Self::Linear { id, .. } => format!("linear-{id}"),
         }
     }
 
@@ -168,7 +216,7 @@ impl IssueRef {
     /// HTTPS clone URL for the repository.
     pub fn clone_url(&self) -> String {
         match self {
-            Self::GitHub { owner, repo, .. } => {
+            Self::GitHub { owner, repo, .. } | Self::Linear { owner, repo, .. } => {
                 format!("https://github.com/{owner}/{repo}.git")
             }
         }
@@ -182,13 +230,29 @@ impl IssueRef {
     /// Path to the bare clone: `$TMPDIR/worktree-io/github/owner/repo`
     pub fn bare_clone_path(&self) -> PathBuf {
         match self {
-            Self::GitHub { owner, repo, .. } => std::env::temp_dir()
-                .join("worktree-io")
-                .join("github")
-                .join(owner)
-                .join(repo),
+            Self::GitHub { owner, repo, .. } | Self::Linear { owner, repo, .. } => {
+                std::env::temp_dir()
+                    .join("worktree-io")
+                    .join("github")
+                    .join(owner)
+                    .join(repo)
+            }
         }
     }
+}
+
+/// Returns `true` if `s` matches the standard UUID format
+/// `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` (all hex, case-insensitive).
+fn is_uuid(s: &str) -> bool {
+    let parts: Vec<&str> = s.split('-').collect();
+    if parts.len() != 5 {
+        return false;
+    }
+    let expected_lengths = [8, 4, 4, 4, 12];
+    parts
+        .iter()
+        .zip(expected_lengths.iter())
+        .all(|(part, &len)| part.len() == len && part.chars().all(|c| c.is_ascii_hexdigit()))
 }
 
 #[cfg(test)]
@@ -291,5 +355,109 @@ mod tests {
             number: 7,
         };
         assert_eq!(r.clone_url(), "https://github.com/acme/api.git");
+    }
+
+    // --- Linear tests ---
+
+    #[test]
+    fn test_parse_linear_shorthand() {
+        let uuid = "9cad7a4b-9426-4788-9dbc-e784df999053";
+        let r = IssueRef::parse(&format!("acme/api@{uuid}")).unwrap();
+        assert_eq!(
+            r,
+            IssueRef::Linear {
+                owner: "acme".into(),
+                repo: "api".into(),
+                id: uuid.into(),
+            }
+        );
+    }
+
+    #[test]
+    fn test_parse_linear_shorthand_invalid_uuid() {
+        let err = IssueRef::parse("acme/api@not-a-uuid").unwrap_err();
+        assert!(err.to_string().contains("Invalid Linear issue UUID"));
+    }
+
+    #[test]
+    fn test_parse_linear_worktree_url() {
+        let uuid = "9cad7a4b-9426-4788-9dbc-e784df999053";
+        let url = format!("worktree://open?owner=acme&repo=api&linear_id={uuid}");
+        let r = IssueRef::parse(&url).unwrap();
+        assert_eq!(
+            r,
+            IssueRef::Linear {
+                owner: "acme".into(),
+                repo: "api".into(),
+                id: uuid.into(),
+            }
+        );
+    }
+
+    #[test]
+    fn test_parse_linear_worktree_url_with_editor() {
+        let uuid = "9cad7a4b-9426-4788-9dbc-e784df999053";
+        let url = format!("worktree://open?owner=acme&repo=api&linear_id={uuid}&editor=cursor");
+        let (r, opts) = IssueRef::parse_with_options(&url).unwrap();
+        assert_eq!(
+            r,
+            IssueRef::Linear {
+                owner: "acme".into(),
+                repo: "api".into(),
+                id: uuid.into(),
+            }
+        );
+        assert_eq!(opts.editor.as_deref(), Some("cursor"));
+    }
+
+    #[test]
+    fn test_linear_workspace_dir_name() {
+        let uuid = "9cad7a4b-9426-4788-9dbc-e784df999053";
+        let r = IssueRef::Linear {
+            owner: "acme".into(),
+            repo: "api".into(),
+            id: uuid.into(),
+        };
+        assert_eq!(r.workspace_dir_name(), format!("linear-{uuid}"));
+        assert_eq!(r.branch_name(), format!("linear-{uuid}"));
+    }
+
+    #[test]
+    fn test_linear_clone_url() {
+        let r = IssueRef::Linear {
+            owner: "acme".into(),
+            repo: "api".into(),
+            id: "9cad7a4b-9426-4788-9dbc-e784df999053".into(),
+        };
+        assert_eq!(r.clone_url(), "https://github.com/acme/api.git");
+    }
+
+    #[test]
+    fn test_linear_paths() {
+        let uuid = "9cad7a4b-9426-4788-9dbc-e784df999053";
+        let r = IssueRef::Linear {
+            owner: "acme".into(),
+            repo: "api".into(),
+            id: uuid.into(),
+        };
+        assert!(r.bare_clone_path().ends_with("worktree-io/github/acme/api"));
+        assert!(r
+            .temp_path()
+            .ends_with(format!("worktree-io/github/acme/api/linear-{uuid}")));
+    }
+
+    #[test]
+    fn test_is_uuid_valid() {
+        assert!(is_uuid("9cad7a4b-9426-4788-9dbc-e784df999053"));
+        assert!(is_uuid("00000000-0000-0000-0000-000000000000"));
+        assert!(is_uuid("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"));
+    }
+
+    #[test]
+    fn test_is_uuid_invalid() {
+        assert!(!is_uuid("not-a-uuid"));
+        assert!(!is_uuid("9cad7a4b-9426-4788-9dbc"));
+        assert!(!is_uuid("9cad7a4b94264788-9dbc-e784df999053"));
+        assert!(!is_uuid("9cad7a4b-9426-4788-9dbc-e784df99905z")); // 'z' invalid
     }
 }
