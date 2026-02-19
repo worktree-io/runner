@@ -28,20 +28,12 @@ enum Commands {
         #[arg(long)]
         editor: bool,
 
-        /// Force open in file explorer
-        #[arg(long)]
-        explorer: bool,
-
-        /// Force open in terminal
-        #[arg(long)]
-        terminal: bool,
-
         /// Print the workspace path and exit without opening anything
         #[arg(long)]
         print_path: bool,
     },
 
-    /// Manage runner configuration
+    /// Manage worktree configuration
     Config {
         #[command(subcommand)]
         action: ConfigAction,
@@ -90,13 +82,9 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Open {
-            issue_ref,
-            editor,
-            explorer,
-            terminal,
-            print_path,
-        } => cmd_open(&issue_ref, editor, explorer, terminal, print_path)?,
+        Commands::Open { issue_ref, editor, print_path } => {
+            cmd_open(&issue_ref, editor, print_path)?
+        }
 
         Commands::Config { action } => cmd_config(action)?,
 
@@ -108,13 +96,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn cmd_open(
-    issue_ref: &str,
-    force_editor: bool,
-    force_explorer: bool,
-    force_terminal: bool,
-    print_path: bool,
-) -> Result<()> {
+fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result<()> {
     let issue = IssueRef::parse(issue_ref)?;
     let workspace = Workspace::open_or_create(issue)?;
 
@@ -131,28 +113,12 @@ fn cmd_open(
 
     let config = Config::load()?;
 
-    // Determine what to open: explicit flags override config
-    let open_editor = force_editor || (!force_explorer && !force_terminal && config.open.editor);
-    let open_explorer = force_explorer || (!force_editor && !force_terminal && config.open.explorer);
-    let open_terminal = force_terminal || (!force_editor && !force_explorer && config.open.terminal);
-
-    // If nothing at all is selected, fall back to terminal
-    let open_terminal = open_terminal || (!open_editor && !open_explorer);
-
-    if open_editor {
+    if force_editor || config.open.editor {
         if let Some(cmd) = &config.editor.command {
             opener::open_in_editor(&workspace.path, cmd)?;
         } else {
-            eprintln!("No editor configured. Set editor.command in your config.");
+            eprintln!("No editor configured. Run: worktree setup");
         }
-    }
-
-    if open_explorer {
-        opener::open_in_explorer(&workspace.path)?;
-    }
-
-    if open_terminal {
-        opener::open_in_terminal(&workspace.path, config.terminal.command.as_deref())?;
     }
 
     Ok(())
@@ -207,8 +173,6 @@ fn cmd_setup() -> Result<()> {
         if let Some((name, cmd)) = detect_editor() {
             eprintln!("Detected editor: {name}");
             config.editor.command = Some(cmd);
-            config.open.editor = true;
-            config.open.terminal = false;
         }
     }
 

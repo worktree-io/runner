@@ -6,7 +6,6 @@ use std::path::PathBuf;
 #[serde(default)]
 pub struct Config {
     pub editor: EditorConfig,
-    pub terminal: TerminalConfig,
     pub open: OpenConfig,
 }
 
@@ -19,24 +18,14 @@ pub struct EditorConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
-pub struct TerminalConfig {
-    /// Command to launch a terminal in the workspace dir; None uses platform default
-    pub command: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(default)]
 pub struct OpenConfig {
     pub editor: bool,
-    pub explorer: bool,
-    pub terminal: bool,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
             editor: EditorConfig::default(),
-            terminal: TerminalConfig::default(),
             open: OpenConfig::default(),
         }
     }
@@ -48,19 +37,9 @@ impl Default for EditorConfig {
     }
 }
 
-impl Default for TerminalConfig {
-    fn default() -> Self {
-        Self { command: None }
-    }
-}
-
 impl Default for OpenConfig {
     fn default() -> Self {
-        Self {
-            editor: false,
-            explorer: false,
-            terminal: true,
-        }
+        Self { editor: true }
     }
 }
 
@@ -100,10 +79,7 @@ impl Config {
     pub fn get_value(&self, key: &str) -> Result<String> {
         match key {
             "editor.command" => Ok(self.editor.command.clone().unwrap_or_default()),
-            "terminal.command" => Ok(self.terminal.command.clone().unwrap_or_default()),
             "open.editor" => Ok(self.open.editor.to_string()),
-            "open.explorer" => Ok(self.open.explorer.to_string()),
-            "open.terminal" => Ok(self.open.terminal.to_string()),
             _ => anyhow::bail!("Unknown config key: {key}"),
         }
     }
@@ -114,19 +90,8 @@ impl Config {
             "editor.command" => {
                 self.editor.command = if value.is_empty() { None } else { Some(value.to_string()) };
             }
-            "terminal.command" => {
-                self.terminal.command = if value.is_empty() { None } else { Some(value.to_string()) };
-            }
             "open.editor" => {
                 self.open.editor = value.parse::<bool>()
-                    .with_context(|| format!("Invalid boolean value: {value}"))?;
-            }
-            "open.explorer" => {
-                self.open.explorer = value.parse::<bool>()
-                    .with_context(|| format!("Invalid boolean value: {value}"))?;
-            }
-            "open.terminal" => {
-                self.open.terminal = value.parse::<bool>()
                     .with_context(|| format!("Invalid boolean value: {value}"))?;
             }
             _ => anyhow::bail!("Unknown config key: {key}"),
