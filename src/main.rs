@@ -3,7 +3,7 @@ use clap::{Parser, Subcommand};
 
 use worktree_io::{
     config::Config,
-    daemon,
+    scheme,
     issue::IssueRef,
     opener,
     workspace::Workspace,
@@ -40,9 +40,9 @@ enum Commands {
     },
 
     /// Manage the worktree:// URL scheme handler
-    Daemon {
+    Scheme {
         #[command(subcommand)]
-        action: DaemonAction,
+        action: SchemeAction,
     },
 
     /// Run first-time setup: detect editor, write config, register URL scheme
@@ -69,9 +69,7 @@ enum ConfigAction {
 }
 
 #[derive(Subcommand)]
-enum DaemonAction {
-    /// Register the worktree:// URL scheme handler
-    Install,
+enum SchemeAction {
     /// Unregister the worktree:// URL scheme handler
     Uninstall,
     /// Check whether the URL scheme handler is registered
@@ -88,7 +86,7 @@ fn main() -> Result<()> {
 
         Commands::Config { action } => cmd_config(action)?,
 
-        Commands::Daemon { action } => cmd_daemon(action)?,
+        Commands::Scheme { action } => cmd_scheme(action)?,
 
         Commands::Setup => cmd_setup()?,
     }
@@ -179,11 +177,10 @@ fn cmd_config(action: ConfigAction) -> Result<()> {
     Ok(())
 }
 
-fn cmd_daemon(action: DaemonAction) -> Result<()> {
+fn cmd_scheme(action: SchemeAction) -> Result<()> {
     match action {
-        DaemonAction::Install => daemon::install()?,
-        DaemonAction::Uninstall => daemon::uninstall()?,
-        DaemonAction::Status => println!("{}", daemon::status()?),
+        SchemeAction::Uninstall => scheme::uninstall()?,
+        SchemeAction::Status => println!("{}", scheme::status()?),
     }
     Ok(())
 }
@@ -208,7 +205,7 @@ fn cmd_setup() -> Result<()> {
     }
 
     // Register URL scheme handler (warn but don't abort on failure)
-    match daemon::install() {
+    match scheme::install() {
         Ok(()) => {}
         Err(e) => eprintln!("Warning: could not register URL scheme handler: {e}"),
     }

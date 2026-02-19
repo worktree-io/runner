@@ -1,12 +1,12 @@
 use anyhow::{bail, Context, Result};
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum DaemonStatus {
+pub enum SchemeStatus {
     Installed { path: String },
     NotInstalled,
 }
 
-impl std::fmt::Display for DaemonStatus {
+impl std::fmt::Display for SchemeStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Installed { path } => write!(f, "Installed at {path}"),
@@ -23,7 +23,7 @@ pub fn uninstall() -> Result<()> {
     platform_uninstall()
 }
 
-pub fn status() -> Result<DaemonStatus> {
+pub fn status() -> Result<SchemeStatus> {
     platform_status()
 }
 
@@ -161,14 +161,14 @@ fn platform_uninstall() -> Result<()> {
 }
 
 #[cfg(target_os = "macos")]
-fn platform_status() -> Result<DaemonStatus> {
+fn platform_status() -> Result<SchemeStatus> {
     let app = app_dir();
     if app.join("Contents").join("Info.plist").exists() {
-        Ok(DaemonStatus::Installed {
+        Ok(SchemeStatus::Installed {
             path: app.display().to_string(),
         })
     } else {
-        Ok(DaemonStatus::NotInstalled)
+        Ok(SchemeStatus::NotInstalled)
     }
 }
 
@@ -229,14 +229,14 @@ fn platform_uninstall() -> Result<()> {
 }
 
 #[cfg(target_os = "linux")]
-fn platform_status() -> Result<DaemonStatus> {
+fn platform_status() -> Result<SchemeStatus> {
     let path = desktop_file();
     if path.exists() {
-        Ok(DaemonStatus::Installed {
+        Ok(SchemeStatus::Installed {
             path: path.display().to_string(),
         })
     } else {
-        Ok(DaemonStatus::NotInstalled)
+        Ok(SchemeStatus::NotInstalled)
     }
 }
 
@@ -307,7 +307,7 @@ fn platform_uninstall() -> Result<()> {
 }
 
 #[cfg(target_os = "windows")]
-fn platform_status() -> Result<DaemonStatus> {
+fn platform_status() -> Result<SchemeStatus> {
     use std::process::Command;
 
     let output = Command::new("reg")
@@ -316,11 +316,11 @@ fn platform_status() -> Result<DaemonStatus> {
         .context("Failed to query registry")?;
 
     if output.status.success() {
-        Ok(DaemonStatus::Installed {
+        Ok(SchemeStatus::Installed {
             path: r"HKCU\Software\Classes\worktree".to_string(),
         })
     } else {
-        Ok(DaemonStatus::NotInstalled)
+        Ok(SchemeStatus::NotInstalled)
     }
 }
 
@@ -337,6 +337,6 @@ fn platform_uninstall() -> Result<()> {
 }
 
 #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
-fn platform_status() -> Result<DaemonStatus> {
-    Ok(DaemonStatus::NotInstalled)
+fn platform_status() -> Result<SchemeStatus> {
+    Ok(SchemeStatus::NotInstalled)
 }
