@@ -43,63 +43,58 @@ fn platform_install() -> Result<()> {
 
     let exe = std::env::current_exe().context("Failed to get current executable path")?;
     let app = app_dir();
-    let contents = app.join("Contents");
-    let macos_dir = contents.join("MacOS");
 
-    std::fs::create_dir_all(&macos_dir)
-        .with_context(|| format!("Failed to create {}", macos_dir.display()))?;
+    // Remove any previous install so osacompile starts clean
+    if app.exists() {
+        std::fs::remove_dir_all(&app)
+            .with_context(|| format!("Failed to remove existing app at {}", app.display()))?;
+    }
 
-    // Shell handler script that forwards the URL as the first argument
-    let handler = macos_dir.join("runner-handler");
-    let script = format!(
-        "#!/bin/sh\nexec {exe} open \"$1\"\n",
-        exe = exe.display()
+    // macOS delivers URL scheme events as Apple Events (kAEGetURL / open location),
+    // NOT as argv[1] to the executable.  A plain shell script never sees the URL.
+    // Compiling an AppleScript applet that handles `on open location` is the
+    // correct, documented way to receive the URL from the OS.
+    let script_src = std::env::temp_dir().join("worktree-runner.applescript");
+    let applescript = format!(
+        "on open location this_URL\n\
+         \tdo shell script {exe_q} & \" open \" & quoted form of this_URL\n\
+         end open location\n",
+        exe_q = applescript_quoted(&exe.display().to_string()),
     );
-    std::fs::write(&handler, &script)
-        .with_context(|| format!("Failed to write handler script to {}", handler.display()))?;
+    std::fs::write(&script_src, &applescript)
+        .context("Failed to write AppleScript source")?;
 
-    // Make it executable
-    Command::new("chmod")
-        .args(["+x"])
-        .arg(&handler)
+    // Compile the script into a .app bundle
+    let status = Command::new("osacompile")
+        .args(["-o"])
+        .arg(&app)
+        .arg(&script_src)
         .status()
-        .context("Failed to chmod handler script")?;
+        .context("Failed to run osacompile")?;
+    let _ = std::fs::remove_file(&script_src);
+    if !status.success() {
+        bail!("osacompile failed");
+    }
 
-    // Info.plist
-    let plist_path = contents.join("Info.plist");
-    let plist = format!(
-        r#"<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
-    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>CFBundleIdentifier</key>
-    <string>io.worktree.runner</string>
-    <key>CFBundleName</key>
-    <string>WorktreeRunner</string>
-    <key>CFBundleExecutable</key>
-    <string>runner-handler</string>
-    <key>CFBundlePackageType</key>
-    <string>APPL</string>
-    <key>LSUIElement</key>
-    <true/>
-    <key>CFBundleURLTypes</key>
-    <array>
-        <dict>
-            <key>CFBundleURLName</key>
-            <string>Worktree URL</string>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>worktree</string>
-            </array>
-        </dict>
-    </array>
-</dict>
-</plist>
-"#
-    );
-    std::fs::write(&plist_path, plist)
-        .with_context(|| format!("Failed to write Info.plist to {}", plist_path.display()))?;
+    // Patch the generated Info.plist: bundle identity + LSUIElement + URL scheme
+    let plist = app.join("Contents").join("Info.plist");
+    let pb = "/usr/libexec/PlistBuddy";
+
+    // CFBundleIdentifier is absent from the osacompile-generated plist — Add it
+    plist_buddy(pb, "Add :CFBundleIdentifier string io.worktree.runner", &plist)?;
+    // CFBundleName is present but defaults to the script filename — override it
+    plist_buddy(pb, "Set :CFBundleName WorktreeRunner", &plist)?;
+
+    // LSUIElement keeps the applet out of the Dock; add if absent then set it
+    let _ = Command::new(pb).args(["-c", "Add :LSUIElement bool true"]).arg(&plist).status();
+    plist_buddy(pb, "Set :LSUIElement true", &plist)?;
+
+    // URL scheme registration
+    let _ = Command::new(pb).args(["-c", "Add :CFBundleURLTypes array"]).arg(&plist).status();
+    plist_buddy(pb, "Add :CFBundleURLTypes:0 dict", &plist)?;
+    plist_buddy(pb, "Add :CFBundleURLTypes:0:CFBundleURLName string Worktree URL", &plist)?;
+    plist_buddy(pb, "Add :CFBundleURLTypes:0:CFBundleURLSchemes array", &plist)?;
+    plist_buddy(pb, "Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string worktree", &plist)?;
 
     // Register with Launch Services
     let lsregister = "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/\
@@ -116,6 +111,29 @@ fn platform_install() -> Result<()> {
 
     println!("Installed WorktreeRunner.app at {}", app.display());
     println!("The worktree:// URL scheme is now registered.");
+    Ok(())
+}
+
+/// Wrap a string in AppleScript's `quoted form` equivalent for embedding in source.
+/// Escapes backslashes and double-quotes so the path is safe inside a double-quoted
+/// AppleScript string literal.
+#[cfg(target_os = "macos")]
+fn applescript_quoted(s: &str) -> String {
+    let escaped = s.replace('\\', "\\\\").replace('"', "\\\"");
+    format!("\"{escaped}\"")
+}
+
+/// Run a single PlistBuddy command, returning an error if it fails.
+#[cfg(target_os = "macos")]
+fn plist_buddy(pb: &str, cmd: &str, plist: &std::path::Path) -> Result<()> {
+    let status = std::process::Command::new(pb)
+        .args(["-c", cmd])
+        .arg(plist)
+        .status()
+        .with_context(|| format!("Failed to run PlistBuddy: {cmd}"))?;
+    if !status.success() {
+        bail!("PlistBuddy failed: {cmd}");
+    }
     Ok(())
 }
 
