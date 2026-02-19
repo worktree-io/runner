@@ -4,8 +4,20 @@ A CLI tool that opens GitHub issues as git worktree workspaces. Paste a GitHub i
 
 ## Install
 
+Download a prebuilt binary from the [latest release](https://github.com/worktree-io/runner/releases/latest):
+
+| Platform | Download |
+| -------- | -------- |
+| macOS (Apple Silicon) | `worktree-macos-aarch64.tar.gz` |
+| macOS (Intel) | `worktree-macos-x86_64.tar.gz` |
+| Linux x86_64 | `worktree-linux-x86_64.tar.gz` |
+| Linux ARM64 | `worktree-linux-aarch64.tar.gz` |
+| Windows | `worktree-windows-x86_64.zip` |
+
+Or install from [crates.io](https://crates.io/crates/worktree-io):
+
 ```sh
-cargo install --path .
+cargo install worktree-io
 ```
 
 Then run first-time setup:
@@ -27,7 +39,7 @@ worktree open https://github.com/owner/repo/issues/42
 # Shorthand
 worktree open owner/repo#42
 
-# worktree:// deep link (used by browser extensions / integrations)
+# worktree:// deep link (used by browser / integrations)
 worktree open "worktree://open?owner=owner&repo=repo&issue=42"
 ```
 
@@ -50,10 +62,10 @@ worktree config get <key>
 
 Config keys:
 
-| Key              | Type   | Default | Description                                           |
-| ---------------- | ------ | ------- | ----------------------------------------------------- |
+| Key              | Type   | Default | Description                                            |
+| ---------------- | ------ | ------- | ------------------------------------------------------ |
 | `editor.command` | string | —       | Command to open the editor, e.g. `code .` or `nvim .` |
-| `open.editor`    | bool   | `true`  | Open editor automatically                             |
+| `open.editor`    | bool   | `true`  | Open editor automatically                              |
 
 The config file lives at:
 
@@ -75,9 +87,9 @@ editor = true
 Register `worktree` as the system handler for `worktree://` links so they open automatically from the browser:
 
 ```sh
-worktree daemon install    # register the URL scheme handler
-worktree daemon uninstall  # unregister it
-worktree daemon status     # check whether it's registered
+worktree scheme install    # register the URL scheme handler
+worktree scheme uninstall  # unregister it
+worktree scheme status     # check whether it's registered
 ```
 
 Platform details:
