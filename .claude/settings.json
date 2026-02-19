@@ -12,7 +12,10 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(centy create issue:*)",
-      "Bash(source:*)"
+      "Bash(source:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(git tag:*)"
     ]
   },
   "hooks": {
