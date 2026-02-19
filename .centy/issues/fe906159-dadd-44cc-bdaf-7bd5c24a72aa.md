@@ -1,9 +1,9 @@
 ---
 displayNumber: 3
-status: open
+status: in-progress
 priority: 3
 createdAt: 2026-02-19T12:43:03.849944+00:00
-updatedAt: 2026-02-19T12:43:03.849944+00:00
+updatedAt: 2026-02-19T12:50:55.754957+00:00
 ---
 
 # Rename `daemon` subcommand and remove `install` action
