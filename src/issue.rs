@@ -2,6 +2,14 @@ use anyhow::{bail, Context, Result};
 use std::path::PathBuf;
 use url::Url;
 
+/// Options extracted from a `worktree://` deep link.
+#[derive(Debug, Clone, Default)]
+pub struct DeepLinkOptions {
+    /// Editor override from the `editor` query param. May be a symbolic name
+    /// (`cursor`, `code`, `zed`, `nvim`, etc.) or a raw percent-decoded command.
+    pub editor: Option<String>,
+}
+
 /// A reference to a GitHub issue that identifies a workspace.
 #[derive(Debug, Clone, PartialEq)]
 pub enum IssueRef {
@@ -23,7 +31,8 @@ impl IssueRef {
 
         // Try worktree:// scheme first
         if s.starts_with("worktree://") {
-            return Self::parse_worktree_url(s);
+            let (issue, _opts) = Self::parse_worktree_url(s)?;
+            return Ok(issue);
         }
 
         // Try https://github.com URL
@@ -45,11 +54,23 @@ impl IssueRef {
         )
     }
 
-    fn parse_worktree_url(s: &str) -> Result<Self> {
+    /// Like [`parse`] but also returns any [`DeepLinkOptions`] embedded in a
+    /// `worktree://` URL (e.g. the `editor` query param).
+    pub fn parse_with_options(s: &str) -> Result<(Self, DeepLinkOptions)> {
+        let s = s.trim();
+        if s.starts_with("worktree://") {
+            return Self::parse_worktree_url(s);
+        }
+        Ok((Self::parse(s)?, DeepLinkOptions::default()))
+    }
+
+    fn parse_worktree_url(s: &str) -> Result<(Self, DeepLinkOptions)> {
         let url = Url::parse(s).with_context(|| format!("Invalid URL: {s}"))?;
         let mut owner = None;
         let mut repo = None;
         let mut issue_num = None;
+        let mut url_param = None;
+        let mut editor = None;
 
         for (key, val) in url.query_pairs() {
             match key.as_ref() {
@@ -63,17 +84,27 @@ impl IssueRef {
                 }
                 "url" => {
                     // query_pairs() already percent-decodes the value for us
-                    return Self::parse_github_url(&val);
+                    url_param = Some(val.into_owned());
                 }
+                "editor" => editor = Some(val.into_owned()),
                 _ => {}
             }
         }
 
-        Ok(Self::GitHub {
-            owner: owner.context("Missing 'owner' query param")?,
-            repo: repo.context("Missing 'repo' query param")?,
-            number: issue_num.context("Missing 'issue' query param")?,
-        })
+        let opts = DeepLinkOptions { editor };
+
+        if let Some(url_str) = url_param {
+            return Ok((Self::parse_github_url(&url_str)?, opts));
+        }
+
+        Ok((
+            Self::GitHub {
+                owner: owner.context("Missing 'owner' query param")?,
+                repo: repo.context("Missing 'repo' query param")?,
+                number: issue_num.context("Missing 'issue' query param")?,
+            },
+            opts,
+        ))
     }
 
     fn parse_github_url(s: &str) -> Result<Self> {
@@ -201,6 +232,44 @@ mod tests {
                 number: 7
             }
         );
+    }
+
+    #[test]
+    fn test_parse_worktree_url_with_editor_symbolic() {
+        let (r, opts) =
+            IssueRef::parse_with_options("worktree://open?owner=acme&repo=api&issue=42&editor=cursor")
+                .unwrap();
+        assert_eq!(
+            r,
+            IssueRef::GitHub {
+                owner: "acme".into(),
+                repo: "api".into(),
+                number: 42,
+            }
+        );
+        assert_eq!(opts.editor.as_deref(), Some("cursor"));
+    }
+
+    #[test]
+    fn test_parse_worktree_url_with_editor_raw_command() {
+        let (r, opts) =
+            IssueRef::parse_with_options("worktree://open?owner=acme&repo=api&issue=42&editor=my-editor%20.")
+                .unwrap();
+        assert_eq!(r, IssueRef::GitHub { owner: "acme".into(), repo: "api".into(), number: 42 });
+        assert_eq!(opts.editor.as_deref(), Some("my-editor ."));
+    }
+
+    #[test]
+    fn test_parse_with_options_no_editor() {
+        let (_r, opts) =
+            IssueRef::parse_with_options("worktree://open?owner=acme&repo=api&issue=42").unwrap();
+        assert!(opts.editor.is_none());
+    }
+
+    #[test]
+    fn test_parse_with_options_non_deep_link() {
+        let (_r, opts) = IssueRef::parse_with_options("acme/api#42").unwrap();
+        assert!(opts.editor.is_none());
     }
 
     #[test]

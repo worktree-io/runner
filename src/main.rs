@@ -97,7 +97,7 @@ fn main() -> Result<()> {
 }
 
 fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result<()> {
-    let issue = IssueRef::parse(issue_ref)?;
+    let (issue, deep_link_opts) = IssueRef::parse_with_options(issue_ref)?;
     let workspace = Workspace::open_or_create(issue)?;
 
     if workspace.created {
@@ -111,17 +111,42 @@ fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result<()>
         return Ok(());
     }
 
-    let config = Config::load()?;
-
-    if force_editor || config.open.editor {
-        if let Some(cmd) = &config.editor.command {
-            opener::open_in_editor(&workspace.path, cmd)?;
-        } else {
-            eprintln!("No editor configured. Run: worktree setup");
+    if let Some(editor_name) = deep_link_opts.editor {
+        // Deep link editor param takes precedence over config
+        let cmd = resolve_editor_command(&editor_name);
+        opener::open_in_editor(&workspace.path, &cmd)?;
+    } else {
+        let config = Config::load()?;
+        if force_editor || config.open.editor {
+            if let Some(cmd) = &config.editor.command {
+                opener::open_in_editor(&workspace.path, cmd)?;
+            } else {
+                eprintln!("No editor configured. Run: worktree setup");
+            }
         }
     }
 
     Ok(())
+}
+
+/// Map a symbolic editor name to a launch command, or return the value as-is
+/// if it is not a known symbol (treating it as a raw command string).
+fn resolve_editor_command(name: &str) -> String {
+    let candidates: &[(&str, &str)] = &[
+        ("cursor", "cursor ."),
+        ("code",   "code ."),
+        ("zed",    "zed ."),
+        ("subl",   "subl ."),
+        ("nvim",   "nvim ."),
+        ("vim",    "vim ."),
+    ];
+    for &(sym, cmd) in candidates {
+        if name.eq_ignore_ascii_case(sym) {
+            return cmd.to_string();
+        }
+    }
+    // Not a recognised symbolic name — treat as a raw command string
+    name.to_string()
 }
 
 fn cmd_config(action: ConfigAction) -> Result<()> {
