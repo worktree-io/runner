@@ -1,0 +1,15 @@
+{
+  "allowedStates": [
+    "open",
+    "planning",
+    "in-progress",
+    "closed"
+  ],
+  "customFields": [],
+  "defaultState": "open",
+  "defaults": {},
+  "hooks": [],
+  "priorityColors": {},
+  "priorityLevels": 3,
+  "stateColors": {}
+}
