@@ -1,6 +1,6 @@
 use anyhow::{bail, Context, Result};
 use std::path::Path;
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 /// Open the workspace path in the configured editor.
 /// `command` is a shell template, e.g. `"code ."` or `"nvim ."`.
@@ -30,6 +30,9 @@ fn run_shell_command(cmd: &str) -> Result<()> {
     let program = parts.remove(0);
     Command::new(&program)
         .args(&parts)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
         .spawn()
         .with_context(|| format!("Failed to spawn {program}"))?;
     Ok(())
