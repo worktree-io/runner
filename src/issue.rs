@@ -222,17 +222,18 @@ impl IssueRef {
         }
     }
 
-    /// Path to the worktree checkout: `$TMPDIR/worktree-io/github/owner/repo/issue-N`
+    /// Path to the worktree checkout: `~/worktrees/github/owner/repo/issue-N`
     pub fn temp_path(&self) -> PathBuf {
         self.bare_clone_path().join(self.workspace_dir_name())
     }
 
-    /// Path to the bare clone: `$TMPDIR/worktree-io/github/owner/repo`
+    /// Path to the bare clone: `~/worktrees/github/owner/repo`
     pub fn bare_clone_path(&self) -> PathBuf {
         match self {
             Self::GitHub { owner, repo, .. } | Self::Linear { owner, repo, .. } => {
-                std::env::temp_dir()
-                    .join("worktree-io")
+                dirs::home_dir()
+                    .expect("could not determine home directory")
+                    .join("worktrees")
                     .join("github")
                     .join(owner)
                     .join(repo)
@@ -343,8 +344,8 @@ mod tests {
             repo: "api".into(),
             number: 7,
         };
-        assert!(r.bare_clone_path().ends_with("worktree-io/github/acme/api"));
-        assert!(r.temp_path().ends_with("worktree-io/github/acme/api/issue-7"));
+        assert!(r.bare_clone_path().ends_with("worktrees/github/acme/api"));
+        assert!(r.temp_path().ends_with("worktrees/github/acme/api/issue-7"));
     }
 
     #[test]
@@ -440,10 +441,10 @@ mod tests {
             repo: "api".into(),
             id: uuid.into(),
         };
-        assert!(r.bare_clone_path().ends_with("worktree-io/github/acme/api"));
+        assert!(r.bare_clone_path().ends_with("worktrees/github/acme/api"));
         assert!(r
             .temp_path()
-            .ends_with(format!("worktree-io/github/acme/api/linear-{uuid}")));
+            .ends_with(format!("worktrees/github/acme/api/linear-{uuid}")));
     }
 
     #[test]

@@ -101,8 +101,8 @@ Platform details:
 ## How it works
 
 1. Parses the issue reference into `owner`, `repo`, and `number`.
-2. Bare-clones the repository to `$TMPDIR/worktree-io/github/<owner>/<repo>` (re-uses the clone on subsequent runs and fetches latest).
-3. Creates a git worktree at `$TMPDIR/worktree-io/github/<owner>/<repo>/issue-<N>` on a branch named `issue-<N>`.
+2. Bare-clones the repository to `~/worktrees/github/<owner>/<repo>` (re-uses the clone on subsequent runs and fetches latest).
+3. Creates a git worktree at `~/worktrees/github/<owner>/<repo>/issue-<N>` on a branch named `issue-<N>`.
    - If the branch already exists on the remote it is checked out and tracked locally.
    - Otherwise a new branch is created from the repo's default branch (`main`, `master`, etc.).
 4. Opens the workspace directory in the configured editor.
