@@ -16,7 +16,8 @@
       "Bash(gh run list:*)",
       "Bash(gh run view:*)",
       "Bash(git tag:*)",
-      "Bash(gh run watch:*)"
+      "Bash(gh run watch:*)",
+      "mcp__playwright__browser_navigate"
     ],
     "deny": ["Bash(gh issue create:*)"]
   },
