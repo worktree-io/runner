@@ -15,7 +15,8 @@
       "Bash(source:*)",
       "Bash(gh run list:*)",
       "Bash(gh run view:*)",
-      "Bash(git tag:*)"
+      "Bash(git tag:*)",
+      "Bash(gh run watch:*)"
     ]
   },
   "hooks": {
