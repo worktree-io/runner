@@ -1,0 +1,13 @@
+#!/bin/sh
+
+output=$(cargo fmt --check 2>&1)
+
+if [ $? -ne 0 ]; then
+    files=$(echo "$output" | grep "^Diff in " | sed 's/^Diff in //' | sed 's/:[0-9]*:$//' | sort -u)
+    echo "error: the following files are not formatted:"
+    echo "$files" | while IFS= read -r file; do
+        echo "  $file"
+    done
+    echo "Run \`cargo fmt\` to fix formatting."
+    exit 1
+fi

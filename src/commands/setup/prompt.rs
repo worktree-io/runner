@@ -19,7 +19,11 @@ pub(super) fn prompt_editor(detected: &[(&str, &str)]) -> Result<Option<String>>
     let trimmed = line.trim();
 
     let choice: usize = if trimmed.is_empty() {
-        if detected.is_empty() { 0 } else { 1 }
+        if detected.is_empty() {
+            0
+        } else {
+            1
+        }
     } else {
         trimmed.parse().unwrap_or(usize::MAX)
     };

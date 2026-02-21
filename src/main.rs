@@ -8,7 +8,11 @@ use commands::scheme::{cmd_scheme, SchemeAction};
 use commands::setup::cmd_setup;
 
 #[derive(Parser)]
-#[command(name = "worktree", about = "Open GitHub issues as git worktree workspaces", version)]
+#[command(
+    name = "worktree",
+    about = "Open GitHub issues as git worktree workspaces",
+    version
+)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -54,7 +58,11 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Open { issue_ref, editor, print_path } => cmd_open(&issue_ref, editor, print_path)?,
+        Commands::Open {
+            issue_ref,
+            editor,
+            print_path,
+        } => cmd_open(&issue_ref, editor, print_path)?,
         Commands::Config { action } => cmd_config(action)?,
         Commands::Scheme { action } => cmd_scheme(action)?,
         Commands::Setup => cmd_setup()?,

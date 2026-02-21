@@ -66,7 +66,11 @@ pub fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result
 
 fn build_hook_context(issue: &IssueRef, worktree_path: &std::path::Path) -> HookContext {
     let (owner, repo, issue_str) = match issue {
-        IssueRef::GitHub { owner, repo, number } => (owner.clone(), repo.clone(), number.to_string()),
+        IssueRef::GitHub {
+            owner,
+            repo,
+            number,
+        } => (owner.clone(), repo.clone(), number.to_string()),
         IssueRef::Linear { owner, repo, id } => (owner.clone(), repo.clone(), id.clone()),
     };
     HookContext {

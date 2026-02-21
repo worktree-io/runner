@@ -11,14 +11,9 @@ pub enum ConfigAction {
     /// Write the default configuration to disk
     Init,
     /// Set a configuration value (e.g. editor.command "code .")
-    Set {
-        key: String,
-        value: String,
-    },
+    Set { key: String, value: String },
     /// Get a configuration value
-    Get {
-        key: String,
-    },
+    Get { key: String },
 }
 
 pub fn cmd_config(action: ConfigAction) -> Result<()> {

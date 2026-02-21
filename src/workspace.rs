@@ -1,7 +1,9 @@
 use anyhow::Result;
 use std::path::PathBuf;
 
-use crate::git::{bare_clone, branch_exists_remote, create_worktree, detect_default_branch, git_fetch};
+use crate::git::{
+    bare_clone, branch_exists_remote, create_worktree, detect_default_branch, git_fetch,
+};
 use crate::issue::IssueRef;
 
 pub struct Workspace {
@@ -19,12 +21,20 @@ impl Workspace {
 
         // Fast path: worktree already exists
         if worktree_path.exists() {
-            return Ok(Self { path: worktree_path, issue, created: false });
+            return Ok(Self {
+                path: worktree_path,
+                issue,
+                created: false,
+            });
         }
 
         // Ensure the bare clone exists
         if !bare_path.exists() {
-            eprintln!("Cloning {} (bare) into {}…", issue.clone_url(), bare_path.display());
+            eprintln!(
+                "Cloning {} (bare) into {}…",
+                issue.clone_url(),
+                bare_path.display()
+            );
             bare_clone(&issue.clone_url(), &bare_path)?;
         } else {
             eprintln!("Fetching origin…");
@@ -37,9 +47,23 @@ impl Workspace {
         let branch = issue.branch_name();
         let branch_exists = branch_exists_remote(&bare_path, &branch);
 
-        eprintln!("Creating worktree {} at {}…", branch, worktree_path.display());
-        create_worktree(&bare_path, &worktree_path, &branch, &base_branch, branch_exists)?;
+        eprintln!(
+            "Creating worktree {} at {}…",
+            branch,
+            worktree_path.display()
+        );
+        create_worktree(
+            &bare_path,
+            &worktree_path,
+            &branch,
+            &base_branch,
+            branch_exists,
+        )?;
 
-        Ok(Self { path: worktree_path, issue, created: true })
+        Ok(Self {
+            path: worktree_path,
+            issue,
+            created: true,
+        })
     }
 }

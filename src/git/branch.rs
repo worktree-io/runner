@@ -42,7 +42,11 @@ pub fn detect_default_branch(bare: &Path) -> Result<String> {
         let output = Command::new("git")
             .args(["-C"])
             .arg(bare)
-            .args(["rev-parse", "--verify", &format!("refs/remotes/origin/{candidate}")])
+            .args([
+                "rev-parse",
+                "--verify",
+                &format!("refs/remotes/origin/{candidate}"),
+            ])
             .output()
             .context("Failed to run `git rev-parse`")?;
         if output.status.success() {
@@ -57,7 +61,11 @@ pub fn branch_exists_remote(bare: &Path, branch: &str) -> bool {
     Command::new("git")
         .args(["-C"])
         .arg(bare)
-        .args(["rev-parse", "--verify", &format!("refs/remotes/origin/{branch}")])
+        .args([
+            "rev-parse",
+            "--verify",
+            &format!("refs/remotes/origin/{branch}"),
+        ])
         .output()
         .map(|o| o.status.success())
         .unwrap_or(false)

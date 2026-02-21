@@ -57,10 +57,18 @@ fn test_parse_worktree_url_with_editor_symbolic() {
 
 #[test]
 fn test_parse_worktree_url_with_editor_raw_command() {
-    let (r, opts) =
-        IssueRef::parse_with_options("worktree://open?owner=acme&repo=api&issue=42&editor=my-editor%20.")
-            .unwrap();
-    assert_eq!(r, IssueRef::GitHub { owner: "acme".into(), repo: "api".into(), number: 42 });
+    let (r, opts) = IssueRef::parse_with_options(
+        "worktree://open?owner=acme&repo=api&issue=42&editor=my-editor%20.",
+    )
+    .unwrap();
+    assert_eq!(
+        r,
+        IssueRef::GitHub {
+            owner: "acme".into(),
+            repo: "api".into(),
+            number: 42
+        }
+    );
     assert_eq!(opts.editor.as_deref(), Some("my-editor ."));
 }
 

@@ -20,9 +20,7 @@ pub fn create_worktree(
 
     if branch_exists {
         // Check out the existing remote branch, tracking it locally
-        cmd.arg(dest)
-            .arg("--track")
-            .arg(format!("origin/{branch}"));
+        cmd.arg(dest).arg("--track").arg(format!("origin/{branch}"));
     } else {
         // Create a new branch from the default base
         cmd.arg(dest)

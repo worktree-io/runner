@@ -32,7 +32,11 @@ pub fn install() -> Result<()> {
         .with_context(|| format!("Failed to write desktop file to {}", path.display()))?;
 
     Command::new("xdg-mime")
-        .args(["default", "worktree-runner.desktop", "x-scheme-handler/worktree"])
+        .args([
+            "default",
+            "worktree-runner.desktop",
+            "x-scheme-handler/worktree",
+        ])
         .status()
         .context("Failed to run xdg-mime")?;
 
@@ -55,7 +59,9 @@ pub fn uninstall() -> Result<()> {
 pub fn status() -> Result<SchemeStatus> {
     let path = desktop_file();
     if path.exists() {
-        Ok(SchemeStatus::Installed { path: path.display().to_string() })
+        Ok(SchemeStatus::Installed {
+            path: path.display().to_string(),
+        })
     } else {
         Ok(SchemeStatus::NotInstalled)
     }

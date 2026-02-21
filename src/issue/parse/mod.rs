@@ -62,9 +62,7 @@ pub(super) fn parse_github_url(s: &str) -> Result<IssueRef> {
         .collect();
 
     if segments.len() < 4 || segments[2] != "issues" {
-        bail!(
-            "Expected GitHub issue URL like https://github.com/owner/repo/issues/42, got: {s}"
-        );
+        bail!("Expected GitHub issue URL like https://github.com/owner/repo/issues/42, got: {s}");
     }
 
     let owner = segments[0].to_string();
@@ -73,5 +71,9 @@ pub(super) fn parse_github_url(s: &str) -> Result<IssueRef> {
         .parse::<u64>()
         .with_context(|| format!("Invalid issue number in URL: {}", segments[3]))?;
 
-    Ok(IssueRef::GitHub { owner, repo, number })
+    Ok(IssueRef::GitHub {
+        owner,
+        repo,
+        number,
+    })
 }

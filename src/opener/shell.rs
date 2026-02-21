@@ -3,11 +3,7 @@ use std::process::{Command, Stdio};
 
 pub fn augmented_path() -> String {
     let current = std::env::var("PATH").unwrap_or_default();
-    let extras = [
-        "/usr/local/bin",
-        "/opt/homebrew/bin",
-        "/opt/homebrew/sbin",
-    ];
+    let extras = ["/usr/local/bin", "/opt/homebrew/bin", "/opt/homebrew/sbin"];
     let mut parts: Vec<&str> = extras.iter().copied().collect();
     for p in current.split(':').filter(|s| !s.is_empty()) {
         if !parts.contains(&p) {

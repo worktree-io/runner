@@ -82,6 +82,7 @@ fn test_linear_paths() {
         id: uuid.into(),
     };
     assert!(r.bare_clone_path().ends_with("worktrees/github/acme/api"));
-    assert!(r.temp_path().ends_with(format!("worktrees/github/acme/api/linear-{uuid}")));
+    assert!(r
+        .temp_path()
+        .ends_with(format!("worktrees/github/acme/api/linear-{uuid}")));
 }
-

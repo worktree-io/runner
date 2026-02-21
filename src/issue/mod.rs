@@ -67,15 +67,12 @@ impl IssueRef {
     /// Path to the bare clone: `~/worktrees/github/owner/repo`
     pub fn bare_clone_path(&self) -> PathBuf {
         match self {
-            Self::GitHub { owner, repo, .. } | Self::Linear { owner, repo, .. } => {
-                dirs::home_dir()
-                    .expect("could not determine home directory")
-                    .join("worktrees")
-                    .join("github")
-                    .join(owner)
-                    .join(repo)
-            }
+            Self::GitHub { owner, repo, .. } | Self::Linear { owner, repo, .. } => dirs::home_dir()
+                .expect("could not determine home directory")
+                .join("worktrees")
+                .join("github")
+                .join(owner)
+                .join(repo),
         }
     }
 }
-

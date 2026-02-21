@@ -39,35 +39,53 @@ pub fn status() -> Result<SchemeStatus> {
 // ──────────────────────────── macOS ────────────────────────────
 
 #[cfg(target_os = "macos")]
-fn platform_install() -> Result<()> { macos::install() }
+fn platform_install() -> Result<()> {
+    macos::install()
+}
 
 #[cfg(target_os = "macos")]
-fn platform_uninstall() -> Result<()> { macos::uninstall() }
+fn platform_uninstall() -> Result<()> {
+    macos::uninstall()
+}
 
 #[cfg(target_os = "macos")]
-fn platform_status() -> Result<SchemeStatus> { macos::status() }
+fn platform_status() -> Result<SchemeStatus> {
+    macos::status()
+}
 
 // ──────────────────────────── Linux ────────────────────────────
 
 #[cfg(target_os = "linux")]
-fn platform_install() -> Result<()> { linux::install() }
+fn platform_install() -> Result<()> {
+    linux::install()
+}
 
 #[cfg(target_os = "linux")]
-fn platform_uninstall() -> Result<()> { linux::uninstall() }
+fn platform_uninstall() -> Result<()> {
+    linux::uninstall()
+}
 
 #[cfg(target_os = "linux")]
-fn platform_status() -> Result<SchemeStatus> { linux::status() }
+fn platform_status() -> Result<SchemeStatus> {
+    linux::status()
+}
 
 // ──────────────────────────── Windows ────────────────────────────
 
 #[cfg(target_os = "windows")]
-fn platform_install() -> Result<()> { windows::install() }
+fn platform_install() -> Result<()> {
+    windows::install()
+}
 
 #[cfg(target_os = "windows")]
-fn platform_uninstall() -> Result<()> { windows::uninstall() }
+fn platform_uninstall() -> Result<()> {
+    windows::uninstall()
+}
 
 #[cfg(target_os = "windows")]
-fn platform_status() -> Result<SchemeStatus> { windows::status() }
+fn platform_status() -> Result<SchemeStatus> {
+    windows::status()
+}
 
 // ──────────────────────────── Fallback ────────────────────────────
 
