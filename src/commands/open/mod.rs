@@ -1,3 +1,5 @@
+mod editor;
+
 use anyhow::Result;
 use worktree_io::{
     config::Config,
@@ -31,7 +33,7 @@ pub fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result
     }
 
     let editor_cmd: Option<String> = if let Some(editor_name) = deep_link_opts.editor {
-        Some(resolve_editor_command(&editor_name))
+        Some(editor::resolve_editor_command(&editor_name))
     } else if force_editor || config.open.editor {
         if config.editor.command.is_none() {
             eprintln!("No editor configured. Run: worktree setup");
@@ -74,38 +76,4 @@ fn build_hook_context(issue: &IssueRef, worktree_path: &std::path::Path) -> Hook
         branch: issue.branch_name(),
         worktree_path: worktree_path.to_string_lossy().into_owned(),
     }
-}
-
-fn resolve_editor_command(name: &str) -> String {
-    let candidates: &[(&str, &str)] = &[
-        ("cursor",          "cursor ."),
-        ("code",            "code ."),
-        ("zed",             "zed ."),
-        ("subl",            "subl ."),
-        ("nvim",            "nvim ."),
-        ("vim",             "vim ."),
-        ("iterm",           "open -a iTerm ."),
-        ("iterm2",          "open -a iTerm ."),
-        ("warp",            "open -a Warp ."),
-        ("ghostty",         "open -a Ghostty ."),
-        ("alacritty",       "alacritty --working-directory ."),
-        ("kitty",           "kitty --directory ."),
-        ("wezterm",         "wezterm start --cwd ."),
-        ("wt",              "wt -d ."),
-        ("windowsterminal", "wt -d ."),
-    ];
-    for &(sym, cmd) in candidates {
-        if name.eq_ignore_ascii_case(sym) {
-            return cmd.to_string();
-        }
-    }
-    if name.eq_ignore_ascii_case("terminal") {
-        #[cfg(target_os = "macos")]
-        return "open -a Terminal .".to_string();
-        #[cfg(target_os = "windows")]
-        return "wt -d .".to_string();
-        #[cfg(not(any(target_os = "macos", target_os = "windows")))]
-        return "xterm".to_string();
-    }
-    name.to_string()
 }

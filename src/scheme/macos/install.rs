@@ -1,18 +1,9 @@
 use anyhow::{bail, Context, Result};
 use std::process::Command;
 
-use super::SchemeStatus;
-
-fn app_dir() -> std::path::PathBuf {
-    dirs::home_dir()
-        .unwrap_or_else(|| std::path::PathBuf::from("~"))
-        .join("Applications")
-        .join("WorktreeRunner.app")
-}
-
 pub fn install() -> Result<()> {
     let exe = std::env::current_exe().context("Failed to get current executable path")?;
-    let app = app_dir();
+    let app = super::app_dir();
 
     // Remove any previous install so osacompile starts clean
     if app.exists() {
@@ -84,41 +75,11 @@ pub fn install() -> Result<()> {
     Ok(())
 }
 
-pub fn uninstall() -> Result<()> {
-    let app = app_dir();
-    if app.exists() {
-        // Unregister before removing
-        let lsregister = "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/\
-            LaunchServices.framework/Versions/A/Support/lsregister";
-        let _ = Command::new(lsregister).args(["-u"]).arg(&app).status();
-
-        std::fs::remove_dir_all(&app)
-            .with_context(|| format!("Failed to remove {}", app.display()))?;
-        println!("Removed {}", app.display());
-    } else {
-        println!("Not installed — nothing to remove.");
-    }
-    Ok(())
-}
-
-pub fn status() -> Result<SchemeStatus> {
-    let app = app_dir();
-    if app.join("Contents").join("Info.plist").exists() {
-        Ok(SchemeStatus::Installed { path: app.display().to_string() })
-    } else {
-        Ok(SchemeStatus::NotInstalled)
-    }
-}
-
-/// Wrap a string in AppleScript's `quoted form` equivalent for embedding in source.
-/// Escapes backslashes and double-quotes so the path is safe inside a double-quoted
-/// AppleScript string literal.
 fn applescript_quoted(s: &str) -> String {
     let escaped = s.replace('\\', "\\\\").replace('"', "\\\"");
     format!("\"{escaped}\"")
 }
 
-/// Run a single PlistBuddy command, returning an error if it fails.
 fn plist_buddy(pb: &str, cmd: &str, plist: &std::path::Path) -> Result<()> {
     let status = std::process::Command::new(pb)
         .args(["-c", cmd])
