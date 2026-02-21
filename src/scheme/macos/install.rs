@@ -22,8 +22,7 @@ pub fn install() -> Result<()> {
          end open location\n",
         exe_q = applescript_quoted(&exe.display().to_string()),
     );
-    std::fs::write(&script_src, &applescript)
-        .context("Failed to write AppleScript source")?;
+    std::fs::write(&script_src, &applescript).context("Failed to write AppleScript source")?;
 
     // Compile the script into a .app bundle
     let status = Command::new("osacompile")
@@ -42,20 +41,42 @@ pub fn install() -> Result<()> {
     let pb = "/usr/libexec/PlistBuddy";
 
     // CFBundleIdentifier is absent from the osacompile-generated plist — Add it
-    plist_buddy(pb, "Add :CFBundleIdentifier string io.worktree.runner", &plist)?;
+    plist_buddy(
+        pb,
+        "Add :CFBundleIdentifier string io.worktree.runner",
+        &plist,
+    )?;
     // CFBundleName is present but defaults to the script filename — override it
     plist_buddy(pb, "Set :CFBundleName WorktreeRunner", &plist)?;
 
     // LSUIElement keeps the applet out of the Dock; add if absent then set it
-    let _ = Command::new(pb).args(["-c", "Add :LSUIElement bool true"]).arg(&plist).status();
+    let _ = Command::new(pb)
+        .args(["-c", "Add :LSUIElement bool true"])
+        .arg(&plist)
+        .status();
     plist_buddy(pb, "Set :LSUIElement true", &plist)?;
 
     // URL scheme registration
-    let _ = Command::new(pb).args(["-c", "Add :CFBundleURLTypes array"]).arg(&plist).status();
+    let _ = Command::new(pb)
+        .args(["-c", "Add :CFBundleURLTypes array"])
+        .arg(&plist)
+        .status();
     plist_buddy(pb, "Add :CFBundleURLTypes:0 dict", &plist)?;
-    plist_buddy(pb, "Add :CFBundleURLTypes:0:CFBundleURLName string Worktree URL", &plist)?;
-    plist_buddy(pb, "Add :CFBundleURLTypes:0:CFBundleURLSchemes array", &plist)?;
-    plist_buddy(pb, "Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string worktree", &plist)?;
+    plist_buddy(
+        pb,
+        "Add :CFBundleURLTypes:0:CFBundleURLName string Worktree URL",
+        &plist,
+    )?;
+    plist_buddy(
+        pb,
+        "Add :CFBundleURLTypes:0:CFBundleURLSchemes array",
+        &plist,
+    )?;
+    plist_buddy(
+        pb,
+        "Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string worktree",
+        &plist,
+    )?;
 
     // Register with Launch Services
     let lsregister = "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/\

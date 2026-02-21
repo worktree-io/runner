@@ -5,7 +5,11 @@ use std::process::{Command, Stdio};
 /// Write a bootstrap script (hook + `exec "${SHELL:-sh}"`) to a temp file and
 /// spawn the terminal running it. Returns `true` if the command was recognised
 /// as a terminal emulator, `false` otherwise (IDE / unknown command).
-pub(super) fn try_terminal_with_init(path: &Path, command: &str, init_script: &str) -> Result<bool> {
+pub(super) fn try_terminal_with_init(
+    path: &Path,
+    command: &str,
+    init_script: &str,
+) -> Result<bool> {
     let path_str = path
         .to_str()
         .context("Workspace path contains non-UTF-8 characters")?;
@@ -16,8 +20,8 @@ pub(super) fn try_terminal_with_init(path: &Path, command: &str, init_script: &s
         path_escaped, init_script
     );
 
-    let tmp_path = std::env::temp_dir()
-        .join(format!("worktree-hook-open-{}.sh", std::process::id()));
+    let tmp_path =
+        std::env::temp_dir().join(format!("worktree-hook-open-{}.sh", std::process::id()));
     std::fs::write(&tmp_path, bootstrap.as_bytes())?;
 
     #[cfg(unix)]

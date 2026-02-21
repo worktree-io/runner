@@ -19,7 +19,10 @@ pub fn uninstall() -> Result<()> {
         // Unregister before removing
         let lsregister = "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/\
             LaunchServices.framework/Versions/A/Support/lsregister";
-        let _ = std::process::Command::new(lsregister).args(["-u"]).arg(&app).status();
+        let _ = std::process::Command::new(lsregister)
+            .args(["-u"])
+            .arg(&app)
+            .status();
 
         std::fs::remove_dir_all(&app)
             .with_context(|| format!("Failed to remove {}", app.display()))?;
@@ -33,7 +36,9 @@ pub fn uninstall() -> Result<()> {
 pub fn status() -> Result<SchemeStatus> {
     let app = app_dir();
     if app.join("Contents").join("Info.plist").exists() {
-        Ok(SchemeStatus::Installed { path: app.display().to_string() })
+        Ok(SchemeStatus::Installed {
+            path: app.display().to_string(),
+        })
     } else {
         Ok(SchemeStatus::NotInstalled)
     }

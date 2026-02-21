@@ -20,8 +20,22 @@ pub fn install() -> Result<()> {
         Ok(())
     };
 
-    run(&["add", r"HKCU\Software\Classes\worktree", "/d", "URL:Worktree Protocol", "/f"])?;
-    run(&["add", r"HKCU\Software\Classes\worktree", "/v", "URL Protocol", "/d", "", "/f"])?;
+    run(&[
+        "add",
+        r"HKCU\Software\Classes\worktree",
+        "/d",
+        "URL:Worktree Protocol",
+        "/f",
+    ])?;
+    run(&[
+        "add",
+        r"HKCU\Software\Classes\worktree",
+        "/v",
+        "URL Protocol",
+        "/d",
+        "",
+        "/f",
+    ])?;
     run(&[
         "add",
         r"HKCU\Software\Classes\worktree\shell\open\command",
@@ -54,7 +68,9 @@ pub fn status() -> Result<SchemeStatus> {
         .context("Failed to query registry")?;
 
     if output.status.success() {
-        Ok(SchemeStatus::Installed { path: r"HKCU\Software\Classes\worktree".to_string() })
+        Ok(SchemeStatus::Installed {
+            path: r"HKCU\Software\Classes\worktree".to_string(),
+        })
     } else {
         Ok(SchemeStatus::NotInstalled)
     }
