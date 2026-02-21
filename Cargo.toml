@@ -13,6 +13,9 @@ path = "src/lib.rs"
 name = "worktree"
 path = "src/main.rs"
 
+[dev-dependencies]
+cargo-husky = { version = "1", default-features = false, features = ["user-hooks"] }
+
 [dependencies]
 clap    = { version = "4", features = ["derive"] }
 serde   = { version = "1", features = ["derive"] }
