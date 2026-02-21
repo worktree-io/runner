@@ -7,6 +7,15 @@ use std::path::PathBuf;
 pub struct Config {
     pub editor: EditorConfig,
     pub open: OpenConfig,
+    pub hooks: HooksConfig,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct HooksConfig {
+    #[serde(rename = "pre:open", skip_serializing_if = "Option::is_none", default)]
+    pub pre_open: Option<String>,
+    #[serde(rename = "post:open", skip_serializing_if = "Option::is_none", default)]
+    pub post_open: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -27,6 +36,7 @@ impl Default for Config {
         Self {
             editor: EditorConfig::default(),
             open: OpenConfig::default(),
+            hooks: HooksConfig::default(),
         }
     }
 }

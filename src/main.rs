@@ -5,6 +5,7 @@ use dirs;
 
 use worktree_io::{
     config::Config,
+    hooks::{run_hook, HookContext},
     scheme,
     issue::IssueRef,
     opener,
@@ -98,7 +99,7 @@ fn main() -> Result<()> {
 
 fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result<()> {
     let (issue, deep_link_opts) = IssueRef::parse_with_options(issue_ref)?;
-    let workspace = Workspace::open_or_create(issue)?;
+    let workspace = Workspace::open_or_create(issue.clone())?;
 
     if workspace.created {
         eprintln!("Created workspace at {}", workspace.path.display());
@@ -111,12 +112,19 @@ fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result<()>
         return Ok(());
     }
 
+    let config = Config::load()?;
+
+    let hook_ctx = build_hook_context(&issue, &workspace.path);
+
+    if let Some(script) = &config.hooks.pre_open {
+        run_hook(script, &hook_ctx)?;
+    }
+
     if let Some(editor_name) = deep_link_opts.editor {
         // Deep link editor param takes precedence over config
         let cmd = resolve_editor_command(&editor_name);
         opener::open_in_editor(&workspace.path, &cmd)?;
     } else {
-        let config = Config::load()?;
         if force_editor || config.open.editor {
             if let Some(cmd) = &config.editor.command {
                 opener::open_in_editor(&workspace.path, cmd)?;
@@ -126,7 +134,29 @@ fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result<()>
         }
     }
 
+    if let Some(script) = &config.hooks.post_open {
+        run_hook(script, &hook_ctx)?;
+    }
+
     Ok(())
+}
+
+fn build_hook_context(issue: &IssueRef, worktree_path: &std::path::Path) -> HookContext {
+    let (owner, repo, issue_str) = match issue {
+        IssueRef::GitHub { owner, repo, number } => {
+            (owner.clone(), repo.clone(), number.to_string())
+        }
+        IssueRef::Linear { owner, repo, id } => {
+            (owner.clone(), repo.clone(), id.clone())
+        }
+    };
+    HookContext {
+        owner,
+        repo,
+        issue: issue_str,
+        branch: issue.branch_name(),
+        worktree_path: worktree_path.to_string_lossy().into_owned(),
+    }
 }
 
 /// Map a symbolic editor/terminal name to a launch command, or return the value as-is
