@@ -12,6 +12,12 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+echo "Running cargo clippy…"
+if ! cargo clippy --all-targets --all-features -- -D warnings 2>&1; then
+    echo "Commit blocked: cargo clippy reported warnings or errors. Fix them before committing."
+    exit 1
+fi
+
 if command -v cspell >/dev/null 2>&1; then
     staged_files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(rs|toml|md|json|sh|txt)$')
     if [ -n "$staged_files" ]; then
