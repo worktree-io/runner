@@ -21,7 +21,11 @@
       "Bash(cargo build:*)",
       "Bash(gh release:*)",
       "Bash(ls:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(cargo test:*)",
+      "Bash(cargo:*)",
+      "Bash(pnpm:*)",
+      "Bash(grep:*)"
     ],
     "deny": ["Bash(gh issue create:*)"]
   },
