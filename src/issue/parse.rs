@@ -72,7 +72,7 @@ impl IssueRef {
                 }
                 "linear_id" => {
                     let id = val.into_owned();
-                    if !super::is_uuid(&id) {
+                    if uuid::Uuid::parse_str(&id).is_err() {
                         bail!("Invalid Linear issue UUID: {id}");
                     }
                     linear_id = Some(id);
@@ -145,7 +145,7 @@ impl IssueRef {
             if owner.is_empty() || repo.is_empty() {
                 return Some(Err(anyhow::anyhow!("Invalid shorthand format: {s}")));
             }
-            if !super::is_uuid(id) {
+            if uuid::Uuid::parse_str(id).is_err() {
                 return Some(Err(anyhow::anyhow!(
                     "Invalid Linear issue UUID in shorthand: {id}"
                 )));

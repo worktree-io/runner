@@ -86,16 +86,16 @@ fn test_linear_paths() {
 }
 
 #[test]
-fn test_is_uuid_valid() {
-    assert!(is_uuid("9cad7a4b-9426-4788-9dbc-e784df999053"));
-    assert!(is_uuid("00000000-0000-0000-0000-000000000000"));
-    assert!(is_uuid("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"));
+fn test_uuid_parse_valid() {
+    assert!(uuid::Uuid::parse_str("9cad7a4b-9426-4788-9dbc-e784df999053").is_ok());
+    assert!(uuid::Uuid::parse_str("00000000-0000-0000-0000-000000000000").is_ok());
+    assert!(uuid::Uuid::parse_str("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF").is_ok());
 }
 
 #[test]
-fn test_is_uuid_invalid() {
-    assert!(!is_uuid("not-a-uuid"));
-    assert!(!is_uuid("9cad7a4b-9426-4788-9dbc"));
-    assert!(!is_uuid("9cad7a4b94264788-9dbc-e784df999053"));
-    assert!(!is_uuid("9cad7a4b-9426-4788-9dbc-e784df99905z")); // 'z' invalid
+fn test_uuid_parse_invalid() {
+    assert!(uuid::Uuid::parse_str("not-a-uuid").is_err());
+    assert!(uuid::Uuid::parse_str("9cad7a4b-9426-4788-9dbc").is_err());
+    assert!(uuid::Uuid::parse_str("9cad7a4b94264788-9dbc-e784df999053").is_err());
+    assert!(uuid::Uuid::parse_str("9cad7a4b-9426-4788-9dbc-e784df99905z").is_err()); // 'z' invalid
 }
