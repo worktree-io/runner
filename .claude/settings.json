@@ -30,7 +30,8 @@
       "Bash(chmod +x:*)",
       "Bash(tail:*)",
       "Bash(gh pr:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(grep:*)"
     ],
     "deny": ["Bash(gh issue create:*)"]
   },
