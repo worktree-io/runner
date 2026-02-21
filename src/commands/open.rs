@@ -30,20 +30,33 @@ pub fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result
         run_hook(script, &hook_ctx)?;
     }
 
-    if let Some(editor_name) = deep_link_opts.editor {
-        let cmd = resolve_editor_command(&editor_name);
-        opener::open_in_editor(&workspace.path, &cmd)?;
+    let editor_cmd: Option<String> = if let Some(editor_name) = deep_link_opts.editor {
+        Some(resolve_editor_command(&editor_name))
     } else if force_editor || config.open.editor {
-        if let Some(cmd) = &config.editor.command {
-            opener::open_in_editor(&workspace.path, cmd)?;
-        } else {
+        if config.editor.command.is_none() {
             eprintln!("No editor configured. Run: worktree setup");
         }
-    }
+        config.editor.command.clone()
+    } else {
+        None
+    };
 
-    if let Some(script) = &config.hooks.post_open {
-        eprintln!("Running post:open hook…");
-        run_hook(script, &hook_ctx)?;
+    match (editor_cmd.as_deref(), config.hooks.post_open.as_deref()) {
+        (Some(cmd), Some(script)) => {
+            let rendered = hook_ctx.render(script);
+            if !opener::open_with_hook(&workspace.path, cmd, &rendered)? {
+                eprintln!("Running post:open hook…");
+                run_hook(script, &hook_ctx)?;
+            }
+        }
+        (Some(cmd), None) => {
+            opener::open_in_editor(&workspace.path, cmd)?;
+        }
+        (None, Some(script)) => {
+            eprintln!("Running post:open hook…");
+            run_hook(script, &hook_ctx)?;
+        }
+        (None, None) => {}
     }
 
     Ok(())

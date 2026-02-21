@@ -12,7 +12,7 @@ pub struct HookContext {
 }
 
 impl HookContext {
-    fn render(&self, template: &str) -> String {
+    pub fn render(&self, template: &str) -> String {
         template
             .replace("{{owner}}", &self.owner)
             .replace("{{repo}}", &self.repo)
