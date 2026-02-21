@@ -15,13 +15,13 @@ pub fn cmd_setup() -> Result<()> {
 
     if config.hooks.pre_open.is_none() {
         config.hooks.pre_open = Some(
-            "#!/usr/bin/env bash\necho \"pre:open: {{owner}}/{{repo}}#{{issue}} ({{branch}}) at {{worktree_path}}\"\n"
+            "#!/usr/bin/env bash\necho \"Opening worktree for {{owner}}/{{repo}}#{{issue}}…\"\n"
                 .to_string(),
         );
     }
     if config.hooks.post_open.is_none() {
         config.hooks.post_open = Some(
-            "#!/usr/bin/env bash\necho \"post:open: {{owner}}/{{repo}}#{{issue}} ({{branch}}) at {{worktree_path}}\"\n"
+            "#!/usr/bin/env bash\necho \"Worktree ready: {{owner}}/{{repo}}#{{issue}} ({{branch}})\"\n"
                 .to_string(),
         );
     }
