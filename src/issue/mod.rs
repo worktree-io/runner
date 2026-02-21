@@ -76,16 +76,3 @@ impl IssueRef {
     }
 }
 
-/// Returns `true` if `s` matches the standard UUID format
-/// `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` (all hex, case-insensitive).
-fn is_uuid(s: &str) -> bool {
-    let parts: Vec<&str> = s.split('-').collect();
-    if parts.len() != 5 {
-        return false;
-    }
-    let expected_lengths = [8, 4, 4, 4, 12];
-    parts
-        .iter()
-        .zip(expected_lengths.iter())
-        .all(|(part, &len)| part.len() == len && part.chars().all(|c| c.is_ascii_hexdigit()))
-}
