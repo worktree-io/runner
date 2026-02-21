@@ -11,3 +11,9 @@ if [ $? -ne 0 ]; then
     echo "Run \`cargo fmt\` to fix formatting."
     exit 1
 fi
+
+echo "Running cargo clippy…"
+if ! cargo clippy --all-targets --all-features -- -D warnings 2>&1; then
+    echo "Commit blocked: cargo clippy reported warnings or errors. Fix them before committing."
+    exit 1
+fi
