@@ -1,7 +1,26 @@
 {
   "version": "0.2",
   "words": [
+    "applescript",
     "centy",
-    "worktree"
+    "ghostty",
+    "HKCU",
+    "iterm",
+    "libexec",
+    "lsregister",
+    "LSUI",
+    "nvim",
+    "osacompile",
+    "osascript",
+    "peekable",
+    "recognised",
+    "refspec",
+    "replacen",
+    "shlex",
+    "subl",
+    "wezterm",
+    "windowsterminal",
+    "worktree",
+    "worktrees"
   ]
 }

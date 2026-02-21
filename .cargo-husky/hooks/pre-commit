@@ -11,3 +11,20 @@ if [ $? -ne 0 ]; then
     echo "Run \`cargo fmt\` to fix formatting."
     exit 1
 fi
+
+if command -v cspell >/dev/null 2>&1; then
+    staged_files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(rs|toml|md|json|sh|txt)$')
+    if [ -n "$staged_files" ]; then
+        cspell_output=$(echo "$staged_files" | xargs cspell --config cspell.json --no-progress 2>&1)
+        if [ $? -ne 0 ]; then
+            echo "error: spell check failed. Unknown words found:"
+            echo "$cspell_output" | grep "Unknown word" | while IFS= read -r line; do
+                echo "  $line"
+            done
+            echo "Fix the spelling or add the word to cspell.json."
+            exit 1
+        fi
+    fi
+else
+    echo "warning: cspell not found, skipping spell check (install with: npm install -g cspell)"
+fi
