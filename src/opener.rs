@@ -41,7 +41,7 @@ fn run_shell_command(cmd: &str) -> Result<()> {
 
 /// Return a PATH that includes common binary directories that GUI-launched
 /// processes (e.g. via AppleScript `do shell script`) typically lack.
-fn augmented_path() -> String {
+pub fn augmented_path() -> String {
     let current = std::env::var("PATH").unwrap_or_default();
     let extras = [
         "/usr/local/bin",

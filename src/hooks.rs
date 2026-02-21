@@ -1,6 +1,8 @@
 use anyhow::Result;
 use std::process::Command;
 
+use crate::opener::augmented_path;
+
 pub struct HookContext {
     pub owner: String,
     pub repo: String,
@@ -35,7 +37,10 @@ pub fn run_hook(script: &str, ctx: &HookContext) -> Result<()> {
         std::fs::set_permissions(&tmp_path, std::fs::Permissions::from_mode(0o755))?;
     }
 
-    let result = Command::new("sh").arg(&tmp_path).status();
+    let result = Command::new("sh")
+        .arg(&tmp_path)
+        .env("PATH", augmented_path())
+        .status();
     let _ = std::fs::remove_file(&tmp_path);
 
     match result {

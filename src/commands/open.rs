@@ -26,6 +26,7 @@ pub fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result
     let hook_ctx = build_hook_context(&issue, &workspace.path);
 
     if let Some(script) = &config.hooks.pre_open {
+        eprintln!("Running pre:open hook…");
         run_hook(script, &hook_ctx)?;
     }
 
@@ -41,6 +42,7 @@ pub fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result
     }
 
     if let Some(script) = &config.hooks.post_open {
+        eprintln!("Running post:open hook…");
         run_hook(script, &hook_ctx)?;
     }
 
