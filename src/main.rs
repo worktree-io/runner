@@ -247,6 +247,19 @@ fn cmd_setup() -> Result<()> {
         Err(e) => eprintln!("Warning: could not read editor choice: {e}"),
     }
 
+    if config.hooks.pre_open.is_none() {
+        config.hooks.pre_open = Some(
+            "#!/usr/bin/env bash\necho \"pre:open: {{owner}}/{{repo}}#{{issue}} ({{branch}}) at {{worktree_path}}\"\n"
+                .to_string(),
+        );
+    }
+    if config.hooks.post_open.is_none() {
+        config.hooks.post_open = Some(
+            "#!/usr/bin/env bash\necho \"post:open: {{owner}}/{{repo}}#{{issue}} ({{branch}}) at {{worktree_path}}\"\n"
+                .to_string(),
+        );
+    }
+
     config.save()?;
     if already_existed {
         eprintln!("Updated config at {}", config_path.display());
