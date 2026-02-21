@@ -82,6 +82,44 @@ command = "code ."
 editor = true
 ```
 
+### Hooks
+
+Run shell scripts automatically when a workspace is opened. Define them in your `config.toml` under `[hooks]`:
+
+```toml
+[hooks]
+"pre:open" = """
+#!/usr/bin/env bash
+set -euo pipefail
+echo "Setting up {{owner}}/{{repo}}#{{issue}}"
+cd {{worktree_path}}
+npm install
+"""
+
+"post:open" = """
+#!/usr/bin/env bash
+curl -s https://hooks.example.com/notify \
+  --data "repo={{repo}}&branch={{branch}}"
+"""
+```
+
+| Hook | When it runs |
+| ---- | ------------ |
+| `pre:open` | After the worktree is created, before the editor launches |
+| `post:open` | After the editor launches |
+
+Both hooks support Mustache-style template variables:
+
+| Variable | Description |
+| -------- | ----------- |
+| `{{owner}}` | GitHub owner / org |
+| `{{repo}}` | Repository name |
+| `{{issue}}` | Issue number |
+| `{{branch}}` | Branch name (e.g. `issue-42`) |
+| `{{worktree_path}}` | Absolute path to the worktree directory |
+
+A non-zero exit code prints a warning but does not abort the open.
+
 ### worktree:// URL scheme
 
 Register `worktree` as the system handler for `worktree://` links so they open automatically from the browser:
