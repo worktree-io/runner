@@ -25,7 +25,11 @@
       "Bash(cargo test:*)",
       "Bash(cargo:*)",
       "Bash(pnpm:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git checkout:*)",
+      "Bash(chmod +x:*)",
+      "Bash(tail:*)",
+      "Bash(gh pr:*)"
     ],
     "deny": ["Bash(gh issue create:*)"]
   },
