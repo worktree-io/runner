@@ -8,7 +8,7 @@ use commands::scheme::{cmd_scheme, SchemeAction};
 use commands::setup::cmd_setup;
 
 #[derive(Parser)]
-#[command(name = "worktree", about = "Open GitHub issues as git worktree workspaces")]
+#[command(name = "worktree", about = "Open GitHub issues as git worktree workspaces", version)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -45,6 +45,9 @@ enum Commands {
 
     /// Run first-time setup: detect editor, write config, register URL scheme
     Setup,
+
+    /// Print the current version
+    Version,
 }
 
 fn main() -> Result<()> {
@@ -55,6 +58,7 @@ fn main() -> Result<()> {
         Commands::Config { action } => cmd_config(action)?,
         Commands::Scheme { action } => cmd_scheme(action)?,
         Commands::Setup => cmd_setup()?,
+        Commands::Version => println!("{}", env!("CARGO_PKG_VERSION")),
     }
 
     Ok(())
