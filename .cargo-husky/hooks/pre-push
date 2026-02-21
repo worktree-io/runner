@@ -21,3 +21,40 @@ if [ "$FAILED" -ne 0 ]; then
     echo "Push blocked: one or more source files exceed the $MAX_LINES line limit."
     exit 1
 fi
+
+if [ "${SKIP_COVERAGE:-0}" = "1" ]; then
+    echo "Skipping coverage check (SKIP_COVERAGE=1)."
+else
+    echo "Running test coverage check…"
+    if ! command -v cargo-llvm-cov >/dev/null 2>&1; then
+        echo "Installing cargo-llvm-cov (one-time setup)…"
+        if ! cargo install cargo-llvm-cov; then
+            echo "Push blocked: failed to install cargo-llvm-cov."
+            exit 1
+        fi
+    fi
+    SUMMARY=$(cargo llvm-cov --summary-only 2>&1)
+    COVERAGE=$(printf '%s\n' "$SUMMARY" | awk '/^TOTAL/{
+        count=0
+        for (i = 1; i <= NF; i++) {
+            if ($i ~ /^[0-9]+\.[0-9]+%$/) {
+                count++
+                if (count == 3) { gsub(/%/, "", $i); print $i; break }
+            }
+        }
+    }')
+    if [ -z "$COVERAGE" ]; then
+        echo "Push blocked: could not determine line coverage."
+        printf '%s\n' "$SUMMARY"
+        exit 1
+    fi
+    INT_COV=$(printf '%s' "$COVERAGE" | cut -d. -f1)
+    if [ "$INT_COV" -lt 100 ]; then
+        echo "Push blocked: line coverage is ${COVERAGE}% (required: 100%)."
+        echo ""
+        echo "Uncovered lines:"
+        cargo llvm-cov 2>&1
+        exit 1
+    fi
+    echo "Coverage: ${COVERAGE}% ✓"
+fi
