@@ -55,9 +55,9 @@ impl Default for OpenConfig {
 
 impl Config {
     pub fn path() -> Result<PathBuf> {
-        let config_dir = dirs::config_dir()
-            .context("Could not determine config directory")?;
-        Ok(config_dir.join("worktree").join("config.toml"))
+        let home = dirs::home_dir()
+            .context("Could not determine home directory")?;
+        Ok(home.join(".config").join("worktree").join("config.toml"))
     }
 
     pub fn load() -> Result<Self> {
