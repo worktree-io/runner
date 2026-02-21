@@ -1,5 +1,11 @@
 #!/bin/sh
 
+echo "Running cargo build…"
+if ! cargo build 2>&1; then
+    echo "Push blocked: cargo build failed. Fix the build errors before pushing."
+    exit 1
+fi
+
 MAX_LINES=100
 FAILED=0
 
