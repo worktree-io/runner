@@ -1,0 +1,17 @@
+#!/bin/sh
+
+MAX_LINES=200
+FAILED=0
+
+for file in $(find src -name "*.rs"); do
+    count=$(wc -l < "$file")
+    if [ "$count" -gt "$MAX_LINES" ]; then
+        echo "error: $file has $count lines (limit is $MAX_LINES)"
+        FAILED=1
+    fi
+done
+
+if [ "$FAILED" -ne 0 ]; then
+    echo "Push blocked: one or more source files exceed the $MAX_LINES line limit."
+    exit 1
+fi
