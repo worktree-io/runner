@@ -1,6 +1,6 @@
 #!/bin/sh
 
-MAX_LINES=200
+MAX_LINES=100
 FAILED=0
 
 for file in $(find src -name "*.rs"); do
