@@ -37,8 +37,8 @@ impl Config {
     ///
     /// # Errors
     ///
-    /// Returns an error if the config directory cannot be created, the config
-    /// cannot be serialized, or the file cannot be written.
+    /// Returns an error if the config directory cannot be created or the file
+    /// cannot be written.
     pub fn save(&self) -> Result<()> {
         // LLVM_COV_EXCL_LINE
         // LLVM_COV_EXCL_START
@@ -47,8 +47,7 @@ impl Config {
             std::fs::create_dir_all(parent)
                 .with_context(|| format!("Failed to create config dir {}", parent.display()))?;
         }
-        let toml = toml::to_string_pretty(self).context("Failed to serialize config")?;
-        let content = format!("# runner — https://worktree.io\n{toml}");
+        let content = self.to_toml_with_comments();
         std::fs::write(&path, content)
             .with_context(|| format!("Failed to write config to {}", path.display()))?;
         Ok(())

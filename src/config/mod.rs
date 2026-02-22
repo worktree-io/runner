@@ -1,4 +1,5 @@
 mod ops;
+mod ser;
 
 #[cfg(test)]
 #[path = "ops_tests.rs"]

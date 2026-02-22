@@ -1,18 +1,6 @@
 use super::*;
 
 #[test]
-fn test_save_prepends_website_comment() {
-    let c = Config::default();
-    let toml = toml::to_string_pretty(&c).unwrap();
-    let content = format!("# runner — https://worktree.io\n{toml}");
-    assert!(
-        content.starts_with("# runner — https://worktree.io\n"),
-        "saved config must start with the website comment"
-    );
-    let _: Config = toml::from_str(&content).unwrap();
-}
-
-#[test]
 fn test_path_ends_with_config_toml() {
     let p = Config::path().unwrap();
     assert!(p.ends_with(".config/worktree/config.toml"));
