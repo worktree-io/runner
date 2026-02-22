@@ -11,6 +11,11 @@ fn git(dir: &Path, args: &[&str]) {
         .args(["-C"])
         .arg(dir)
         .args(args)
+        // Unset inherited git env vars so `-C dir` is honoured even inside
+        // a git worktree hook, where GIT_DIR would otherwise override it.
+        .env_remove("GIT_DIR")
+        .env_remove("GIT_WORK_TREE")
+        .env_remove("GIT_INDEX_FILE")
         .status()
         .unwrap();
     assert!(status.success(), "git {args:?} failed");

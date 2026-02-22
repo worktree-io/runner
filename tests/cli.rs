@@ -39,6 +39,11 @@ fn git_in(dir: &Path, args: &[&str]) {
     let ok = Command::new("git")
         .args(["-C", dir.to_str().unwrap()])
         .args(args)
+        // Unset inherited git env vars so `-C dir` is honoured even inside
+        // a git worktree hook, where GIT_DIR would otherwise override it.
+        .env_remove("GIT_DIR")
+        .env_remove("GIT_WORK_TREE")
+        .env_remove("GIT_INDEX_FILE")
         .status()
         .unwrap()
         .success();
