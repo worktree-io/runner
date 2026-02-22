@@ -30,3 +30,44 @@ fn test_run_hook_success() {
 fn test_run_hook_nonzero_exit() {
     run_hook("exit 1", &ctx()).unwrap();
 }
+
+/// Regression test: two hooks running concurrently (same process, different
+/// threads — identical PID) must not overwrite each other's temp script.
+/// With the old PID-based filename both threads wrote to the same file, so
+/// one hook silently executed the other's rendered script.
+#[test]
+fn test_concurrent_hooks_use_distinct_contexts() {
+    let out_a = std::env::temp_dir().join("worktree-test-concurrent-a.txt");
+    let out_b = std::env::temp_dir().join("worktree-test-concurrent-b.txt");
+    let _ = std::fs::remove_file(&out_a);
+    let _ = std::fs::remove_file(&out_b);
+
+    let path_a = out_a.to_str().unwrap().to_string();
+    let path_b = out_b.to_str().unwrap().to_string();
+
+    // {{issue}} is rendered to the actual number before the script runs.
+    let script_a = format!("printf '%s' '{{{{issue}}}}' > '{path_a}'");
+    let script_b = format!("printf '%s' '{{{{issue}}}}' > '{path_b}'");
+
+    let ctx_a = HookContext {
+        issue: "159".into(),
+        ..ctx()
+    };
+    let ctx_b = HookContext {
+        issue: "129".into(),
+        ..ctx()
+    };
+
+    let h1 = std::thread::spawn(move || run_hook(&script_a, &ctx_a).unwrap());
+    let h2 = std::thread::spawn(move || run_hook(&script_b, &ctx_b).unwrap());
+    h1.join().unwrap();
+    h2.join().unwrap();
+
+    let val_a = std::fs::read_to_string(&out_a).unwrap_or_default();
+    let val_b = std::fs::read_to_string(&out_b).unwrap_or_default();
+    let _ = std::fs::remove_file(&out_a);
+    let _ = std::fs::remove_file(&out_b);
+
+    assert_eq!(val_a, "159", "hook A ran with wrong issue context");
+    assert_eq!(val_b, "129", "hook B ran with wrong issue context");
+}
