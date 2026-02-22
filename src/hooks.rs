@@ -42,7 +42,7 @@ impl HookContext {
 pub fn run_hook(script: &str, ctx: &HookContext) -> Result<()> {
     let rendered = ctx.render(script);
 
-    let tmp_path = std::env::temp_dir().join(format!("worktree-hook-{}.sh", std::process::id()));
+    let tmp_path = std::env::temp_dir().join(format!("worktree-hook-{}.sh", uuid::Uuid::new_v4()));
     std::fs::write(&tmp_path, rendered.as_bytes())?;
 
     #[cfg(unix)]

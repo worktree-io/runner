@@ -21,7 +21,7 @@ pub(super) fn try_terminal_with_init(
         format!("#!/bin/sh\ncd '{path_escaped}'\n{init_script}\nexec \"${{SHELL:-sh}}\"\n");
 
     let tmp_path =
-        std::env::temp_dir().join(format!("worktree-hook-open-{}.sh", std::process::id()));
+        std::env::temp_dir().join(format!("worktree-hook-open-{}.sh", uuid::Uuid::new_v4()));
     std::fs::write(&tmp_path, bootstrap.as_bytes())?;
 
     #[cfg(unix)]
