@@ -32,7 +32,7 @@ if ! command -v cargo-llvm-cov >/dev/null 2>&1; then
 fi
 # Exclude files whose untestable paths require live system interaction
 # (GUI terminals, macOS app registration, interactive stdin, network git clone)
-IGNORE='src/(main|workspace|hooks|config/ops|git/clone|opener/(mod|terminal)|issue/parse/(mod|worktree_url)|commands/(open/mod|scheme|setup/(mod|prompt))|scheme/(mod|macos/(install|mod)))\.rs'
+IGNORE='(main|workspace|hooks|config/ops|git/clone|opener/(mod|terminal)|issue/parse/(mod|worktree_url)|commands/(open/mod|scheme|setup/(mod|prompt))|scheme/(mod|macos/(install|mod)))\.rs'
 SUMMARY=$(cargo llvm-cov --ignore-filename-regex "$IGNORE" --summary-only 2>&1)
 COVERAGE=$(printf '%s\n' "$SUMMARY" | awk '/^TOTAL/{
     count=0

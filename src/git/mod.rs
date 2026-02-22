@@ -1,10 +1,10 @@
 mod branch;
 mod clone;
+mod local_branch;
 
-pub use branch::{
-    branch_exists_local, branch_exists_remote, detect_default_branch, detect_local_default_branch,
-};
+pub use branch::{branch_exists_remote, detect_default_branch};
 pub use clone::{bare_clone, git_fetch};
+pub use local_branch::{branch_exists_local, detect_local_default_branch};
 
 use anyhow::{bail, Context, Result};
 use std::path::Path;
