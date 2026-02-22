@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use worktree_io::git::{
@@ -12,7 +13,7 @@ fn git(dir: &Path, args: &[&str]) {
         .args(args)
         .status()
         .unwrap();
-    assert!(status.success(), "git {:?} failed", args);
+    assert!(status.success(), "git {args:?} failed");
 }
 
 fn make_test_dir(name: &str) -> PathBuf {

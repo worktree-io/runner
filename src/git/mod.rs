@@ -14,6 +14,10 @@ use std::process::Command;
 ///
 /// When `branch_exists` is false a new branch is created from HEAD.
 /// When `branch_exists` is true the existing local branch is checked out.
+///
+/// # Errors
+///
+/// Returns an error if the git command fails to spawn or exits non-zero.
 pub fn create_local_worktree(
     repo: &Path,
     dest: &Path,
@@ -38,6 +42,14 @@ pub fn create_local_worktree(
     Ok(())
 }
 
+/// Create a worktree inside a bare clone.
+///
+/// When `branch_exists` is false a new branch is created from `origin/<base_branch>`.
+/// When `branch_exists` is true the existing branch is checked out.
+///
+/// # Errors
+///
+/// Returns an error if the git command fails to spawn or exits non-zero.
 pub fn create_worktree(
     bare: &Path,
     dest: &Path,

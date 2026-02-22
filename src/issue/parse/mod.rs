@@ -14,6 +14,11 @@ impl IssueRef {
     /// - `worktree://open?owner=X&repo=Y&linear_id=<uuid>`
     /// - `owner/repo#42`
     /// - `owner/repo@<linear-uuid>`
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `s` does not match any supported format or if the
+    /// extracted values (e.g. issue number) are invalid.
     pub fn parse(s: &str) -> Result<Self> {
         let s = s.trim();
 
@@ -43,6 +48,10 @@ impl IssueRef {
 
     /// Like [`parse`] but also returns any [`DeepLinkOptions`] embedded in a
     /// `worktree://` URL (e.g. the `editor` query param).
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `s` cannot be parsed as a valid issue reference.
     pub fn parse_with_options(s: &str) -> Result<(Self, DeepLinkOptions)> {
         let s = s.trim();
         if s.starts_with("worktree://") {

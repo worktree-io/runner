@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -41,7 +42,7 @@ fn git_in(dir: &Path, args: &[&str]) {
         .status()
         .unwrap()
         .success();
-    assert!(ok, "git {:?} failed", args);
+    assert!(ok, "git {args:?} failed");
 }
 
 fn setup_bare_clone(home: &Path, owner: &str, repo: &str) {

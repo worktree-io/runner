@@ -6,6 +6,12 @@ if ! cargo build 2>&1; then
     exit 1
 fi
 
+echo "Running cargo clippy…"
+if ! cargo clippy --all-targets 2>&1; then
+    echo "Push blocked: cargo clippy reported errors. Fix all lint violations before pushing."
+    exit 1
+fi
+
 MAX_LINES=100
 FAILED=0
 

@@ -1,9 +1,18 @@
+//! `worktree-io` — open GitHub, Linear, and local Centy issues as git worktree workspaces.
+
+/// Configuration loading and serialization.
 pub mod config;
+/// Git operations: cloning, fetching, branch detection, and worktree creation.
 pub mod git;
+/// Pre/post-open hook execution.
 pub mod hooks;
+/// Issue reference types and parsing.
 pub mod issue;
+/// Editor and terminal openers.
 pub mod opener;
+/// `worktree://` URL scheme registration.
 pub mod scheme;
+/// Workspace creation and lifecycle.
 pub mod workspace;
 
 pub use config::Config;

@@ -2,6 +2,15 @@ use anyhow::{bail, Context, Result};
 use std::path::Path;
 use std::process::Command;
 
+/// Clone `url` as a bare repository into `dest`.
+///
+/// Also configures `remote.origin.fetch` so that `git fetch` populates
+/// `refs/remotes/origin/*`, then runs an initial fetch.
+///
+/// # Errors
+///
+/// Returns an error if the destination directory cannot be created, or if any
+/// of the git commands fail.
 pub fn bare_clone(url: &str, dest: &Path) -> Result<()> {
     if let Some(parent) = dest.parent() {
         std::fs::create_dir_all(parent)
@@ -44,6 +53,11 @@ pub fn bare_clone(url: &str, dest: &Path) -> Result<()> {
     Ok(())
 }
 
+/// Fetch the latest refs from `origin` for a bare clone at `bare`.
+///
+/// # Errors
+///
+/// Returns an error if the git command fails to spawn or exits non-zero.
 pub fn git_fetch(bare: &Path) -> Result<()> {
     let status = Command::new("git")
         .args(["-C"])

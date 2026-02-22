@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::Subcommand;
 use worktree_io::scheme;
 
-#[derive(Subcommand)]
+#[derive(Copy, Clone, Subcommand)]
 pub enum SchemeAction {
     /// Unregister the worktree:// URL scheme handler
     Uninstall,

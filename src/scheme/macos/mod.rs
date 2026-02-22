@@ -33,6 +33,11 @@ pub fn uninstall() -> Result<()> {
     Ok(())
 }
 
+/// Check whether the URL scheme handler app bundle is installed.
+///
+/// Always succeeds on macOS; the `Result` return type matches the platform
+/// abstraction in `scheme/mod.rs`.
+#[allow(clippy::unnecessary_wraps)]
 pub fn status() -> Result<SchemeStatus> {
     let app = app_dir();
     if app.join("Contents").join("Info.plist").exists() {

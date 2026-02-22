@@ -1,5 +1,7 @@
 use anyhow::Result;
 
+mod dispatch;
+
 #[cfg(target_os = "macos")]
 mod macos;
 
@@ -9,9 +11,15 @@ mod linux;
 #[cfg(target_os = "windows")]
 mod windows;
 
-#[derive(Debug, Clone, PartialEq)]
+/// Whether the `worktree://` URL scheme handler is registered on this system.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SchemeStatus {
-    Installed { path: String },
+    /// The handler is installed at the given path.
+    Installed {
+        /// File-system path to the installed application bundle or binary.
+        path: String,
+    },
+    /// The handler is not installed.
     NotInstalled,
 }
 
@@ -24,66 +32,31 @@ impl std::fmt::Display for SchemeStatus {
     }
 }
 
+/// Register the `worktree://` URL scheme handler on the current platform.
+///
+/// # Errors
+///
+/// Returns an error if the platform is unsupported or registration fails.
 pub fn install() -> Result<()> {
-    platform_install()
+    dispatch::platform_install()
 }
+
+/// Remove the `worktree://` URL scheme handler from the current platform.
+///
+/// # Errors
+///
+/// Returns an error if the platform is unsupported or removal fails.
 pub fn uninstall() -> Result<()> {
-    platform_uninstall()
+    dispatch::platform_uninstall()
 }
+
+/// Query whether the `worktree://` URL scheme handler is currently installed.
+///
+/// # Errors
+///
+/// Returns an error if the platform is unsupported or the query fails.
 pub fn status() -> Result<SchemeStatus> {
-    platform_status()
-}
-
-#[cfg(target_os = "macos")]
-fn platform_install() -> Result<()> {
-    macos::install()
-}
-#[cfg(target_os = "macos")]
-fn platform_uninstall() -> Result<()> {
-    macos::uninstall()
-}
-#[cfg(target_os = "macos")]
-fn platform_status() -> Result<SchemeStatus> {
-    macos::status()
-}
-
-#[cfg(target_os = "linux")]
-fn platform_install() -> Result<()> {
-    linux::install()
-}
-#[cfg(target_os = "linux")]
-fn platform_uninstall() -> Result<()> {
-    linux::uninstall()
-}
-#[cfg(target_os = "linux")]
-fn platform_status() -> Result<SchemeStatus> {
-    linux::status()
-}
-
-#[cfg(target_os = "windows")]
-fn platform_install() -> Result<()> {
-    windows::install()
-}
-#[cfg(target_os = "windows")]
-fn platform_uninstall() -> Result<()> {
-    windows::uninstall()
-}
-#[cfg(target_os = "windows")]
-fn platform_status() -> Result<SchemeStatus> {
-    windows::status()
-}
-
-#[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
-fn platform_install() -> Result<()> {
-    anyhow::bail!("URL scheme registration is not supported on this platform")
-}
-#[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
-fn platform_uninstall() -> Result<()> {
-    anyhow::bail!("URL scheme registration is not supported on this platform")
-}
-#[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
-fn platform_status() -> Result<SchemeStatus> {
-    Ok(SchemeStatus::NotInstalled)
+    dispatch::platform_status()
 }
 
 #[cfg(test)]

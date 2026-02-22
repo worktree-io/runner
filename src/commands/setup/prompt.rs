@@ -12,7 +12,7 @@ pub(super) fn prompt_editor(detected: &[(&str, &str)]) -> Result<Option<String>>
     let custom_idx = detected.len() + 1;
     eprintln!("  {custom_idx}. Enter a custom command");
     eprintln!("  0. Skip (no editor configured)");
-    eprint!("Choice [{}]: ", if detected.is_empty() { 0 } else { 1 });
+    eprint!("Choice [{}]: ", i32::from(!detected.is_empty()));
     std::io::stderr().flush().ok();
 
     let stdin = std::io::stdin();
@@ -21,11 +21,7 @@ pub(super) fn prompt_editor(detected: &[(&str, &str)]) -> Result<Option<String>>
     let trimmed = line.trim();
 
     let choice: usize = if trimmed.is_empty() {
-        if detected.is_empty() {
-            0
-        } else {
-            1
-        }
+        usize::from(!detected.is_empty())
     } else {
         trimmed.parse().unwrap_or(usize::MAX)
     };
