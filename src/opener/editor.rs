@@ -1,4 +1,5 @@
 /// Map a short editor name (e.g. "terminal", "vscode", "cursor") to a shell command.
+#[must_use]
 pub fn resolve_editor_command(name: &str) -> String {
     let candidates: &[(&str, &str)] = &[
         ("vscode", "code ."),
