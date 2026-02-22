@@ -1,6 +1,5 @@
 use anyhow::{bail, Context, Result};
 use std::path::Path;
-use std::process::Command;
 
 /// Clone `url` as a bare repository into `dest`.
 ///
@@ -17,7 +16,7 @@ pub fn bare_clone(url: &str, dest: &Path) -> Result<()> {
             .with_context(|| format!("Failed to create directory {}", parent.display()))?;
     }
 
-    let status = Command::new("git")
+    let status = super::git_cmd()
         .args(["clone", "--bare", url])
         .arg(dest)
         .status()
@@ -28,7 +27,7 @@ pub fn bare_clone(url: &str, dest: &Path) -> Result<()> {
     }
 
     let fetch_refspec = "+refs/heads/*:refs/remotes/origin/*";
-    let status = Command::new("git")
+    let status = super::git_cmd()
         .args(["-C"])
         .arg(dest)
         .args(["config", "remote.origin.fetch", fetch_refspec])
@@ -39,7 +38,7 @@ pub fn bare_clone(url: &str, dest: &Path) -> Result<()> {
         bail!("Failed to set remote.origin.fetch"); // LLVM_COV_EXCL_LINE
     }
 
-    let status = Command::new("git")
+    let status = super::git_cmd()
         .args(["-C"])
         .arg(dest)
         .args(["fetch", "origin"])
@@ -59,7 +58,7 @@ pub fn bare_clone(url: &str, dest: &Path) -> Result<()> {
 ///
 /// Returns an error if the git command fails to spawn or exits non-zero.
 pub fn git_fetch(bare: &Path) -> Result<()> {
-    let status = Command::new("git")
+    let status = super::git_cmd()
         .args(["-C"])
         .arg(bare)
         .args(["fetch", "origin"])
