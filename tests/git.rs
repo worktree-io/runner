@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use worktree_io::git::{
@@ -10,9 +11,14 @@ fn git(dir: &Path, args: &[&str]) {
         .args(["-C"])
         .arg(dir)
         .args(args)
+        // Unset inherited git env vars so `-C dir` is honoured even inside
+        // a git worktree hook, where GIT_DIR would otherwise override it.
+        .env_remove("GIT_DIR")
+        .env_remove("GIT_WORK_TREE")
+        .env_remove("GIT_INDEX_FILE")
         .status()
         .unwrap();
-    assert!(status.success(), "git {:?} failed", args);
+    assert!(status.success(), "git {args:?} failed");
 }
 
 fn make_test_dir(name: &str) -> PathBuf {
@@ -121,6 +127,9 @@ fn test_detect_default_branch_remote_show_fallback() {
         .args(["-C"])
         .arg(&dest)
         .args(["symbolic-ref", "--delete", "refs/remotes/origin/HEAD"])
+        .env_remove("GIT_DIR")
+        .env_remove("GIT_WORK_TREE")
+        .env_remove("GIT_INDEX_FILE")
         .status();
     let branch = detect_default_branch(&dest).unwrap();
     assert_eq!(branch, "main");
@@ -138,6 +147,9 @@ fn test_detect_default_branch_rev_parse_fallback() {
         .args(["-C"])
         .arg(&dest)
         .args(["symbolic-ref", "--delete", "refs/remotes/origin/HEAD"])
+        .env_remove("GIT_DIR")
+        .env_remove("GIT_WORK_TREE")
+        .env_remove("GIT_INDEX_FILE")
         .status();
     git(
         &dest,

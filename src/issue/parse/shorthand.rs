@@ -27,13 +27,10 @@ pub(super) fn try_parse_shorthand(s: &str) -> Option<Result<IssueRef>> {
         return Some(Err(anyhow::anyhow!("Invalid shorthand format: {s}")));
     }
 
-    let number = match num_str.parse::<u64>() {
-        Ok(n) => n,
-        Err(_) => {
-            return Some(Err(anyhow::anyhow!(
-                "Invalid issue number in shorthand: {num_str}"
-            )))
-        }
+    let Ok(number) = num_str.parse::<u64>() else {
+        return Some(Err(anyhow::anyhow!(
+            "Invalid issue number in shorthand: {num_str}"
+        )));
     };
 
     Some(Ok(IssueRef::GitHub {

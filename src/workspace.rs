@@ -7,15 +7,23 @@ use crate::git::{
 };
 use crate::issue::IssueRef;
 
+/// An open (or newly created) git worktree for a given issue.
 pub struct Workspace {
+    /// Absolute path to the worktree directory.
     pub path: PathBuf,
+    /// The issue this workspace was opened for.
     pub issue: IssueRef,
-    /// true if this call actually created the worktree; false if it already existed
+    /// `true` if this call created the worktree; `false` if it already existed.
     pub created: bool,
 }
 
 impl Workspace {
     /// Open an existing worktree or create a fresh one.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the repository cannot be cloned/fetched, the branch
+    /// cannot be detected, or the worktree cannot be created.
     pub fn open_or_create(issue: IssueRef) -> Result<Self> {
         let worktree_path = issue.temp_path();
         let bare_path = issue.bare_clone_path();
@@ -30,47 +38,44 @@ impl Workspace {
         }
 
         // LLVM_COV_EXCL_START
-        match &issue {
-            IssueRef::Local { project_path, .. } => {
-                // No bare clone — use the local repo directly.
-                eprintln!("Creating local worktree at {}…", worktree_path.display());
-                let branch = issue.branch_name();
-                let branch_exists = branch_exists_local(project_path, &branch);
-                std::fs::create_dir_all(worktree_path.parent().unwrap_or(&worktree_path))?;
-                create_local_worktree(project_path, &worktree_path, &branch, branch_exists)?;
-            }
-            _ => {
-                if !bare_path.exists() {
-                    eprintln!(
-                        "Cloning {} (bare) into {}…",
-                        issue.clone_url(),
-                        bare_path.display()
-                    );
-                    bare_clone(&issue.clone_url(), &bare_path)?;
-                } else {
-                    eprintln!("Fetching origin…");
-                    git_fetch(&bare_path)?;
-                }
-
-                let base_branch = detect_default_branch(&bare_path)?;
-                eprintln!("Default branch: {base_branch}");
-
-                let branch = issue.branch_name();
-                let branch_exists = branch_exists_remote(&bare_path, &branch);
-
+        if let IssueRef::Local { project_path, .. } = &issue {
+            // No bare clone — use the local repo directly.
+            eprintln!("Creating local worktree at {}…", worktree_path.display());
+            let branch = issue.branch_name();
+            let branch_exists = branch_exists_local(project_path, &branch);
+            std::fs::create_dir_all(worktree_path.parent().unwrap_or(&worktree_path))?;
+            create_local_worktree(project_path, &worktree_path, &branch, branch_exists)?;
+        } else {
+            if bare_path.exists() {
+                eprintln!("Fetching origin…");
+                git_fetch(&bare_path)?;
+            } else {
                 eprintln!(
-                    "Creating worktree {} at {}…",
-                    branch,
-                    worktree_path.display()
+                    "Cloning {} (bare) into {}…",
+                    issue.clone_url(),
+                    bare_path.display()
                 );
-                create_worktree(
-                    &bare_path,
-                    &worktree_path,
-                    &branch,
-                    &base_branch,
-                    branch_exists,
-                )?;
+                bare_clone(&issue.clone_url(), &bare_path)?;
             }
+
+            let base_branch = detect_default_branch(&bare_path)?;
+            eprintln!("Default branch: {base_branch}");
+
+            let branch = issue.branch_name();
+            let branch_exists = branch_exists_remote(&bare_path, &branch);
+
+            eprintln!(
+                "Creating worktree {} at {}…",
+                branch,
+                worktree_path.display()
+            );
+            create_worktree(
+                &bare_path,
+                &worktree_path,
+                &branch,
+                &base_branch,
+                branch_exists,
+            )?;
         }
 
         Ok(Self {

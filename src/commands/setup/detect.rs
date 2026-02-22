@@ -55,23 +55,21 @@ fn macos_app_exists(app_name: &str) -> bool {
 }
 
 pub(super) fn which(binary: &str) -> bool {
-    std::env::var_os("PATH")
-        .map(|path| {
-            std::env::split_paths(&path).any(|dir| {
-                let candidate = dir.join(binary);
-                candidate.is_file() || {
-                    #[cfg(target_os = "windows")]
-                    {
-                        dir.join(format!("{binary}.exe")).is_file()
-                    }
-                    #[cfg(not(target_os = "windows"))]
-                    {
-                        false
-                    }
+    std::env::var_os("PATH").is_some_and(|path| {
+        std::env::split_paths(&path).any(|dir| {
+            let candidate = dir.join(binary);
+            candidate.is_file() || {
+                #[cfg(target_os = "windows")]
+                {
+                    dir.join(format!("{binary}.exe")).is_file()
                 }
-            })
+                #[cfg(not(target_os = "windows"))]
+                {
+                    false
+                }
+            }
         })
-        .unwrap_or(false)
+    })
 }
 
 #[cfg(test)]

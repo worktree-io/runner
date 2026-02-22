@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -38,10 +39,15 @@ fn git_in(dir: &Path, args: &[&str]) {
     let ok = Command::new("git")
         .args(["-C", dir.to_str().unwrap()])
         .args(args)
+        // Unset inherited git env vars so `-C dir` is honoured even inside
+        // a git worktree hook, where GIT_DIR would otherwise override it.
+        .env_remove("GIT_DIR")
+        .env_remove("GIT_WORK_TREE")
+        .env_remove("GIT_INDEX_FILE")
         .status()
         .unwrap()
         .success();
-    assert!(ok, "git {:?} failed", args);
+    assert!(ok, "git {args:?} failed");
 }
 
 fn setup_bare_clone(home: &Path, owner: &str, repo: &str) {

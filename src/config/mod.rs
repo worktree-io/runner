@@ -6,22 +6,30 @@ mod ops_tests;
 
 use serde::{Deserialize, Serialize};
 
+/// Top-level configuration for the worktree CLI.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct Config {
+    /// Editor configuration.
     pub editor: EditorConfig,
+    /// Workspace open behavior.
     pub open: OpenConfig,
+    /// Hook scripts run around the open command.
     pub hooks: HooksConfig,
 }
 
+/// Shell scripts executed before and after opening a workspace.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct HooksConfig {
+    /// Script run before opening the workspace.
     #[serde(rename = "pre:open", skip_serializing_if = "Option::is_none", default)]
     pub pre_open: Option<String>,
+    /// Script run after opening the workspace.
     #[serde(rename = "post:open", skip_serializing_if = "Option::is_none", default)]
     pub post_open: Option<String>,
 }
 
+/// Editor-related configuration.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct EditorConfig {
@@ -29,9 +37,11 @@ pub struct EditorConfig {
     pub command: Option<String>,
 }
 
+/// Controls how the workspace is opened.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
 pub struct OpenConfig {
+    /// Whether to launch the configured editor when opening a workspace.
     pub editor: bool,
 }
 

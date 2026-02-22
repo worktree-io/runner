@@ -1,6 +1,8 @@
 use anyhow::{bail, Context, Result};
 use std::process::{Command, Stdio};
 
+/// Return the `PATH` string augmented with common homebrew and system locations.
+#[must_use]
 pub fn augmented_path() -> String {
     let current = std::env::var("PATH").unwrap_or_default();
     let extras = ["/usr/local/bin", "/opt/homebrew/bin", "/opt/homebrew/sbin"];

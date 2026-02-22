@@ -27,29 +27,39 @@ pub struct DeepLinkOptions {
 }
 
 /// A reference to an issue that identifies a workspace.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum IssueRef {
+    /// A GitHub issue identified by owner, repo, and number.
     GitHub {
+        /// GitHub organization or user name.
         owner: String,
+        /// Repository name.
         repo: String,
+        /// Issue number.
         number: u64,
     },
     /// A Linear issue identified by its UUID, paired with the GitHub repo that
     /// hosts the code for that project.
     Linear {
+        /// GitHub organization or user name that hosts the code.
         owner: String,
+        /// Repository name.
         repo: String,
+        /// Linear issue UUID.
         id: String,
     },
     /// A local Centy issue — the repository itself is the source, no remote clone needed.
     Local {
+        /// Absolute path to the local project repository.
         project_path: PathBuf,
+        /// Human-readable issue number shown in the branch name.
         display_number: u32,
     },
 }
 
 impl IssueRef {
     /// Directory name used inside the bare clone for this worktree.
+    #[must_use]
     pub fn workspace_dir_name(&self) -> String {
         match self {
             Self::GitHub { number, .. } => format!("issue-{number}"),
@@ -59,6 +69,7 @@ impl IssueRef {
     }
 
     /// Git branch name for this issue worktree.
+    #[must_use]
     pub fn branch_name(&self) -> String {
         self.workspace_dir_name()
     }
@@ -68,6 +79,7 @@ impl IssueRef {
     /// # Panics
     ///
     /// Always panics for `IssueRef::Local` — local repos are never cloned.
+    #[must_use]
     pub fn clone_url(&self) -> String {
         match self {
             Self::GitHub { owner, repo, .. } | Self::Linear { owner, repo, .. } => {

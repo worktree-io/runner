@@ -15,10 +15,10 @@ pub(super) fn try_terminal_with_init(
         .context("Workspace path contains non-UTF-8 characters")?;
 
     let path_escaped = path_str.replace('\'', "'\\''");
-    let bootstrap = format!(
-        "#!/bin/sh\ncd '{}'\n{}\nexec \"${{SHELL:-sh}}\"\n",
-        path_escaped, init_script
-    );
+    // Single quotes around {path_escaped} are shell quoting, not Rust string delimiters.
+    #[allow(clippy::literal_string_with_formatting_args)]
+    let bootstrap =
+        format!("#!/bin/sh\ncd '{path_escaped}'\n{init_script}\nexec \"${{SHELL:-sh}}\"\n");
 
     let tmp_path =
         std::env::temp_dir().join(format!("worktree-hook-open-{}.sh", std::process::id()));
@@ -37,8 +37,7 @@ pub(super) fn try_terminal_with_init(
 
     if cmd_lower.contains("iterm") {
         let script = format!(
-            r#"tell application "iTerm2" to create window with default profile command "sh {}""#,
-            tmp_str
+            r#"tell application "iTerm2" to create window with default profile command "sh {tmp_str}""#
         );
         Command::new("osascript")
             .args(["-e", &script])

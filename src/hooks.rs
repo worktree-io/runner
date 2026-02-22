@@ -3,15 +3,24 @@ use std::process::Command;
 
 use crate::opener::augmented_path;
 
+/// Template variables available to hook scripts.
 pub struct HookContext {
+    /// GitHub owner / organization name.
     pub owner: String,
+    /// Repository name.
     pub repo: String,
+    /// Issue number or Linear UUID as a string.
     pub issue: String,
+    /// Git branch name for the worktree.
     pub branch: String,
+    /// Absolute path to the worktree directory.
     pub worktree_path: String,
 }
 
 impl HookContext {
+    /// Expand `{{owner}}`, `{{repo}}`, `{{issue}}`, `{{branch}}`, and
+    /// `{{worktree_path}}` placeholders in `template`.
+    #[must_use]
     pub fn render(&self, template: &str) -> String {
         template
             .replace("{{owner}}", &self.owner)
@@ -25,6 +34,11 @@ impl HookContext {
 /// Render `script` with `ctx`, write to a temp file, and execute it.
 /// Stdout and stderr are forwarded to the caller's terminal.
 /// A non-zero exit code prints a warning but does not return an error.
+///
+/// # Errors
+///
+/// Returns an error if the temp file cannot be written or its permissions
+/// cannot be set.
 pub fn run_hook(script: &str, ctx: &HookContext) -> Result<()> {
     let rendered = ctx.render(script);
 
@@ -59,32 +73,5 @@ pub fn run_hook(script: &str, ctx: &HookContext) -> Result<()> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    fn ctx() -> HookContext {
-        HookContext {
-            owner: "acme".into(),
-            repo: "api".into(),
-            issue: "42".into(),
-            branch: "issue-42".into(),
-            worktree_path: "/tmp/wt".into(),
-        }
-    }
-    #[test]
-    fn test_render_all_placeholders() {
-        let out = ctx().render("{{owner}}/{{repo}}#{{issue}} {{branch}} {{worktree_path}}");
-        assert_eq!(out, "acme/api#42 issue-42 /tmp/wt");
-    }
-    #[test]
-    fn test_render_no_placeholders() {
-        assert_eq!(ctx().render("hello"), "hello");
-    }
-    #[test]
-    fn test_run_hook_success() {
-        run_hook("true", &ctx()).unwrap();
-    }
-    #[test]
-    fn test_run_hook_nonzero_exit() {
-        run_hook("exit 1", &ctx()).unwrap();
-    }
-}
+#[path = "hooks_tests.rs"]
+mod tests;

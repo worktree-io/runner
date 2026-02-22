@@ -33,6 +33,10 @@ fn open_hook_in_auto_terminal(path: &Path, init_script: &str) -> Result<bool> {
 }
 
 /// Open `path` with `command` and run `init_script` inside the resulting window.
+///
+/// # Errors
+///
+/// Returns an error if the editor or terminal command fails to spawn.
 pub fn open_with_hook(path: &Path, command: &str, init_script: &str) -> Result<bool> {
     if terminal::try_terminal_with_init(path, command, init_script)? {
         // LLVM_COV_EXCL_START
@@ -44,6 +48,11 @@ pub fn open_with_hook(path: &Path, command: &str, init_script: &str) -> Result<b
 }
 
 /// Open the workspace path in the configured editor.
+///
+/// # Errors
+///
+/// Returns an error if the workspace path is not valid UTF-8 or the editor
+/// command fails to spawn.
 pub fn open_in_editor(path: &Path, command: &str) -> Result<()> {
     let path_str = path
         .to_str()

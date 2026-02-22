@@ -1,9 +1,17 @@
 use anyhow::{bail, Context, Result};
 use std::path::Path;
-use std::process::Command;
 
+/// Detect the default branch of a bare remote repository.
+///
+/// Tries `symbolic-ref refs/remotes/origin/HEAD`, then `git remote show origin`,
+/// then falls back to checking `main`, `master`, and `develop` in that order.
+///
+/// # Errors
+///
+/// Returns an error if any git command fails to spawn or if the default branch
+/// cannot be determined.
 pub fn detect_default_branch(bare: &Path) -> Result<String> {
-    let output = Command::new("git")
+    let output = super::git_cmd()
         .args(["-C"])
         .arg(bare)
         .args(["symbolic-ref", "refs/remotes/origin/HEAD"])
@@ -17,7 +25,7 @@ pub fn detect_default_branch(bare: &Path) -> Result<String> {
         }
     }
 
-    let output = Command::new("git")
+    let output = super::git_cmd()
         .args(["-C"])
         .arg(bare)
         .args(["remote", "show", "origin"])
@@ -35,7 +43,7 @@ pub fn detect_default_branch(bare: &Path) -> Result<String> {
     }
 
     for candidate in ["main", "master", "develop"] {
-        let output = Command::new("git")
+        let output = super::git_cmd()
             .args(["-C"])
             .arg(bare)
             .args([
@@ -53,8 +61,10 @@ pub fn detect_default_branch(bare: &Path) -> Result<String> {
     bail!("Could not detect default branch for the repository"); // LLVM_COV_EXCL_LINE
 }
 
+/// Return `true` if `branch` exists as a remote-tracking ref in the bare clone.
+#[must_use]
 pub fn branch_exists_remote(bare: &Path, branch: &str) -> bool {
-    Command::new("git")
+    super::git_cmd()
         .args(["-C"])
         .arg(bare)
         .args([
