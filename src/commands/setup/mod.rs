@@ -5,6 +5,11 @@ use anyhow::Result;
 use worktree_io::{config::Config, scheme};
 
 pub fn cmd_setup() -> Result<()> {
+    let pre_open_hook =
+        "#!/usr/bin/env bash\necho \"Opening worktree for {{owner}}/{{repo}}#{{issue}}…\"\n";
+    let post_open_hook =
+        "#!/usr/bin/env bash\necho \"Worktree ready: {{owner}}/{{repo}}#{{issue}} ({{branch}})\"\n";
+
     // LLVM_COV_EXCL_LINE
     // LLVM_COV_EXCL_START
     let config_path = Config::path()?;
@@ -19,16 +24,10 @@ pub fn cmd_setup() -> Result<()> {
     }
 
     if config.hooks.pre_open.is_none() {
-        config.hooks.pre_open = Some(
-            "#!/usr/bin/env bash\necho \"Opening worktree for {{owner}}/{{repo}}#{{issue}}…\"\n"
-                .to_string(),
-        );
+        config.hooks.pre_open = Some(pre_open_hook.to_string());
     }
     if config.hooks.post_open.is_none() {
-        config.hooks.post_open = Some(
-            "#!/usr/bin/env bash\necho \"Worktree ready: {{owner}}/{{repo}}#{{issue}} ({{branch}})\"\n"
-                .to_string(),
-        );
+        config.hooks.post_open = Some(post_open_hook.to_string());
     }
 
     config.save()?;
