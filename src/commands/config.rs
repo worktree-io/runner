@@ -1,6 +1,6 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::Subcommand;
-use worktree_io::config::Config;
+use worktree_io::{config::Config, opener};
 
 #[derive(Subcommand)]
 pub enum ConfigAction {
@@ -14,6 +14,8 @@ pub enum ConfigAction {
     Set { key: String, value: String },
     /// Get a configuration value
     Get { key: String },
+    /// Open the configuration file in the editor
+    Edit,
 }
 
 pub fn cmd_config(action: ConfigAction) -> Result<()> {
@@ -43,6 +45,18 @@ pub fn cmd_config(action: ConfigAction) -> Result<()> {
         ConfigAction::Get { key } => {
             let config = Config::load()?;
             println!("{}", config.get_value(&key)?);
+        }
+        ConfigAction::Edit => {
+            let path = Config::path()?;
+            if !path.exists() {
+                Config::default().save()?;
+            }
+            let command = Config::load()?
+                .editor
+                .command
+                .or_else(|| std::env::var("EDITOR").ok())
+                .context("No editor configured. Run: worktree config set editor.command \"code .\", or set the $EDITOR environment variable")?;
+            opener::open_in_editor(&path, &command)?;
         }
     }
     Ok(())
