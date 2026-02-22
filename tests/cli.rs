@@ -117,6 +117,29 @@ fn test_config_set_and_get() {
 }
 
 #[test]
+fn test_config_edit_with_editor() {
+    let h = temp_home("cfg_edit_ed");
+    write_config(&h, "[editor]\ncommand = \"echo .\"\n");
+    let out = run(&h, &["config", "edit"]);
+    assert!(out.status.success());
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_config_edit_no_editor() {
+    let h = temp_home("cfg_edit_no_ed");
+    let out = Command::new(BIN)
+        .env("HOME", &h)
+        .env_remove("EDITOR")
+        .args(["config", "edit"])
+        .output()
+        .unwrap();
+    assert!(!out.status.success());
+    assert!(String::from_utf8_lossy(&out.stderr).contains("No editor configured"));
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
 fn test_open_print_path() {
     let h = temp_home("op_pp");
     pre_create_workspace(&h, "__t__", "__t__", 1);
