@@ -15,6 +15,9 @@ mod uuid_tests;
 #[cfg(test)]
 mod parse_tests;
 
+#[cfg(test)]
+mod local_tests;
+
 /// Options extracted from a `worktree://` deep link.
 #[derive(Debug, Clone, Default)]
 pub struct DeepLinkOptions {

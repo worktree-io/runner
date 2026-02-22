@@ -1,7 +1,8 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use worktree_io::git::{
-    bare_clone, branch_exists_remote, create_worktree, detect_default_branch, git_fetch,
+    bare_clone, branch_exists_local, branch_exists_remote, create_local_worktree, create_worktree,
+    detect_default_branch, detect_local_default_branch, git_fetch,
 };
 
 fn git(dir: &Path, args: &[&str]) {
@@ -217,5 +218,73 @@ fn test_create_worktree_branch_in_use() {
     let wt2 = base.join("wt-issue-42-b");
     let result = create_worktree(&dest, &wt2, "issue-42", "main", true);
     assert!(result.is_err());
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_branch_exists_local() {
+    let base = make_test_dir("local-exists");
+    let src = setup_source_repo(&base);
+    assert!(branch_exists_local(&src, "main"));
+    assert!(branch_exists_local(&src, "issue-42"));
+    assert!(!branch_exists_local(&src, "nonexistent-xyz"));
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_detect_local_default_branch() {
+    let base = make_test_dir("local-branch");
+    let src = setup_source_repo(&base);
+    let branch = detect_local_default_branch(&src).unwrap();
+    assert_eq!(branch, "main");
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_detect_local_default_branch_detached_fallback() {
+    // Detach HEAD so rev-parse returns "HEAD"; fallback finds refs/heads/main
+    let base = make_test_dir("local-branch-det");
+    let src = setup_source_repo(&base);
+    git(&src, &["checkout", "--detach"]);
+    let branch = detect_local_default_branch(&src).unwrap();
+    assert_eq!(branch, "main");
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_detect_local_default_branch_bail() {
+    // Repo initialized with a non-standard branch; detached HEAD with no main/master/develop
+    let base = make_test_dir("local-branch-bail");
+    let src = base.join("source");
+    std::fs::create_dir_all(&src).unwrap();
+    git(&src, &["init", "-b", "feature"]);
+    git(&src, &["config", "user.email", "test@test.com"]);
+    git(&src, &["config", "user.name", "Test"]);
+    std::fs::write(src.join("README.md"), "hello").unwrap();
+    git(&src, &["add", "."]);
+    git(&src, &["commit", "-m", "init"]);
+    git(&src, &["checkout", "--detach"]);
+    let result = detect_local_default_branch(&src);
+    assert!(result.is_err());
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_create_local_worktree_new_branch() {
+    let base = make_test_dir("local-wt");
+    let src = setup_source_repo(&base);
+    let wt_path = base.join("wt-issue-5");
+    create_local_worktree(&src, &wt_path, "issue-5", false).unwrap();
+    assert!(wt_path.exists());
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_create_local_worktree_existing_branch() {
+    let base = make_test_dir("local-wt2");
+    let src = setup_source_repo(&base); // has "issue-42" branch
+    let wt_path = base.join("wt-issue-42");
+    create_local_worktree(&src, &wt_path, "issue-42", true).unwrap();
+    assert!(wt_path.exists());
     let _ = std::fs::remove_dir_all(&base);
 }

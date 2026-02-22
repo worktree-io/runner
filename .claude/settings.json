@@ -31,7 +31,9 @@
       "Bash(tail:*)",
       "Bash(gh pr:*)",
       "Bash(git pull:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "WebSearch",
+      "WebFetch(domain:crates.io)"
     ],
     "deny": ["Bash(gh issue create:*)"]
   },
