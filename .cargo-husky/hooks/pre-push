@@ -39,6 +39,9 @@ fi
 # Exclude files whose untestable paths require live system interaction
 # (GUI terminals, macOS app registration, interactive stdin, network git clone)
 IGNORE='(main|workspace|hooks|config/ops|git/clone|opener/(mod|terminal)|issue/parse/(mod|worktree_url)|commands/(open/mod|scheme|setup/(mod|prompt))|scheme/(mod|dispatch|macos/(install|mod)))\.rs'
+# Unset git worktree environment variables so that cargo and the tests it
+# spawns use correct file paths and behave identically to a plain shell run.
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR
 # Clean stale coverage data so the report always reflects the current code.
 cargo llvm-cov clean --workspace 2>/dev/null || true
 SUMMARY=$(cargo llvm-cov --ignore-filename-regex "$IGNORE" --summary-only 2>&1)
