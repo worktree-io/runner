@@ -27,7 +27,6 @@ pub(super) fn detect_all_editors() -> Vec<(&'static str, &'static str)> {
     #[cfg(target_os = "macos")]
     {
         found.push(("Terminal", "open -a Terminal ."));
-
         let app_candidates: &[(&str, &str, &str)] = &[
             ("iTerm2", "open -a iTerm .", "iTerm"),
             ("Warp", "open -a Warp .", "Warp"),
@@ -52,7 +51,7 @@ pub(super) fn detect_all_editors() -> Vec<(&'static str, &'static str)> {
 fn macos_app_exists(app_name: &str) -> bool {
     let system = std::path::Path::new("/Applications").join(format!("{app_name}.app"));
     let user = dirs::home_dir().map(|h| h.join("Applications").join(format!("{app_name}.app")));
-    system.exists() || user.map_or(false, |p| p.exists())
+    system.exists() || user.is_some_and(|p| p.exists())
 }
 
 pub(super) fn which(binary: &str) -> bool {
@@ -73,4 +72,22 @@ pub(super) fn which(binary: &str) -> bool {
             })
         })
         .unwrap_or(false)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_which_sh_exists() {
+        assert!(which("sh"));
+    }
+    #[test]
+    fn test_which_nonexistent() {
+        assert!(!which("__no_such_binary_xyz__"));
+    }
+    #[test]
+    fn test_detect_all_editors_returns_vec() {
+        let editors = detect_all_editors();
+        assert!(editors.iter().any(|&(name, _)| name == "Terminal"));
+    }
 }

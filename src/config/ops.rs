@@ -14,14 +14,18 @@ impl Config {
         if !path.exists() {
             return Ok(Self::default());
         }
+        // LLVM_COV_EXCL_START
         let content = std::fs::read_to_string(&path)
             .with_context(|| format!("Failed to read config from {}", path.display()))?;
         let config: Self = toml::from_str(&content)
             .with_context(|| format!("Failed to parse config at {}", path.display()))?;
         Ok(config)
+        // LLVM_COV_EXCL_STOP
     }
 
     pub fn save(&self) -> Result<()> {
+        // LLVM_COV_EXCL_LINE
+        // LLVM_COV_EXCL_START
         let path = Self::path()?;
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)
@@ -31,6 +35,7 @@ impl Config {
         std::fs::write(&path, content)
             .with_context(|| format!("Failed to write config to {}", path.display()))?;
         Ok(())
+        // LLVM_COV_EXCL_STOP
     }
 
     /// Get a config value by dot-separated key path

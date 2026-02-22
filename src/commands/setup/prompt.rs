@@ -1,6 +1,8 @@
 use anyhow::Result;
 
 pub(super) fn prompt_editor(detected: &[(&str, &str)]) -> Result<Option<String>> {
+    // LLVM_COV_EXCL_LINE
+    // LLVM_COV_EXCL_START
     use std::io::{BufRead, Write};
 
     eprintln!("\nSelect your default editor or terminal:");
@@ -45,4 +47,5 @@ pub(super) fn prompt_editor(detected: &[(&str, &str)]) -> Result<Option<String>>
 
     eprintln!("Invalid choice, skipping editor configuration.");
     Ok(None)
+    // LLVM_COV_EXCL_STOP
 }

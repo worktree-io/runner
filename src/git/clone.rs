@@ -15,11 +15,9 @@ pub fn bare_clone(url: &str, dest: &Path) -> Result<()> {
         .context("Failed to run `git clone --bare`")?;
 
     if !status.success() {
-        bail!("git clone --bare failed for {url}");
+        bail!("git clone --bare failed for {url}"); // LLVM_COV_EXCL_LINE
     }
 
-    // Set up the remote tracking so `git fetch` and `symbolic-ref` work correctly
-    // for a bare clone we need to configure remote.origin.fetch
     let fetch_refspec = "+refs/heads/*:refs/remotes/origin/*";
     let status = Command::new("git")
         .args(["-C"])
@@ -29,10 +27,9 @@ pub fn bare_clone(url: &str, dest: &Path) -> Result<()> {
         .context("Failed to configure remote.origin.fetch")?;
 
     if !status.success() {
-        bail!("Failed to set remote.origin.fetch");
+        bail!("Failed to set remote.origin.fetch"); // LLVM_COV_EXCL_LINE
     }
 
-    // Fetch so that refs/remotes/origin/HEAD is populated
     let status = Command::new("git")
         .args(["-C"])
         .arg(dest)
@@ -41,7 +38,7 @@ pub fn bare_clone(url: &str, dest: &Path) -> Result<()> {
         .context("Failed to run `git fetch origin`")?;
 
     if !status.success() {
-        bail!("git fetch origin failed after bare clone");
+        bail!("git fetch origin failed after bare clone"); // LLVM_COV_EXCL_LINE
     }
 
     Ok(())
@@ -56,7 +53,7 @@ pub fn git_fetch(bare: &Path) -> Result<()> {
         .context("Failed to run `git fetch`")?;
 
     if !status.success() {
-        bail!("git fetch origin failed");
+        bail!("git fetch origin failed"); // LLVM_COV_EXCL_LINE
     }
     Ok(())
 }

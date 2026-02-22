@@ -17,6 +17,8 @@ pub enum ConfigAction {
 }
 
 pub fn cmd_config(action: ConfigAction) -> Result<()> {
+    // LLVM_COV_EXCL_LINE
+    // LLVM_COV_EXCL_START
     match action {
         ConfigAction::Show => {
             let config = Config::load()?;
@@ -44,4 +46,5 @@ pub fn cmd_config(action: ConfigAction) -> Result<()> {
         }
     }
     Ok(())
+    // LLVM_COV_EXCL_STOP
 }

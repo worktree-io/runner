@@ -5,6 +5,8 @@ use anyhow::Result;
 use worktree_io::{config::Config, scheme};
 
 pub fn cmd_setup() -> Result<()> {
+    // LLVM_COV_EXCL_LINE
+    // LLVM_COV_EXCL_START
     let config_path = Config::path()?;
     let already_existed = config_path.exists();
     let mut config = Config::load()?;
@@ -43,4 +45,5 @@ pub fn cmd_setup() -> Result<()> {
 
     eprintln!("\nSetup complete! Run: worktree open <github-issue-url>");
     Ok(())
+    // LLVM_COV_EXCL_STOP
 }

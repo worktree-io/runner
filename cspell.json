@@ -1,6 +1,7 @@
 {
   "version": "0.2",
   "words": [
+    "acme",
     "applescript",
     "centy",
     "ghostty",
@@ -9,18 +10,25 @@
     "libexec",
     "lsregister",
     "LSUI",
+    "myproject",
     "nvim",
     "osacompile",
     "osascript",
     "peekable",
     "recognised",
     "refspec",
+    "remoteshow",
     "replacen",
+    "revparse",
+    "setget",
     "shlex",
     "subl",
+    "symref",
+    "tnew",
     "wezterm",
     "windowsterminal",
     "worktree",
-    "worktrees"
+    "worktrees",
+    "wrongpfx"
   ]
 }

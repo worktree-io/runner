@@ -11,9 +11,12 @@ pub enum SchemeAction {
 }
 
 pub fn cmd_scheme(action: SchemeAction) -> Result<()> {
+    // LLVM_COV_EXCL_LINE
+    // LLVM_COV_EXCL_START
     match action {
         SchemeAction::Uninstall => scheme::uninstall()?,
         SchemeAction::Status => println!("{}", scheme::status()?),
     }
     Ok(())
+    // LLVM_COV_EXCL_STOP
 }

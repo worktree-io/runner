@@ -27,79 +27,81 @@ impl std::fmt::Display for SchemeStatus {
 pub fn install() -> Result<()> {
     platform_install()
 }
-
 pub fn uninstall() -> Result<()> {
     platform_uninstall()
 }
-
 pub fn status() -> Result<SchemeStatus> {
     platform_status()
 }
-
-// ──────────────────────────── macOS ────────────────────────────
 
 #[cfg(target_os = "macos")]
 fn platform_install() -> Result<()> {
     macos::install()
 }
-
 #[cfg(target_os = "macos")]
 fn platform_uninstall() -> Result<()> {
     macos::uninstall()
 }
-
 #[cfg(target_os = "macos")]
 fn platform_status() -> Result<SchemeStatus> {
     macos::status()
 }
 
-// ──────────────────────────── Linux ────────────────────────────
-
 #[cfg(target_os = "linux")]
 fn platform_install() -> Result<()> {
     linux::install()
 }
-
 #[cfg(target_os = "linux")]
 fn platform_uninstall() -> Result<()> {
     linux::uninstall()
 }
-
 #[cfg(target_os = "linux")]
 fn platform_status() -> Result<SchemeStatus> {
     linux::status()
 }
 
-// ──────────────────────────── Windows ────────────────────────────
-
 #[cfg(target_os = "windows")]
 fn platform_install() -> Result<()> {
     windows::install()
 }
-
 #[cfg(target_os = "windows")]
 fn platform_uninstall() -> Result<()> {
     windows::uninstall()
 }
-
 #[cfg(target_os = "windows")]
 fn platform_status() -> Result<SchemeStatus> {
     windows::status()
 }
 
-// ──────────────────────────── Fallback ────────────────────────────
-
 #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
 fn platform_install() -> Result<()> {
     anyhow::bail!("URL scheme registration is not supported on this platform")
 }
-
 #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
 fn platform_uninstall() -> Result<()> {
     anyhow::bail!("URL scheme registration is not supported on this platform")
 }
-
 #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
 fn platform_status() -> Result<SchemeStatus> {
     Ok(SchemeStatus::NotInstalled)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_display_installed() {
+        let s = SchemeStatus::Installed {
+            path: "/Applications/Foo.app".into(),
+        };
+        assert_eq!(s.to_string(), "Installed at /Applications/Foo.app");
+    }
+    #[test]
+    fn test_display_not_installed() {
+        assert_eq!(SchemeStatus::NotInstalled.to_string(), "Not installed");
+    }
+    #[test]
+    fn test_status_does_not_panic() {
+        let _ = status();
+    }
 }

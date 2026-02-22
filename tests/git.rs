@@ -1,0 +1,221 @@
+use std::path::{Path, PathBuf};
+use std::process::Command;
+use worktree_io::git::{
+    bare_clone, branch_exists_remote, create_worktree, detect_default_branch, git_fetch,
+};
+
+fn git(dir: &Path, args: &[&str]) {
+    let status = Command::new("git")
+        .args(["-C"])
+        .arg(dir)
+        .args(args)
+        .status()
+        .unwrap();
+    assert!(status.success(), "git {:?} failed", args);
+}
+
+fn make_test_dir(name: &str) -> PathBuf {
+    let dir = std::env::temp_dir().join(format!("wt-test-{}-{}", name, std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    dir
+}
+
+fn setup_source_repo(base: &Path) -> PathBuf {
+    let src = base.join("source");
+    std::fs::create_dir_all(&src).unwrap();
+    git(&src, &["init", "-b", "main"]);
+    git(&src, &["config", "user.email", "test@test.com"]);
+    git(&src, &["config", "user.name", "Test"]);
+    std::fs::write(src.join("README.md"), "hello").unwrap();
+    git(&src, &["add", "."]);
+    git(&src, &["commit", "-m", "init"]);
+    git(&src, &["branch", "issue-42"]);
+    src
+}
+
+#[test]
+fn test_bare_clone_and_git_fetch() {
+    let base = make_test_dir("clone");
+    let src = setup_source_repo(&base);
+    let dest = base.join("bare.git");
+
+    bare_clone(src.to_str().unwrap(), &dest).unwrap();
+    assert!(dest.exists());
+
+    // git_fetch should succeed on the bare clone
+    git_fetch(&dest).unwrap();
+
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_detect_default_branch() {
+    let base = make_test_dir("branch");
+    let src = setup_source_repo(&base);
+    let dest = base.join("bare.git");
+
+    bare_clone(src.to_str().unwrap(), &dest).unwrap();
+
+    let branch = detect_default_branch(&dest).unwrap();
+    assert_eq!(branch, "main");
+
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_branch_exists_remote_true_and_false() {
+    let base = make_test_dir("exists");
+    let src = setup_source_repo(&base);
+    let dest = base.join("bare.git");
+
+    bare_clone(src.to_str().unwrap(), &dest).unwrap();
+
+    assert!(branch_exists_remote(&dest, "main"));
+    assert!(branch_exists_remote(&dest, "issue-42"));
+    assert!(!branch_exists_remote(&dest, "nonexistent-branch-xyz"));
+
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_create_worktree_new_branch() {
+    let base = make_test_dir("worktree");
+    let src = setup_source_repo(&base);
+    let dest = base.join("bare.git");
+
+    bare_clone(src.to_str().unwrap(), &dest).unwrap();
+
+    let wt_path = base.join("wt-issue-99");
+    create_worktree(&dest, &wt_path, "issue-99", "main", false).unwrap();
+    assert!(wt_path.exists());
+
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_create_worktree_existing_branch() {
+    let base = make_test_dir("worktree2");
+    let src = setup_source_repo(&base);
+    let dest = base.join("bare.git");
+
+    bare_clone(src.to_str().unwrap(), &dest).unwrap();
+
+    let wt_path = base.join("wt-issue-42");
+    create_worktree(&dest, &wt_path, "issue-42", "main", true).unwrap();
+    assert!(wt_path.exists());
+
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_detect_default_branch_remote_show_fallback() {
+    // Delete HEAD symref → forces fallback to `git remote show origin`
+    let base = make_test_dir("branch-remoteshow");
+    let src = setup_source_repo(&base);
+    let dest = base.join("bare.git");
+    bare_clone(src.to_str().unwrap(), &dest).unwrap();
+    // Delete the HEAD symref so symbolic-ref fails
+    let _ = Command::new("git")
+        .args(["-C"])
+        .arg(&dest)
+        .args(["symbolic-ref", "--delete", "refs/remotes/origin/HEAD"])
+        .status();
+    let branch = detect_default_branch(&dest).unwrap();
+    assert_eq!(branch, "main");
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_detect_default_branch_rev_parse_fallback() {
+    // Bad origin URL → remote show fails → falls through to rev-parse candidates
+    let base = make_test_dir("branch-revparse");
+    let src = setup_source_repo(&base);
+    let dest = base.join("bare.git");
+    bare_clone(src.to_str().unwrap(), &dest).unwrap();
+    let _ = Command::new("git")
+        .args(["-C"])
+        .arg(&dest)
+        .args(["symbolic-ref", "--delete", "refs/remotes/origin/HEAD"])
+        .status();
+    git(
+        &dest,
+        &["remote", "set-url", "origin", "/nonexistent/bad/path"],
+    );
+    // refs/remotes/origin/main still exists from the clone
+    let branch = detect_default_branch(&dest).unwrap();
+    assert_eq!(branch, "main");
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_detect_default_branch_bail() {
+    // Empty bare repo with bad remote → all detection paths fail → bail
+    let base = make_test_dir("branch-bail");
+    std::fs::create_dir_all(&base).unwrap();
+    let dest = base.join("bare.git");
+    std::fs::create_dir_all(&dest).unwrap();
+    git(&dest, &["init", "--bare"]);
+    git(&dest, &["remote", "add", "origin", "/nonexistent/bad/path"]);
+    // No remote refs, bad origin → bail!
+    let result = detect_default_branch(&dest);
+    assert!(result.is_err());
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_detect_default_branch_wrong_symref_prefix() {
+    // HEAD symref exits 0 but output doesn't start with refs/remotes/origin/
+    // → falls through to remote show which succeeds
+    let base = make_test_dir("branch-wrongpfx");
+    let src = setup_source_repo(&base);
+    let dest = base.join("bare.git");
+    bare_clone(src.to_str().unwrap(), &dest).unwrap();
+    // Set HEAD to something that won't match refs/remotes/origin/ prefix
+    git(
+        &dest,
+        &[
+            "symbolic-ref",
+            "refs/remotes/origin/HEAD",
+            "refs/heads/main",
+        ],
+    );
+    let branch = detect_default_branch(&dest).unwrap();
+    assert_eq!(branch, "main");
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_bare_clone_bad_url() {
+    let base = make_test_dir("clone-bad");
+    let dest = base.join("bare.git");
+    let result = bare_clone("/nonexistent/bad/path", &dest);
+    assert!(result.is_err());
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_git_fetch_bad_origin() {
+    let base = make_test_dir("fetch-bad");
+    let dest = base.join("bare.git");
+    std::fs::create_dir_all(&dest).unwrap();
+    git(&dest, &["init", "--bare"]);
+    git(&dest, &["remote", "add", "origin", "/nonexistent/bad/path"]);
+    let result = git_fetch(&dest);
+    assert!(result.is_err());
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_create_worktree_branch_in_use() {
+    let base = make_test_dir("worktree-dup");
+    let src = setup_source_repo(&base);
+    let dest = base.join("bare.git");
+    bare_clone(src.to_str().unwrap(), &dest).unwrap();
+    let wt1 = base.join("wt-issue-42-a");
+    create_worktree(&dest, &wt1, "issue-42", "main", true).unwrap();
+    let wt2 = base.join("wt-issue-42-b");
+    let result = create_worktree(&dest, &wt2, "issue-42", "main", true);
+    assert!(result.is_err());
+    let _ = std::fs::remove_dir_all(&base);
+}

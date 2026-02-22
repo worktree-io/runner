@@ -1,8 +1,12 @@
 mod ops;
 
+#[cfg(test)]
+#[path = "ops_tests.rs"]
+mod ops_tests;
+
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct Config {
     pub editor: EditorConfig,
@@ -18,7 +22,7 @@ pub struct HooksConfig {
     pub post_open: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct EditorConfig {
     /// Command to launch the editor, e.g. "code ." or "nvim ."
@@ -31,24 +35,28 @@ pub struct OpenConfig {
     pub editor: bool,
 }
 
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            editor: EditorConfig::default(),
-            open: OpenConfig::default(),
-            hooks: HooksConfig::default(),
-        }
-    }
-}
-
-impl Default for EditorConfig {
-    fn default() -> Self {
-        Self { command: None }
-    }
-}
-
 impl Default for OpenConfig {
     fn default() -> Self {
         Self { editor: true }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_config_default() {
+        let c = Config::default();
+        assert!(c.editor.command.is_none());
+        assert!(c.open.editor);
+        assert!(c.hooks.pre_open.is_none());
+    }
+    #[test]
+    fn test_editor_config_default() {
+        assert!(EditorConfig::default().command.is_none());
+    }
+    #[test]
+    fn test_open_config_default() {
+        assert!(OpenConfig::default().editor);
     }
 }

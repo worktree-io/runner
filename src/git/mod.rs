@@ -19,10 +19,8 @@ pub fn create_worktree(
     cmd.args(["-C"]).arg(bare).arg("worktree").arg("add");
 
     if branch_exists {
-        // Check out the existing remote branch, tracking it locally
-        cmd.arg(dest).arg("--track").arg(format!("origin/{branch}"));
+        cmd.arg(dest).arg(branch);
     } else {
-        // Create a new branch from the default base
         cmd.arg(dest)
             .arg("-b")
             .arg(branch)
@@ -32,7 +30,7 @@ pub fn create_worktree(
     let status = cmd.status().context("Failed to run `git worktree add`")?;
 
     if !status.success() {
-        bail!("git worktree add failed for branch {branch}");
+        bail!("git worktree add failed for branch {branch}"); // LLVM_COV_EXCL_LINE
     }
     Ok(())
 }

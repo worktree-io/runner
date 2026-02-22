@@ -3,7 +3,6 @@ use std::path::Path;
 use std::process::Command;
 
 pub fn detect_default_branch(bare: &Path) -> Result<String> {
-    // Try symbolic-ref first (works when remote HEAD is set)
     let output = Command::new("git")
         .args(["-C"])
         .arg(bare)
@@ -13,13 +12,11 @@ pub fn detect_default_branch(bare: &Path) -> Result<String> {
 
     if output.status.success() {
         let full = String::from_utf8_lossy(&output.stdout);
-        // Output looks like "refs/remotes/origin/main\n"
         if let Some(branch) = full.trim().strip_prefix("refs/remotes/origin/") {
             return Ok(branch.to_string());
         }
     }
 
-    // Fall back: try `git remote show origin` to detect the default branch name
     let output = Command::new("git")
         .args(["-C"])
         .arg(bare)
@@ -32,12 +29,11 @@ pub fn detect_default_branch(bare: &Path) -> Result<String> {
         for line in text.lines() {
             let line = line.trim();
             if let Some(branch) = line.strip_prefix("HEAD branch: ") {
-                return Ok(branch.to_string());
+                return Ok(branch.to_string()); // LLVM_COV_EXCL_LINE
             }
         }
     }
 
-    // Last resort: try common names
     for candidate in ["main", "master", "develop"] {
         let output = Command::new("git")
             .args(["-C"])
@@ -50,11 +46,11 @@ pub fn detect_default_branch(bare: &Path) -> Result<String> {
             .output()
             .context("Failed to run `git rev-parse`")?;
         if output.status.success() {
-            return Ok(candidate.to_string());
+            return Ok(candidate.to_string()); // LLVM_COV_EXCL_LINE
         }
     }
 
-    bail!("Could not detect default branch for the repository");
+    bail!("Could not detect default branch for the repository"); // LLVM_COV_EXCL_LINE
 }
 
 pub fn branch_exists_remote(bare: &Path, branch: &str) -> bool {

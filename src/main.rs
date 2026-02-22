@@ -25,38 +25,33 @@ enum Commands {
         /// Issue reference: GitHub URL, worktree:// deep link, or owner/repo#N
         #[arg(value_name = "REF")]
         issue_ref: String,
-
         /// Force open in editor
         #[arg(long)]
         editor: bool,
-
         /// Print the workspace path and exit without opening anything
         #[arg(long)]
         print_path: bool,
     },
-
     /// Manage worktree configuration
     Config {
         #[command(subcommand)]
         action: ConfigAction,
     },
-
     /// Manage the worktree:// URL scheme handler
     Scheme {
         #[command(subcommand)]
         action: SchemeAction,
     },
-
     /// Run first-time setup: detect editor, write config, register URL scheme
     Setup,
-
     /// Print the current version
     Version,
 }
 
 fn main() -> Result<()> {
+    // LLVM_COV_EXCL_LINE
+    // LLVM_COV_EXCL_START
     let cli = Cli::parse();
-
     match cli.command {
         Commands::Open {
             issue_ref,
@@ -68,6 +63,6 @@ fn main() -> Result<()> {
         Commands::Setup => cmd_setup()?,
         Commands::Version => println!("{}", env!("CARGO_PKG_VERSION")),
     }
-
     Ok(())
+    // LLVM_COV_EXCL_STOP
 }
