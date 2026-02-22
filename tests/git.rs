@@ -127,6 +127,9 @@ fn test_detect_default_branch_remote_show_fallback() {
         .args(["-C"])
         .arg(&dest)
         .args(["symbolic-ref", "--delete", "refs/remotes/origin/HEAD"])
+        .env_remove("GIT_DIR")
+        .env_remove("GIT_WORK_TREE")
+        .env_remove("GIT_INDEX_FILE")
         .status();
     let branch = detect_default_branch(&dest).unwrap();
     assert_eq!(branch, "main");
@@ -144,6 +147,9 @@ fn test_detect_default_branch_rev_parse_fallback() {
         .args(["-C"])
         .arg(&dest)
         .args(["symbolic-ref", "--delete", "refs/remotes/origin/HEAD"])
+        .env_remove("GIT_DIR")
+        .env_remove("GIT_WORK_TREE")
+        .env_remove("GIT_INDEX_FILE")
         .status();
     git(
         &dest,

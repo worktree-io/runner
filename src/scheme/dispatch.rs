@@ -11,6 +11,7 @@ use super::linux;
 #[cfg(target_os = "windows")]
 use super::windows;
 
+// LLVM_COV_EXCL_START
 #[cfg(target_os = "macos")]
 pub(super) fn platform_install() -> Result<()> {
     macos::install()
@@ -19,6 +20,7 @@ pub(super) fn platform_install() -> Result<()> {
 pub(super) fn platform_uninstall() -> Result<()> {
     macos::uninstall()
 }
+// LLVM_COV_EXCL_STOP
 #[cfg(target_os = "macos")]
 pub(super) fn platform_status() -> Result<SchemeStatus> {
     macos::status()
