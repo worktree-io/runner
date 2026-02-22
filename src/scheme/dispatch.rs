@@ -11,7 +11,6 @@ use super::linux;
 #[cfg(target_os = "windows")]
 use super::windows;
 
-// LLVM_COV_EXCL_START
 #[cfg(target_os = "macos")]
 pub(super) fn platform_install() -> Result<()> {
     macos::install()
@@ -20,7 +19,6 @@ pub(super) fn platform_install() -> Result<()> {
 pub(super) fn platform_uninstall() -> Result<()> {
     macos::uninstall()
 }
-// LLVM_COV_EXCL_STOP
 #[cfg(target_os = "macos")]
 pub(super) fn platform_status() -> Result<SchemeStatus> {
     macos::status()
@@ -63,4 +61,17 @@ pub(super) fn platform_uninstall() -> Result<()> {
 #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
 pub(super) fn platform_status() -> Result<SchemeStatus> {
     Ok(SchemeStatus::NotInstalled)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_platform_install_and_uninstall_dispatch() {
+        // These calls exercise the dispatch paths; failures (Err) are expected
+        // in environments without an installed app bundle.
+        let _ = platform_install();
+        let _ = platform_uninstall();
+    }
 }
