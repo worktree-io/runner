@@ -70,7 +70,7 @@ Config keys:
 The config file lives at:
 
 - **macOS/Linux:** `~/.config/worktree/config.toml`
-- **Windows:** `%APPDATA%\worktree\config.toml`
+- **Windows:** `%USERPROFILE%\.config\worktree\config.toml`
 
 Example `config.toml`:
 
