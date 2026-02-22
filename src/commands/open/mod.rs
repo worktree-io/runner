@@ -10,8 +10,6 @@ use worktree_io::{
 };
 
 pub fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result<()> {
-    // LLVM_COV_EXCL_LINE
-    // LLVM_COV_EXCL_START
     let (issue, deep_link_opts) = IssueRef::parse_with_options(issue_ref)?;
     let workspace = Workspace::open_or_create(issue.clone())?;
 
@@ -64,7 +62,6 @@ pub fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result
     }
 
     Ok(())
-    // LLVM_COV_EXCL_STOP
 }
 
 fn build_hook_context(issue: &IssueRef, worktree_path: &std::path::Path) -> HookContext {

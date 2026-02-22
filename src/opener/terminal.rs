@@ -35,7 +35,6 @@ pub(super) fn try_terminal_with_init(
         .context("Temp path contains non-UTF-8 characters")?;
     let cmd_lower = command.to_ascii_lowercase();
 
-    // LLVM_COV_EXCL_START
     if cmd_lower.contains("iterm") {
         let script = format!(
             r#"tell application "iTerm2" to create window with default profile command "sh {}""#,
@@ -81,7 +80,6 @@ pub(super) fn try_terminal_with_init(
             .spawn()?;
         Ok(true)
     } else {
-        // LLVM_COV_EXCL_STOP
         Ok(false)
     }
 }

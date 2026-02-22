@@ -2,8 +2,6 @@ use anyhow::{bail, Context, Result};
 use std::process::Command;
 
 pub fn install() -> Result<()> {
-    // LLVM_COV_EXCL_LINE
-    // LLVM_COV_EXCL_START
     let exe = std::env::current_exe().context("Failed to get current executable path")?;
     let app = super::app_dir();
     if app.exists() {
@@ -74,7 +72,6 @@ pub fn install() -> Result<()> {
     println!("Installed WorktreeRunner.app at {}", app.display());
     println!("The worktree:// URL scheme is now registered.");
     Ok(())
-    // LLVM_COV_EXCL_STOP
 }
 
 fn applescript_quoted(s: &str) -> String {
@@ -83,8 +80,6 @@ fn applescript_quoted(s: &str) -> String {
 }
 
 fn plist_buddy(pb: &str, cmd: &str, plist: &std::path::Path) -> Result<()> {
-    // LLVM_COV_EXCL_LINE
-    // LLVM_COV_EXCL_START
     let status = std::process::Command::new(pb)
         .args(["-c", cmd])
         .arg(plist)
@@ -94,25 +89,8 @@ fn plist_buddy(pb: &str, cmd: &str, plist: &std::path::Path) -> Result<()> {
         bail!("PlistBuddy failed: {cmd}");
     }
     Ok(())
-    // LLVM_COV_EXCL_STOP
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn test_applescript_quoted_no_special() {
-        assert_eq!(
-            applescript_quoted("/usr/bin/worktree"),
-            "\"/usr/bin/worktree\""
-        );
-    }
-    #[test]
-    fn test_applescript_quoted_backslash() {
-        assert_eq!(applescript_quoted("C:\\foo"), "\"C:\\\\foo\"");
-    }
-    #[test]
-    fn test_applescript_quoted_double_quote() {
-        assert_eq!(applescript_quoted("say \"hi\""), "\"say \\\"hi\\\"\"");
-    }
-}
+#[path = "install_tests.rs"]
+mod tests;
