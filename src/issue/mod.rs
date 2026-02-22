@@ -37,6 +37,11 @@ pub enum IssueRef {
         repo: String,
         id: String,
     },
+    /// A local Centy issue — the repository itself is the source, no remote clone needed.
+    Local {
+        project_path: PathBuf,
+        display_number: u32,
+    },
 }
 
 impl IssueRef {
@@ -45,6 +50,7 @@ impl IssueRef {
         match self {
             Self::GitHub { number, .. } => format!("issue-{number}"),
             Self::Linear { id, .. } => format!("linear-{id}"),
+            Self::Local { display_number, .. } => format!("issue-{display_number}"),
         }
     }
 
@@ -54,20 +60,30 @@ impl IssueRef {
     }
 
     /// HTTPS clone URL for the repository.
+    ///
+    /// # Panics
+    ///
+    /// Always panics for `IssueRef::Local` — local repos are never cloned.
     pub fn clone_url(&self) -> String {
         match self {
             Self::GitHub { owner, repo, .. } | Self::Linear { owner, repo, .. } => {
                 format!("https://github.com/{owner}/{repo}.git")
             }
+            Self::Local { .. } => {
+                unreachable!("clone_url is never called for IssueRef::Local")
+            }
         }
     }
 
-    /// Path to the worktree checkout: `~/worktrees/github/owner/repo/issue-N`
+    /// Path to the worktree checkout.
+    ///
+    /// For `Local`: `~/worktrees/local/{project_name}/issue-{display_number}`
+    /// For others:  `~/worktrees/github/{owner}/{repo}/issue-N`
     pub fn temp_path(&self) -> PathBuf {
         self.bare_clone_path().join(self.workspace_dir_name())
     }
 
-    /// Path to the bare clone: `~/worktrees/github/owner/repo`
+    /// Path to the bare clone (or the local repo itself for `Local`).
     pub fn bare_clone_path(&self) -> PathBuf {
         match self {
             Self::GitHub { owner, repo, .. } | Self::Linear { owner, repo, .. } => dirs::home_dir()
@@ -76,6 +92,17 @@ impl IssueRef {
                 .join("github")
                 .join(owner)
                 .join(repo),
+            Self::Local { project_path, .. } => {
+                let project_name = project_path
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_string_lossy();
+                dirs::home_dir()
+                    .expect("could not determine home directory")
+                    .join("worktrees")
+                    .join("local")
+                    .join(project_name.as_ref())
+            }
         }
     }
 }

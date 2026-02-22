@@ -72,6 +72,17 @@ fn build_hook_context(issue: &IssueRef, worktree_path: &std::path::Path) -> Hook
             number,
         } => (owner.clone(), repo.clone(), number.to_string()),
         IssueRef::Linear { owner, repo, id } => (owner.clone(), repo.clone(), id.clone()),
+        IssueRef::Local {
+            project_path,
+            display_number,
+        } => {
+            let project_name = project_path
+                .file_name()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .into_owned();
+            (project_name, String::new(), display_number.to_string())
+        }
     };
     HookContext {
         owner,
