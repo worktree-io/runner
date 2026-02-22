@@ -288,3 +288,24 @@ fn test_create_local_worktree_existing_branch() {
     assert!(wt_path.exists());
     let _ = std::fs::remove_dir_all(&base);
 }
+
+#[test]
+fn test_create_local_worktree_branch_in_use() {
+    let base = make_test_dir("local-wt-dup");
+    let src = setup_source_repo(&base);
+    let wt1 = base.join("wt-issue-42-a");
+    create_local_worktree(&src, &wt1, "issue-42", true).unwrap();
+    let wt2 = base.join("wt-issue-42-b");
+    let result = create_local_worktree(&src, &wt2, "issue-42", true);
+    assert!(result.is_err());
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_detect_local_default_branch_status_fails() {
+    // Non-git directory: rev-parse exits non-zero → false branch of if status.success()
+    let base = make_test_dir("local-branch-no-git");
+    let result = detect_local_default_branch(&base);
+    assert!(result.is_err());
+    let _ = std::fs::remove_dir_all(&base);
+}
