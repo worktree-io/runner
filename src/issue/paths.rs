@@ -26,7 +26,9 @@ impl IssueRef {
                 .join("github")
                 .join(owner)
                 .join(repo),
-            Self::AzureDevOps { org, project, repo, .. } => dirs::home_dir()
+            Self::AzureDevOps {
+                org, project, repo, ..
+            } => dirs::home_dir()
                 .expect("could not determine home directory")
                 .join("worktrees")
                 .join("azuredevops")

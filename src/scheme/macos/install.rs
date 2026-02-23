@@ -90,8 +90,12 @@ fn install_launch_agent(app: &std::path::Path) -> Result<()> {
         .join("LaunchAgents");
     std::fs::create_dir_all(&agents_dir).context("Failed to create LaunchAgents directory")?;
     let plist_path = agents_dir.join("io.worktree.runner.plist");
-    std::fs::write(&plist_path, launch_agent_plist_content(app))
-        .with_context(|| format!("Failed to write LaunchAgent plist at {}", plist_path.display()))?;
+    std::fs::write(&plist_path, launch_agent_plist_content(app)).with_context(|| {
+        format!(
+            "Failed to write LaunchAgent plist at {}",
+            plist_path.display()
+        )
+    })?;
     Ok(())
 }
 

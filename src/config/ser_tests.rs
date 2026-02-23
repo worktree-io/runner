@@ -87,7 +87,10 @@ fn test_multiline_hook_uses_triple_quotes() {
     let mut c = Config::default();
     c.hooks.post_open = Some(script.into());
     let s = c.to_toml_with_comments();
-    assert!(s.contains("\"post:open\" = \"\"\"\n"), "expected multiline basic string");
+    assert!(
+        s.contains("\"post:open\" = \"\"\"\n"),
+        "expected multiline basic string"
+    );
     assert!(!s.contains("\\n"), "newlines must not be escaped as \\n");
 }
 

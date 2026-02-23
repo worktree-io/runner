@@ -72,7 +72,12 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
         let project = ado_project.context("Missing 'project' query param")?;
         let repo = ado_repo.unwrap_or_else(|| project.clone());
         return Ok((
-            IssueRef::AzureDevOps { org, project, repo, id },
+            IssueRef::AzureDevOps {
+                org,
+                project,
+                repo,
+                id,
+            },
             opts,
         ));
     }

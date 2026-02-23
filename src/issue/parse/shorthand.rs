@@ -10,7 +10,9 @@ pub(super) fn try_parse_shorthand(s: &str) -> Option<Result<IssueRef>> {
         let project = parts.next().unwrap_or("");
         let repo = parts.next().unwrap_or("");
         if org.is_empty() || project.is_empty() || repo.is_empty() {
-            return Some(Err(anyhow::anyhow!("Invalid Azure DevOps shorthand format: {s}")));
+            return Some(Err(anyhow::anyhow!(
+                "Invalid Azure DevOps shorthand format: {s}"
+            )));
         }
         let Ok(id) = id_str.parse::<u64>() else {
             return Some(Err(anyhow::anyhow!(

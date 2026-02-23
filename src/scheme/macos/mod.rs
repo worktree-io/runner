@@ -43,8 +43,9 @@ pub fn uninstall() -> Result<()> {
     if let Some(plist) = launch_agent_plist_path() {
         // LLVM_COV_EXCL_START
         if plist.exists() {
-            std::fs::remove_file(&plist)
-                .with_context(|| format!("Failed to remove LaunchAgent plist at {}", plist.display()))?;
+            std::fs::remove_file(&plist).with_context(|| {
+                format!("Failed to remove LaunchAgent plist at {}", plist.display())
+            })?;
             println!("Removed LaunchAgent {}", plist.display());
         }
         // LLVM_COV_EXCL_STOP

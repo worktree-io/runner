@@ -72,9 +72,12 @@ fn build_hook_context(issue: &IssueRef, worktree_path: &std::path::Path) -> Hook
             number,
         } => (owner.clone(), repo.clone(), number.to_string()),
         IssueRef::Linear { owner, repo, id } => (owner.clone(), repo.clone(), id.clone()),
-        IssueRef::AzureDevOps { org, project, repo, id } => {
-            (format!("{org}/{project}"), repo.clone(), id.to_string())
-        }
+        IssueRef::AzureDevOps {
+            org,
+            project,
+            repo,
+            id,
+        } => (format!("{org}/{project}"), repo.clone(), id.to_string()),
         IssueRef::Local {
             project_path,
             display_number,

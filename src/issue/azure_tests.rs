@@ -24,7 +24,9 @@ fn test_parse_azure_devops_url_invalid_id() {
 #[test]
 fn test_parse_azure_devops_url_wrong_format() {
     let err = IssueRef::parse("https://dev.azure.com/myorg/myproject/_boards/board").unwrap_err();
-    assert!(err.to_string().contains("Expected Azure DevOps work item URL"));
+    assert!(err
+        .to_string()
+        .contains("Expected Azure DevOps work item URL"));
 }
 
 #[test]
@@ -55,9 +57,10 @@ fn test_parse_azure_devops_shorthand_missing_parts() {
 
 #[test]
 fn test_parse_azure_devops_worktree_url() {
-    let r =
-        IssueRef::parse("worktree://open?org=myorg&project=myproject&ado_repo=myrepo&work_item_id=42")
-            .unwrap();
+    let r = IssueRef::parse(
+        "worktree://open?org=myorg&project=myproject&ado_repo=myrepo&work_item_id=42",
+    )
+    .unwrap();
     assert_eq!(
         r,
         IssueRef::AzureDevOps {

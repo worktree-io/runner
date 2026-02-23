@@ -100,7 +100,9 @@ impl IssueRef {
             Self::GitHub { owner, repo, .. } | Self::Linear { owner, repo, .. } => {
                 format!("https://github.com/{owner}/{repo}.git")
             }
-            Self::AzureDevOps { org, project, repo, .. } => {
+            Self::AzureDevOps {
+                org, project, repo, ..
+            } => {
                 format!("https://dev.azure.com/{org}/{project}/_git/{repo}")
             }
             Self::Local { .. } => {
