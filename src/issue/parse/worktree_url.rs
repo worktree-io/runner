@@ -11,6 +11,10 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
     let mut linear_id = None;
     let mut url_param = None;
     let mut editor = None;
+    let mut ado_org = None;
+    let mut ado_project = None;
+    let mut ado_repo = None;
+    let mut ado_work_item_id = None;
 
     for (key, val) in url.query_pairs() {
         match key.as_ref() {
@@ -33,6 +37,15 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
                 url_param = Some(val.into_owned());
             }
             "editor" => editor = Some(val.into_owned()),
+            "org" => ado_org = Some(val.into_owned()),
+            "project" => ado_project = Some(val.into_owned()),
+            "ado_repo" => ado_repo = Some(val.into_owned()),
+            "work_item_id" => {
+                ado_work_item_id = Some(
+                    val.parse::<u64>()
+                        .with_context(|| format!("Invalid work item ID: {val}"))?,
+                );
+            }
             _ => {}
         }
     }
@@ -50,6 +63,16 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
                 repo: repo.context("Missing 'repo' query param")?,
                 id,
             },
+            opts,
+        ));
+    }
+
+    if let Some(id) = ado_work_item_id {
+        let org = ado_org.context("Missing 'org' query param")?;
+        let project = ado_project.context("Missing 'project' query param")?;
+        let repo = ado_repo.unwrap_or_else(|| project.clone());
+        return Ok((
+            IssueRef::AzureDevOps { org, project, repo, id },
             opts,
         ));
     }

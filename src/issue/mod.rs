@@ -10,6 +10,9 @@ mod tests;
 mod linear_tests;
 
 #[cfg(test)]
+mod azure_tests;
+
+#[cfg(test)]
 mod uuid_tests;
 
 #[cfg(test)]
@@ -48,6 +51,17 @@ pub enum IssueRef {
         /// Linear issue UUID.
         id: String,
     },
+    /// An Azure DevOps work item paired with an Azure Repos git repository.
+    AzureDevOps {
+        /// Azure DevOps organization name.
+        org: String,
+        /// Azure DevOps project name.
+        project: String,
+        /// Azure Repos git repository name.
+        repo: String,
+        /// Work item ID.
+        id: u64,
+    },
     /// A local Centy issue — the repository itself is the source, no remote clone needed.
     Local {
         /// Absolute path to the local project repository.
@@ -64,6 +78,7 @@ impl IssueRef {
         match self {
             Self::GitHub { number, .. } => format!("issue-{number}"),
             Self::Linear { id, .. } => format!("linear-{id}"),
+            Self::AzureDevOps { id, .. } => format!("workitem-{id}"),
             Self::Local { display_number, .. } => format!("issue-{display_number}"),
         }
     }
@@ -84,6 +99,9 @@ impl IssueRef {
         match self {
             Self::GitHub { owner, repo, .. } | Self::Linear { owner, repo, .. } => {
                 format!("https://github.com/{owner}/{repo}.git")
+            }
+            Self::AzureDevOps { org, project, repo, .. } => {
+                format!("https://dev.azure.com/{org}/{project}/_git/{repo}")
             }
             Self::Local { .. } => {
                 unreachable!("clone_url is never called for IssueRef::Local")
