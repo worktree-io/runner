@@ -67,3 +67,7 @@ impl Config {
 #[cfg(test)]
 #[path = "ser_tests.rs"]
 mod ser_tests;
+
+#[cfg(test)]
+#[path = "ser_multiline_tests.rs"]
+mod ser_multiline_tests;

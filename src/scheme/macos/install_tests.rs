@@ -1,4 +1,5 @@
-use super::*;
+use super::helpers::applescript_quoted;
+use super::launch_agent::launch_agent_plist_content;
 #[test]
 fn test_applescript_quoted_no_special() {
     assert_eq!(

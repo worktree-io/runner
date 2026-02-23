@@ -38,7 +38,7 @@ if ! command -v cargo-llvm-cov >/dev/null 2>&1; then
 fi
 # Exclude files whose untestable paths require live system interaction
 # (GUI terminals, macOS app registration, interactive stdin, network git clone)
-IGNORE='(main|workspace|hooks|config/ops|git/clone|opener/(mod|terminal)|issue/parse/(mod|worktree_url)|commands/(open/mod|scheme|setup/(mod|prompt))|scheme/(mod|dispatch|macos/(install|mod)))\.rs'
+IGNORE='(main|workspace|hooks|config/ops|git/clone|opener/(mod|terminal)|issue/parse/(mod|worktree_url|azure|github)|commands/(open/(mod|hook_ctx)|scheme|setup/(mod|prompt))|scheme/(mod|dispatch|macos/(install|mod|launch_agent|helpers)))\.rs'
 # Unset git worktree environment variables so that cargo and the tests it
 # spawns use correct file paths and behave identically to a plain shell run.
 unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR

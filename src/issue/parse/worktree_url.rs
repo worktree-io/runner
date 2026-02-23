@@ -53,7 +53,7 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
     let opts = DeepLinkOptions { editor };
 
     if let Some(url_str) = url_param {
-        return Ok((super::parse_github_url(&url_str)?, opts));
+        return Ok((super::github::parse_github_url(&url_str)?, opts));
     }
 
     if let Some(id) = linear_id {

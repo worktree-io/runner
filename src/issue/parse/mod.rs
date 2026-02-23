@@ -1,8 +1,9 @@
+mod azure;
+mod github;
 mod shorthand;
 mod worktree_url;
 
-use anyhow::{bail, Context, Result};
-use url::Url;
+use anyhow::{bail, Result};
 
 use super::{DeepLinkOptions, IssueRef};
 
@@ -28,11 +29,11 @@ impl IssueRef {
         }
 
         if s.starts_with("https://github.com") || s.starts_with("http://github.com") {
-            return parse_github_url(s);
+            return github::parse_github_url(s);
         }
 
         if s.starts_with("https://dev.azure.com") || s.starts_with("http://dev.azure.com") {
-            return parse_azure_devops_url(s);
+            return azure::parse_azure_devops_url(s);
         }
 
         if let Some(result) = shorthand::try_parse_shorthand(s) {
@@ -66,67 +67,4 @@ impl IssueRef {
         }
         Ok((Self::parse(s)?, DeepLinkOptions::default()))
     }
-}
-
-/// Parse an Azure DevOps work item URL.
-///
-/// Expected format: `https://dev.azure.com/{org}/{project}/_workitems/edit/{id}`
-///
-/// Since the URL does not include the git repository name, the project name is
-/// used as the repository name by default.
-pub(super) fn parse_azure_devops_url(s: &str) -> Result<IssueRef> {
-    let url = Url::parse(s).with_context(|| format!("Invalid URL: {s}"))?;
-
-    let segments: Vec<&str> = url
-        .path_segments()
-        .context("URL has no path")?
-        .filter(|s| !s.is_empty())
-        .collect();
-
-    // Expected: [org, project, "_workitems", "edit", id]
-    if segments.len() < 5 || segments[2] != "_workitems" || segments[3] != "edit" {
-        bail!(
-            "Expected Azure DevOps work item URL like \
-             https://dev.azure.com/org/project/_workitems/edit/42, got: {s}"
-        );
-    }
-
-    let org = segments[0].to_string();
-    let project = segments[1].to_string();
-    let id = segments[4]
-        .parse::<u64>()
-        .with_context(|| format!("Invalid work item ID in URL: {}", segments[4]))?;
-
-    Ok(IssueRef::AzureDevOps {
-        repo: project.clone(),
-        org,
-        project,
-        id,
-    })
-}
-
-pub(super) fn parse_github_url(s: &str) -> Result<IssueRef> {
-    let url = Url::parse(s).with_context(|| format!("Invalid URL: {s}"))?;
-
-    let segments: Vec<&str> = url
-        .path_segments()
-        .context("URL has no path")?
-        .filter(|s| !s.is_empty())
-        .collect();
-
-    if segments.len() < 4 || segments[2] != "issues" {
-        bail!("Expected GitHub issue URL like https://github.com/owner/repo/issues/42, got: {s}");
-    }
-
-    let owner = segments[0].to_string();
-    let repo = segments[1].to_string();
-    let number = segments[3]
-        .parse::<u64>()
-        .with_context(|| format!("Invalid issue number in URL: {}", segments[3]))?;
-
-    Ok(IssueRef::GitHub {
-        owner,
-        repo,
-        number,
-    })
 }
