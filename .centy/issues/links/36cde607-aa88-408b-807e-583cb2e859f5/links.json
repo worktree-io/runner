@@ -1,0 +1,28 @@
+{
+  "links": [
+    {
+      "targetId": "1b711540-b8b9-460a-ae9e-2962b4837976",
+      "targetType": "issue",
+      "linkType": "blocks",
+      "createdAt": "2026-02-23T12:58:07.518980+00:00"
+    },
+    {
+      "targetId": "26628c37-d19f-4566-b06e-064ff2478024",
+      "targetType": "issue",
+      "linkType": "blocks",
+      "createdAt": "2026-02-23T12:58:07.743902+00:00"
+    },
+    {
+      "targetId": "fabf0ca7-aa59-430c-9373-cb0a5af635c9",
+      "targetType": "issue",
+      "linkType": "blocks",
+      "createdAt": "2026-02-23T12:58:07.962589+00:00"
+    },
+    {
+      "targetId": "fff79355-5455-43be-8b99-3a366abb982b",
+      "targetType": "issue",
+      "linkType": "blocks",
+      "createdAt": "2026-02-23T12:58:08.174613+00:00"
+    }
+  ]
+}
