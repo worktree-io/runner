@@ -4,7 +4,10 @@ use super::APPLET_ICNS;
 #[test]
 fn test_applet_icns_is_valid_icns() {
     // ICNS files begin with the 4-byte magic "icns"
-    assert!(APPLET_ICNS.starts_with(b"icns"), "APPLET_ICNS does not start with ICNS magic bytes");
+    assert!(
+        APPLET_ICNS.starts_with(b"icns"),
+        "APPLET_ICNS does not start with ICNS magic bytes"
+    );
     assert!(!APPLET_ICNS.is_empty(), "APPLET_ICNS must not be empty");
 }
 

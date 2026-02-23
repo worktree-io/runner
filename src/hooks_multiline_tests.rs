@@ -23,5 +23,8 @@ fn test_run_hook_multiline_executes_all_lines() {
     run_hook(&script, &ctx()).unwrap();
     let content = std::fs::read_to_string(&out).unwrap_or_default();
     let _ = std::fs::remove_file(&out);
-    assert_eq!(content, "firstsecond", "all lines of a multi-line hook must run");
+    assert_eq!(
+        content, "firstsecond",
+        "all lines of a multi-line hook must run"
+    );
 }
