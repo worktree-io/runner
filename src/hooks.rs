@@ -83,3 +83,7 @@ pub fn run_hook(script: &str, ctx: &HookContext) -> Result<()> {
 #[cfg(test)]
 #[path = "hooks_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "hooks_multiline_tests.rs"]
+mod multiline_tests;

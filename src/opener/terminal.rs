@@ -80,6 +80,14 @@ pub(super) fn try_terminal_with_init(
             .stderr(Stdio::null())
             .spawn()?;
         Ok(true)
+    } else if cmd_lower.contains("ghostty") {
+        Command::new("ghostty")
+            .args(["-e", "sh", tmp_str])
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()?;
+        Ok(true)
     } else {
         Ok(false)
     }
