@@ -86,3 +86,14 @@ fn test_concurrent_hooks_use_distinct_contexts() {
     assert_eq!(val_a, "159", "hook A ran with wrong issue context");
     assert_eq!(val_b, "129", "hook B ran with wrong issue context");
 }
+
+#[cfg(not(windows))]
+#[test]
+fn test_run_hook_multiline() {
+    let f = std::env::temp_dir().join("worktree-test-multiline.txt");
+    let p = f.to_str().unwrap().to_string();
+    run_hook(&format!("printf a > '{p}'\nprintf b >> '{p}'\n"), &ctx()).unwrap();
+    let got = std::fs::read_to_string(&f).unwrap_or_default();
+    std::fs::remove_file(&f).ok();
+    assert_eq!(got, "ab", "all lines of a multi-line hook must run");
+}
