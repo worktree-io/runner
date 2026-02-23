@@ -3,11 +3,17 @@ use std::fmt::Write as _;
 use super::Config;
 
 /// Wrap a string value in TOML basic-string quotes, escaping special characters.
+///
+/// When the value contains newlines, a TOML multiline basic string (`"""..."""`) is
+/// used so that hook scripts remain human-readable in the config file.
 fn toml_quoted(s: &str) -> String {
+    if s.contains('\n') {
+        let escaped = s.replace('\\', "\\\\").replace('"', "\\\"");
+        return format!("\"\"\"\n{escaped}\"\"\"");
+    }
     let escaped = s
         .replace('\\', "\\\\")
         .replace('"', "\\\"")
-        .replace('\n', "\\n")
         .replace('\r', "\\r")
         .replace('\t', "\\t");
     format!("\"{escaped}\"")
