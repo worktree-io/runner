@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Ad-hoc code-sign `WorktreeRunner.app` after `osacompile` so Gatekeeper does not quarantine or evict the unsigned bundle ([#22](https://github.com/worktree-io/runner/issues/22))
+- Install a `~/Library/LaunchAgents/io.worktree.runner.plist` that re-registers the `worktree://` URL scheme via `lsregister` at login, restoring the handler if Launch Services forgets it after a reboot ([#22](https://github.com/worktree-io/runner/issues/22))
+- `worktree scheme uninstall` now also removes the LaunchAgent plist ([#22](https://github.com/worktree-io/runner/issues/22))
+
 ## [0.9.0] - 2026-02-23
 
 ### Fixed

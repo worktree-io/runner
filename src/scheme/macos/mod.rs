@@ -6,6 +6,10 @@ use anyhow::{Context, Result};
 
 use super::SchemeStatus;
 
+pub(super) const LSREGISTER: &str =
+    "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/\
+     LaunchServices.framework/Versions/A/Support/lsregister";
+
 pub(super) fn app_dir() -> std::path::PathBuf {
     dirs::home_dir()
         .unwrap_or_else(|| std::path::PathBuf::from("~"))
@@ -13,13 +17,19 @@ pub(super) fn app_dir() -> std::path::PathBuf {
         .join("WorktreeRunner.app")
 }
 
+fn launch_agent_plist_path() -> Option<std::path::PathBuf> {
+    dirs::home_dir().map(|h| {
+        h.join("Library")
+            .join("LaunchAgents")
+            .join("io.worktree.runner.plist")
+    })
+}
+
 pub fn uninstall() -> Result<()> {
     let app = app_dir();
     if app.exists() {
         // LLVM_COV_EXCL_START
-        let lsregister = "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/\
-            LaunchServices.framework/Versions/A/Support/lsregister";
-        let _ = std::process::Command::new(lsregister)
+        let _ = std::process::Command::new(LSREGISTER)
             .args(["-u"])
             .arg(&app)
             .status();
@@ -29,6 +39,15 @@ pub fn uninstall() -> Result<()> {
         // LLVM_COV_EXCL_STOP
     } else {
         println!("Not installed — nothing to remove."); // LLVM_COV_EXCL_LINE
+    }
+    if let Some(plist) = launch_agent_plist_path() {
+        // LLVM_COV_EXCL_START
+        if plist.exists() {
+            std::fs::remove_file(&plist)
+                .with_context(|| format!("Failed to remove LaunchAgent plist at {}", plist.display()))?;
+            println!("Removed LaunchAgent {}", plist.display());
+        }
+        // LLVM_COV_EXCL_STOP
     }
     Ok(())
 }
