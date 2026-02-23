@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo.svg" alt="worktree" width="96">
+</p>
+
 # worktree
 
 A CLI tool that opens GitHub issues as git worktree workspaces. Paste a GitHub issue URL (or use a `worktree://` deep link) and `worktree` clones the repo as a bare clone, creates a dedicated worktree branch, and opens it in your editor.
