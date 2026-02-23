@@ -1,4 +1,6 @@
 mod azure;
+mod centy;
+mod gh;
 mod github;
 mod shorthand;
 mod worktree_url;
@@ -15,6 +17,8 @@ impl IssueRef {
     /// - `worktree://open?owner=X&repo=Y&linear_id=<uuid>`
     /// - `owner/repo#42`
     /// - `owner/repo@<linear-uuid>`
+    /// - `centy:<number>` (context-aware: finds nearest `.centy/` ancestor)
+    /// - `gh:<number>` (context-aware: resolves against the `origin` GitHub remote)
     ///
     /// # Errors
     ///
@@ -36,6 +40,14 @@ impl IssueRef {
             return azure::parse_azure_devops_url(s);
         }
 
+        if s.starts_with("centy:") {
+            return centy::parse_centy(s);
+        }
+
+        if s.starts_with("gh:") {
+            return gh::parse_gh(s);
+        }
+
         if let Some(result) = shorthand::try_parse_shorthand(s) {
             return result;
         }
@@ -50,7 +62,9 @@ impl IssueRef {
              - worktree://open?org=org&project=project&repo=repo&work_item_id=42\n\
              - owner/repo#42\n\
              - owner/repo@<linear-uuid>\n\
-             - org/project/repo!42"
+             - org/project/repo!42\n\
+             - centy:<number>\n\
+             - gh:<number>"
         )
     }
 
