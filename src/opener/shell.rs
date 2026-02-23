@@ -8,7 +8,8 @@ use std::process::{Command, Stdio};
 #[must_use]
 pub fn augmented_path() -> String {
     let current = std::env::var("PATH").unwrap_or_default();
-    if cfg!(windows) {
+    #[cfg(windows)]
+    {
         return current;
     }
     let extras = ["/usr/local/bin", "/opt/homebrew/bin", "/opt/homebrew/sbin"];
