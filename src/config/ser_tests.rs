@@ -1,6 +1,12 @@
 use super::*;
 
 #[test]
+fn test_website_comment_is_first_line() {
+    let s = Config::default().to_toml_with_comments();
+    assert!(s.starts_with("# runner \u{2014} https://worktree.io\n"));
+}
+
+#[test]
 fn test_default_output_structure() {
     let s = Config::default().to_toml_with_comments();
     assert!(s.contains("[editor]"));

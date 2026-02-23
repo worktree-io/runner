@@ -23,6 +23,9 @@ impl Config {
     pub fn to_toml_with_comments(&self) -> String {
         let mut out = String::new();
 
+        // Website header comment
+        out.push_str("# runner \u{2014} https://worktree.io\n\n");
+
         // [editor] ------------------------------------------------------------
         out.push_str("# Editor configuration.\n");
         out.push_str("[editor]\n");
