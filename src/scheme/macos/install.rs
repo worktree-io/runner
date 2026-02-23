@@ -1,14 +1,11 @@
 use anyhow::{bail, Context, Result};
 use std::process::Command;
-
 #[path = "helpers.rs"]
 mod helpers;
 use helpers::{applescript_quoted, plist_buddy};
-
 #[path = "launch_agent.rs"]
 mod launch_agent;
 use launch_agent::install_launch_agent;
-
 /// Embedded custom icon for the `WorktreeRunner.app` bundle.
 static APPLET_ICNS: &[u8] = include_bytes!("../../../assets/applet.icns");
 
