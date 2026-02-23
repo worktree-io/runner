@@ -31,6 +31,10 @@ impl IssueRef {
             return parse_github_url(s);
         }
 
+        if s.starts_with("https://dev.azure.com") || s.starts_with("http://dev.azure.com") {
+            return parse_azure_devops_url(s);
+        }
+
         if let Some(result) = shorthand::try_parse_shorthand(s) {
             return result;
         }
@@ -39,10 +43,13 @@ impl IssueRef {
             "Could not parse issue reference: {s:?}\n\
              Supported formats:\n\
              - https://github.com/owner/repo/issues/42\n\
+             - https://dev.azure.com/org/project/_workitems/edit/42\n\
              - worktree://open?owner=owner&repo=repo&issue=42\n\
              - worktree://open?owner=owner&repo=repo&linear_id=<uuid>\n\
+             - worktree://open?org=org&project=project&repo=repo&work_item_id=42\n\
              - owner/repo#42\n\
-             - owner/repo@<linear-uuid>"
+             - owner/repo@<linear-uuid>\n\
+             - org/project/repo!42"
         )
     }
 
@@ -59,6 +66,43 @@ impl IssueRef {
         }
         Ok((Self::parse(s)?, DeepLinkOptions::default()))
     }
+}
+
+/// Parse an Azure DevOps work item URL.
+///
+/// Expected format: `https://dev.azure.com/{org}/{project}/_workitems/edit/{id}`
+///
+/// Since the URL does not include the git repository name, the project name is
+/// used as the repository name by default.
+pub(super) fn parse_azure_devops_url(s: &str) -> Result<IssueRef> {
+    let url = Url::parse(s).with_context(|| format!("Invalid URL: {s}"))?;
+
+    let segments: Vec<&str> = url
+        .path_segments()
+        .context("URL has no path")?
+        .filter(|s| !s.is_empty())
+        .collect();
+
+    // Expected: [org, project, "_workitems", "edit", id]
+    if segments.len() < 5 || segments[2] != "_workitems" || segments[3] != "edit" {
+        bail!(
+            "Expected Azure DevOps work item URL like \
+             https://dev.azure.com/org/project/_workitems/edit/42, got: {s}"
+        );
+    }
+
+    let org = segments[0].to_string();
+    let project = segments[1].to_string();
+    let id = segments[4]
+        .parse::<u64>()
+        .with_context(|| format!("Invalid work item ID in URL: {}", segments[4]))?;
+
+    Ok(IssueRef::AzureDevOps {
+        repo: project.clone(),
+        org,
+        project,
+        id,
+    })
 }
 
 pub(super) fn parse_github_url(s: &str) -> Result<IssueRef> {
