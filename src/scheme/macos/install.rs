@@ -9,6 +9,9 @@ use helpers::{applescript_quoted, plist_buddy};
 mod launch_agent;
 use launch_agent::install_launch_agent;
 
+/// Embedded custom icon for the `WorktreeRunner.app` bundle.
+static APPLET_ICNS: &[u8] = include_bytes!("../../../assets/applet.icns");
+
 pub fn install() -> Result<()> {
     let exe = std::env::current_exe().context("Failed to get current executable path")?;
     let app = super::app_dir();
@@ -34,6 +37,10 @@ pub fn install() -> Result<()> {
     if !status.success() {
         bail!("osacompile failed");
     }
+    // Replace the default applet icon with the custom WorktreeRunner icon.
+    let icon_dest = app.join("Contents").join("Resources").join("applet.icns");
+    std::fs::write(&icon_dest, APPLET_ICNS)
+        .with_context(|| format!("Failed to write icon to {}", icon_dest.display()))?;
     let plist = app.join("Contents").join("Info.plist");
     let pb = "/usr/libexec/PlistBuddy";
     plist_buddy(
