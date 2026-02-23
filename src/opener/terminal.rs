@@ -13,30 +13,11 @@ pub(super) fn try_terminal_with_init(
     let path_str = path
         .to_str()
         .context("Workspace path contains non-UTF-8 characters")?;
-
     let cmd_lower = command.to_ascii_lowercase();
-
-    // Windows Terminal: write a .bat bootstrap and launch via `wt cmd /k`.
     #[cfg(windows)]
     if cmd_lower.starts_with("wt") {
-        let path_escaped = path_str.replace('"', "\"\"");
-        let bootstrap =
-            format!("@echo off\r\ncd /d \"{path_escaped}\"\r\n{init_script}\r\ncmd /k\r\n");
-        let tmp_path =
-            std::env::temp_dir().join(format!("worktree-hook-open-{}.bat", uuid::Uuid::new_v4()));
-        std::fs::write(&tmp_path, bootstrap.as_bytes())?;
-        let tmp_str = tmp_path
-            .to_str()
-            .context("Temp path contains non-UTF-8 characters")?;
-        Command::new("wt")
-            .args(["cmd", "/k", tmp_str])
-            .stdin(Stdio::null())
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()?;
-        return Ok(true);
+        return super::wt::spawn(path_str, init_script);
     }
-
     let path_escaped = path_str.replace('\'', "'\\''");
     // Single quotes around {path_escaped} are shell quoting, not Rust string delimiters.
     #[allow(clippy::literal_string_with_formatting_args)]
@@ -56,7 +37,6 @@ pub(super) fn try_terminal_with_init(
     let tmp_str = tmp_path
         .to_str()
         .context("Temp path contains non-UTF-8 characters")?;
-
     if cmd_lower.contains("iterm") {
         let script = format!(
             r#"tell application "iTerm2" to create window with default profile command "sh {tmp_str}""#
@@ -106,16 +86,5 @@ pub(super) fn try_terminal_with_init(
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn test_ide_command_returns_false() {
-        let p = std::path::Path::new("/tmp");
-        assert!(!try_terminal_with_init(p, "code .", "echo hi").unwrap());
-    }
-    #[test]
-    fn test_unknown_command_returns_false() {
-        let p = std::path::Path::new("/tmp");
-        assert!(!try_terminal_with_init(p, "hx .", "echo hi").unwrap());
-    }
-}
+#[path = "terminal_tests.rs"]
+mod tests;
