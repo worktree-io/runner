@@ -42,7 +42,9 @@ impl HookContext {
 pub fn run_hook(script: &str, ctx: &HookContext) -> Result<()> {
     let rendered = ctx.render(script);
 
-    let tmp_path = std::env::temp_dir().join(format!("worktree-hook-{}.sh", uuid::Uuid::new_v4()));
+    let ext = if cfg!(windows) { ".bat" } else { ".sh" };
+    let tmp_path =
+        std::env::temp_dir().join(format!("worktree-hook-{}{ext}", uuid::Uuid::new_v4()));
     std::fs::write(&tmp_path, rendered.as_bytes())?;
 
     #[cfg(unix)]
@@ -51,6 +53,12 @@ pub fn run_hook(script: &str, ctx: &HookContext) -> Result<()> {
         std::fs::set_permissions(&tmp_path, std::fs::Permissions::from_mode(0o755))?;
     }
 
+    #[cfg(windows)]
+    let result = Command::new("cmd")
+        .args([std::ffi::OsStr::new("/C"), tmp_path.as_os_str()])
+        .env("PATH", augmented_path())
+        .status();
+    #[cfg(not(windows))]
     let result = Command::new("sh")
         .arg(&tmp_path)
         .env("PATH", augmented_path())

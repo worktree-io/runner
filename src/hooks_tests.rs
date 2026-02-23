@@ -21,20 +21,35 @@ fn test_render_no_placeholders() {
     assert_eq!(ctx().render("hello"), "hello");
 }
 
+#[cfg(not(windows))]
 #[test]
 fn test_run_hook_success() {
     run_hook("true", &ctx()).unwrap();
 }
 
+#[cfg(windows)]
+#[test]
+fn test_run_hook_success_windows() {
+    run_hook("@echo off\r\necho hello", &ctx()).unwrap();
+}
+
+#[cfg(not(windows))]
 #[test]
 fn test_run_hook_nonzero_exit() {
     run_hook("exit 1", &ctx()).unwrap();
+}
+
+#[cfg(windows)]
+#[test]
+fn test_run_hook_nonzero_exit_windows() {
+    run_hook("@echo off\r\nexit /b 1", &ctx()).unwrap();
 }
 
 /// Regression test: two hooks running concurrently (same process, different
 /// threads — identical PID) must not overwrite each other's temp script.
 /// With the old PID-based filename both threads wrote to the same file, so
 /// one hook silently executed the other's rendered script.
+#[cfg(not(windows))]
 #[test]
 fn test_concurrent_hooks_use_distinct_contexts() {
     let out_a = std::env::temp_dir().join("worktree-test-concurrent-a.txt");

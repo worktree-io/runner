@@ -2,9 +2,15 @@ use anyhow::{bail, Context, Result};
 use std::process::{Command, Stdio};
 
 /// Return the `PATH` string augmented with common homebrew and system locations.
+///
+/// On Windows the system `PATH` is returned unchanged: homebrew paths do not
+/// apply and the separator is already `;`.
 #[must_use]
 pub fn augmented_path() -> String {
     let current = std::env::var("PATH").unwrap_or_default();
+    if cfg!(windows) {
+        return current;
+    }
     let extras = ["/usr/local/bin", "/opt/homebrew/bin", "/opt/homebrew/sbin"];
     let mut parts: Vec<&str> = extras.to_vec();
     for p in current.split(':').filter(|s| !s.is_empty()) {
@@ -79,18 +85,31 @@ mod tests {
     fn test_shlex_empty() {
         assert!(shlex_split("").is_empty());
     }
+    #[cfg(not(windows))]
     #[test]
     fn test_augmented_path_contains_homebrew() {
         let p = augmented_path();
         assert!(p.contains("/opt/homebrew/bin"));
     }
+    #[cfg(windows)]
+    #[test]
+    fn test_augmented_path_on_windows_returns_current() {
+        let current = std::env::var("PATH").unwrap_or_default();
+        assert_eq!(augmented_path(), current);
+    }
     #[test]
     fn test_run_shell_command_empty() {
         assert!(run_shell_command("").is_err());
     }
+    #[cfg(not(windows))]
     #[test]
     fn test_run_shell_command_success() {
         run_shell_command("true").unwrap();
+    }
+    #[cfg(windows)]
+    #[test]
+    fn test_run_shell_command_success_windows() {
+        run_shell_command("cmd /C echo hello").unwrap();
     }
     #[test]
     fn test_run_shell_command_bad_program() {
