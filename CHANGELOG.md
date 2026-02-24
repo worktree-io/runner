@@ -10,11 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `centy:<number>` shorthand: resolves a Centy issue by walking up to the nearest `.centy/` ancestor directory
 - `gh:<number>` shorthand: resolves a GitHub issue against the `origin` remote of the current git repository
+- Linux: bundle PNG icon via `include_bytes!` and install to `~/.local/share/icons/hicolor/256x256/apps/worktree-runner.png` during `worktree scheme install` ([#25](https://github.com/worktree-io/runner/issues/25))
+- Linux: add `Icon=worktree-runner` field to the `worktree-runner.desktop` entry ([#25](https://github.com/worktree-io/runner/issues/25))
 
 ### Fixed
 - Ad-hoc code-sign `WorktreeRunner.app` after `osacompile` so Gatekeeper does not quarantine or evict the unsigned bundle ([#22](https://github.com/worktree-io/runner/issues/22))
 - Install a `~/Library/LaunchAgents/io.worktree.runner.plist` that re-registers the `worktree://` URL scheme via `lsregister` at login, restoring the handler if Launch Services forgets it after a reboot ([#22](https://github.com/worktree-io/runner/issues/22))
 - `worktree scheme uninstall` now also removes the LaunchAgent plist ([#22](https://github.com/worktree-io/runner/issues/22))
+- Linux: `worktree scheme uninstall` now also removes the PNG icon file ([#25](https://github.com/worktree-io/runner/issues/25))
 
 ## [0.9.0] - 2026-02-23
 
