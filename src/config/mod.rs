@@ -1,4 +1,5 @@
 mod ops;
+mod ops_get_set;
 mod ser;
 
 #[cfg(test)]
@@ -6,6 +7,8 @@ mod ser;
 mod ops_tests;
 
 use serde::{Deserialize, Serialize};
+
+use crate::ttl::Ttl;
 
 /// Top-level configuration for the worktree CLI.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -17,6 +20,17 @@ pub struct Config {
     pub open: OpenConfig,
     /// Hook scripts run around the open command.
     pub hooks: HooksConfig,
+    /// Workspace lifecycle configuration.
+    pub workspace: WorkspaceConfig,
+}
+
+/// Workspace lifecycle configuration.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct WorkspaceConfig {
+    /// Maximum age of a workspace before it is considered expired.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ttl: Option<Ttl>,
 }
 
 /// Shell scripts executed before and after opening a workspace.

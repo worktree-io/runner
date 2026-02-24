@@ -12,6 +12,8 @@ pub mod issue;
 pub mod opener;
 /// `worktree://` URL scheme registration.
 pub mod scheme;
+/// Workspace TTL management and registry.
+pub mod ttl;
 /// Workspace creation and lifecycle.
 pub mod workspace;
 
