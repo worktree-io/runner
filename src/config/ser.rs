@@ -80,3 +80,7 @@ mod ser_tests;
 #[cfg(test)]
 #[path = "ser_multiline_tests.rs"]
 mod ser_multiline_tests;
+
+#[cfg(test)]
+#[path = "ser_workspace_tests.rs"]
+mod ser_workspace_tests;

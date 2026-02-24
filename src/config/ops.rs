@@ -66,8 +66,7 @@ impl Config {
             "workspace.ttl" => Ok(self
                 .workspace
                 .ttl
-                .map(|t| t.to_string())
-                .unwrap_or_default()),
+                .map_or_else(String::new, |t| t.to_string())),
             _ => anyhow::bail!("Unknown config key: {key}"),
         }
     }
@@ -93,15 +92,13 @@ impl Config {
                     .with_context(|| format!("Invalid boolean value: {value}"))?;
             }
             "workspace.ttl" => {
-                self.workspace.ttl = if value.is_empty() {
-                    None
-                } else {
-                    Some(
+                self.workspace.ttl = (!value.is_empty())
+                    .then(|| {
                         value
                             .parse()
-                            .map_err(|e| anyhow::anyhow!("Invalid duration {value:?}: {e}"))?,
-                    )
-                };
+                            .map_err(|e| anyhow::anyhow!("Invalid duration {value:?}: {e}"))
+                    })
+                    .transpose()?;
             }
             _ => anyhow::bail!("Unknown config key: {key}"),
         }

@@ -1,40 +1,8 @@
 use std::path::PathBuf;
-use std::time::{Duration, SystemTime};
+use std::time::SystemTime;
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-
-/// A time-to-live duration controlling how long a workspace remains active.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Ttl(#[serde(with = "humantime_serde")] Duration);
-
-impl Ttl {
-    /// Create a new [`Ttl`] wrapping the given duration.
-    #[must_use]
-    pub const fn new(duration: Duration) -> Self {
-        Self(duration)
-    }
-
-    /// Return the inner [`Duration`].
-    #[must_use]
-    pub const fn duration(self) -> Duration {
-        self.0
-    }
-}
-
-impl std::fmt::Display for Ttl {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", humantime::format_duration(self.0))
-    }
-}
-
-impl std::str::FromStr for Ttl {
-    type Err = humantime::DurationError;
-
-    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        humantime::parse_duration(s).map(Self)
-    }
-}
 
 /// A workspace entry stored in the registry.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -55,33 +23,6 @@ pub struct WorkspaceRegistry {
     pub workspace: Vec<WorkspaceRecord>,
 }
 
-/// Returns `true` if the workspace has exceeded its TTL at the given instant.
-///
-/// Returns `false` when `created_at` is in the future relative to `now`.
-#[must_use]
-pub fn is_expired(record: &WorkspaceRecord, ttl: &Ttl, now: SystemTime) -> bool {
-    now.duration_since(record.created_at)
-        .map(|age| age >= ttl.0)
-        .unwrap_or(false)
-}
-
-/// Returns the subset of workspaces that are both still present on disk and
-/// have exceeded the given TTL.
-///
-/// Entries whose [`WorkspaceRecord::path`] no longer exists on disk are
-/// silently skipped, making the registry self-healing on the next prune call.
-#[must_use]
-pub fn prune<'a>(
-    records: &'a [WorkspaceRecord],
-    ttl: &Ttl,
-    now: SystemTime,
-) -> Vec<&'a WorkspaceRecord> {
-    records
-        .iter()
-        .filter(|r| r.path.exists() && is_expired(r, ttl, now))
-        .collect()
-}
-
 impl WorkspaceRegistry {
     /// Return the path to the workspace registry file
     /// (`~/.config/worktree/workspaces.toml`).
@@ -97,8 +38,7 @@ impl WorkspaceRegistry {
             .join("workspaces.toml"))
     }
 
-    /// Load the registry from disk, returning an empty registry if the file
-    /// does not yet exist.
+    /// Load the registry from disk; returns an empty registry when absent.
     ///
     /// # Errors
     ///
@@ -120,8 +60,8 @@ impl WorkspaceRegistry {
     ///
     /// # Errors
     ///
-    /// Returns an error if the config directory cannot be created or the file
-    /// cannot be written.
+    /// Returns an error if the directory cannot be created or the file cannot
+    /// be written.
     pub fn save(&self) -> Result<()> {
         // LLVM_COV_EXCL_START
         let path = Self::path()?;
@@ -135,7 +75,7 @@ impl WorkspaceRegistry {
         // LLVM_COV_EXCL_STOP
     }
 
-    /// Register a workspace by path with the current timestamp.
+    /// Register a workspace path with the current timestamp.
     ///
     /// Idempotent: if `path` is already present, the existing entry is left
     /// unchanged.
@@ -148,7 +88,3 @@ impl WorkspaceRegistry {
         }
     }
 }
-
-#[cfg(test)]
-#[path = "ttl_tests.rs"]
-mod ttl_tests;
