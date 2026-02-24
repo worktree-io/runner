@@ -73,9 +73,5 @@ mod ttl_tests;
 mod prune_tests;
 
 #[cfg(test)]
-#[path = "registry_tests.rs"]
-mod registry_tests;
-
-#[cfg(test)]
 #[path = "serde_tests.rs"]
 mod serde_tests;

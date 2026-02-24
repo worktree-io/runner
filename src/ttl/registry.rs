@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
 use anyhow::{Context, Result};
@@ -38,22 +38,31 @@ impl WorkspaceRegistry {
             .join("workspaces.toml"))
     }
 
+    fn load_from(path: &Path) -> Result<Self> {
+        if !path.exists() {
+            return Ok(Self::default());
+        }
+        let content = std::fs::read_to_string(path)
+            .context(format!("Failed to read registry from {}", path.display()))?;
+        toml::from_str(&content).context(format!("Failed to parse registry at {}", path.display()))
+    }
+
+    fn write_to(&self, path: &Path) -> Result<()> {
+        let parent = path.parent().context("registry path has no parent")?;
+        std::fs::create_dir_all(parent)
+            .context(format!("Failed to create config dir {}", parent.display()))?;
+        let content = toml::to_string(self).context("Failed to serialize workspace registry")?;
+        std::fs::write(path, content)
+            .context(format!("Failed to write registry to {}", path.display()))
+    }
+
     /// Load the registry from disk; returns an empty registry when absent.
     ///
     /// # Errors
     ///
     /// Returns an error if the file cannot be read or parsed.
     pub fn load() -> Result<Self> {
-        let path = Self::path()?;
-        if !path.exists() {
-            return Ok(Self::default());
-        }
-        // LLVM_COV_EXCL_START
-        let content = std::fs::read_to_string(&path)
-            .with_context(|| format!("Failed to read registry from {}", path.display()))?;
-        toml::from_str(&content)
-            .with_context(|| format!("Failed to parse registry at {}", path.display()))
-        // LLVM_COV_EXCL_STOP
+        Self::load_from(&Self::path()?)
     }
 
     /// Persist the registry to disk.
@@ -63,17 +72,7 @@ impl WorkspaceRegistry {
     /// Returns an error if the directory cannot be created or the file cannot
     /// be written.
     pub fn save(&self) -> Result<()> {
-        // LLVM_COV_EXCL_LINE
-        // LLVM_COV_EXCL_START
-        let path = Self::path()?;
-        if let Some(parent) = path.parent() {
-            std::fs::create_dir_all(parent)
-                .with_context(|| format!("Failed to create config dir {}", parent.display()))?;
-        }
-        let content = toml::to_string(self).context("Failed to serialize workspace registry")?;
-        std::fs::write(&path, content)
-            .with_context(|| format!("Failed to write registry to {}", path.display()))
-        // LLVM_COV_EXCL_STOP
+        self.write_to(&Self::path()?)
     }
 
     /// Register a workspace path with the current timestamp.
@@ -89,3 +88,7 @@ impl WorkspaceRegistry {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "registry_tests.rs"]
+mod registry_tests;
