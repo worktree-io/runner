@@ -57,3 +57,33 @@ fn test_set_value_open_editor_invalid() {
 fn test_set_value_unknown_key() {
     assert!(Config::default().set_value("bad.key", "val").is_err());
 }
+#[test]
+fn test_get_value_workspace_ttl_empty() {
+    assert_eq!(Config::default().get_value("workspace.ttl").unwrap(), "");
+}
+#[test]
+fn test_get_value_workspace_ttl_set() {
+    let mut c = Config::default();
+    c.set_value("workspace.ttl", "7days").unwrap();
+    let v = c.get_value("workspace.ttl").unwrap();
+    assert!(!v.is_empty());
+}
+#[test]
+fn test_set_value_workspace_ttl() {
+    let mut c = Config::default();
+    c.set_value("workspace.ttl", "7days").unwrap();
+    assert!(c.workspace.ttl.is_some());
+}
+#[test]
+fn test_set_value_workspace_ttl_empty_clears() {
+    let mut c = Config::default();
+    c.set_value("workspace.ttl", "7days").unwrap();
+    c.set_value("workspace.ttl", "").unwrap();
+    assert!(c.workspace.ttl.is_none());
+}
+#[test]
+fn test_set_value_workspace_ttl_invalid() {
+    assert!(Config::default()
+        .set_value("workspace.ttl", "not-a-duration")
+        .is_err());
+}

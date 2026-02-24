@@ -63,6 +63,11 @@ impl Config {
         match key {
             "editor.command" => Ok(self.editor.command.clone().unwrap_or_default()),
             "open.editor" => Ok(self.open.editor.to_string()),
+            "workspace.ttl" => Ok(self
+                .workspace
+                .ttl
+                .map(|t| t.to_string())
+                .unwrap_or_default()),
             _ => anyhow::bail!("Unknown config key: {key}"),
         }
     }
@@ -86,6 +91,17 @@ impl Config {
                 self.open.editor = value
                     .parse::<bool>()
                     .with_context(|| format!("Invalid boolean value: {value}"))?;
+            }
+            "workspace.ttl" => {
+                self.workspace.ttl = if value.is_empty() {
+                    None
+                } else {
+                    Some(
+                        value
+                            .parse()
+                            .map_err(|e| anyhow::anyhow!("Invalid duration {value:?}: {e}"))?,
+                    )
+                };
             }
             _ => anyhow::bail!("Unknown config key: {key}"),
         }
