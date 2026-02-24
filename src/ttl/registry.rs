@@ -63,6 +63,7 @@ impl WorkspaceRegistry {
     /// Returns an error if the directory cannot be created or the file cannot
     /// be written.
     pub fn save(&self) -> Result<()> {
+        // LLVM_COV_EXCL_LINE
         // LLVM_COV_EXCL_START
         let path = Self::path()?;
         if let Some(parent) = path.parent() {
