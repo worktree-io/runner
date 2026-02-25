@@ -27,10 +27,9 @@ mod parse_tests;
 mod jira_tests;
 
 #[cfg(test)]
-mod local_tests;
-
-#[cfg(test)]
 mod gitlab_tests;
+#[cfg(test)]
+mod local_tests;
 
 /// A reference to an issue that identifies a workspace.
 #[derive(Debug, Clone, PartialEq, Eq)]

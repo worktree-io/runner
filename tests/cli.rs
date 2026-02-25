@@ -224,3 +224,73 @@ fn test_open_editor_and_post_hook() {
     assert!(out.status.success());
     std::fs::remove_dir_all(&h).ok();
 }
+
+fn write_registry(home: &Path, entries: &[(&Path, &str)]) {
+    let reg = home
+        .join(".config")
+        .join("worktree")
+        .join("workspaces.toml");
+    std::fs::create_dir_all(reg.parent().unwrap()).unwrap();
+    let content = entries
+        .iter()
+        .map(|(path, ts)| {
+            let escaped = path
+                .to_str()
+                .unwrap()
+                .replace('\\', "\\\\")
+                .replace('"', "\\\"");
+            format!("[[workspace]]\npath = \"{escaped}\"\ncreated_at = \"{ts}\"\n")
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    std::fs::write(reg, content).unwrap();
+}
+
+#[test]
+fn test_prune_no_ttl() {
+    let h = temp_home("prune_no_ttl");
+    let out = run(&h, &["prune"]);
+    assert!(!out.status.success());
+    assert!(String::from_utf8_lossy(&out.stderr).contains("No workspace TTL configured"));
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_prune_no_expired() {
+    let h = temp_home("prune_no_exp");
+    write_config(&h, "[workspace]\nttl = \"7days\"\n");
+    let out = run(&h, &["prune"]);
+    assert!(out.status.success());
+    assert!(String::from_utf8_lossy(&out.stderr).contains("No expired workspaces found"));
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_prune_removes_expired() {
+    let h = temp_home("prune_exp");
+    write_config(&h, "[workspace]\nttl = \"1s\"\n");
+    let ws = h.join("old-workspace");
+    std::fs::create_dir_all(&ws).unwrap();
+    write_registry(&h, &[(&ws, "2000-01-01T00:00:00Z")]);
+    let out = run(&h, &["prune"]);
+    assert!(out.status.success());
+    assert!(!ws.exists());
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("Pruned 1 expired workspace(s)"));
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_prune_warns_on_remove_failure() {
+    let h = temp_home("prune_fail");
+    write_config(&h, "[workspace]\nttl = \"1s\"\n");
+    let ws = h.join("not-a-dir");
+    std::fs::write(&ws, "file").unwrap();
+    write_registry(&h, &[(&ws, "2000-01-01T00:00:00Z")]);
+    let out = run(&h, &["prune"]);
+    assert!(out.status.success());
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("Warning: failed to remove"));
+    assert!(stderr.contains("Pruned 1 expired workspace(s)"));
+    std::fs::remove_dir_all(&h).ok();
+}

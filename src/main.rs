@@ -6,6 +6,7 @@ use clap::{Parser, Subcommand};
 mod commands;
 use commands::config::{cmd_config, ConfigAction};
 use commands::open::cmd_open;
+use commands::prune::cmd_prune;
 use commands::scheme::{cmd_scheme, SchemeAction};
 use commands::setup::cmd_setup;
 
@@ -44,6 +45,8 @@ enum Commands {
         #[command(subcommand)]
         action: SchemeAction,
     },
+    /// Remove expired worktrees based on workspace.ttl config
+    Prune,
     /// Run first-time setup: detect editor, write config, register URL scheme
     Setup,
     /// Print the current version
@@ -61,6 +64,7 @@ fn main() -> Result<()> {
             print_path,
         } => cmd_open(&issue_ref, editor, print_path)?,
         Commands::Config { action } => cmd_config(action)?,
+        Commands::Prune => cmd_prune()?,
         Commands::Scheme { action } => cmd_scheme(action)?,
         Commands::Setup => cmd_setup()?,
         Commands::Version => println!("{}", env!("CARGO_PKG_VERSION")),
