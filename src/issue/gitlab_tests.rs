@@ -15,9 +15,8 @@ fn parse_gitlab_url() {
 
 #[test]
 fn parse_gitlab_worktree_url() {
-    let r =
-        IssueRef::parse("worktree://open?gitlab_host=gitlab.com&owner=acme&repo=api&issue=7")
-            .unwrap();
+    let r = IssueRef::parse("worktree://open?gitlab_host=gitlab.com&owner=acme&repo=api&issue=7")
+        .unwrap();
     assert_eq!(
         r,
         IssueRef::GitLab {
@@ -74,5 +73,7 @@ fn paths() {
         number: 42,
     };
     assert!(r.bare_clone_path().ends_with("worktrees/gitlab/acme/api"));
-    assert!(r.temp_path().ends_with("worktrees/gitlab/acme/api/issue-42"));
+    assert!(r
+        .temp_path()
+        .ends_with("worktrees/gitlab/acme/api/issue-42"));
 }
