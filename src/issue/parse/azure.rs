@@ -3,6 +3,24 @@ use url::Url;
 
 use crate::issue::IssueRef;
 
+/// Build an [`IssueRef::AzureDevOps`] from raw `worktree://` query params.
+pub(super) fn resolve_worktree_params(
+    org: Option<String>,
+    project: Option<String>,
+    repo: Option<String>,
+    id: u64,
+) -> Result<IssueRef> {
+    let org = org.context("Missing 'org' query param")?;
+    let project = project.context("Missing 'project' query param")?;
+    let repo = repo.unwrap_or_else(|| project.clone());
+    Ok(IssueRef::AzureDevOps {
+        org,
+        project,
+        repo,
+        id,
+    })
+}
+
 /// Parse an Azure DevOps work item URL.
 ///
 /// Expected format: `https://dev.azure.com/{org}/{project}/_workitems/edit/{id}`

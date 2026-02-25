@@ -1,4 +1,4 @@
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 
 use crate::issue::IssueRef;
 
@@ -12,4 +12,19 @@ pub(super) fn parse_jira_browse_url(s: &str) -> Result<IssueRef> {
          worktree://open?jira_host=<host>&jira_issue_key=<PROJ-42>&owner=<owner>&repo=<repo>\n\
          Got: {s}"
     )
+}
+
+/// Build an [`IssueRef::Jira`] from raw `worktree://` query params.
+pub(super) fn resolve_worktree_params(
+    host: Option<String>,
+    issue_key: String,
+    owner: Option<String>,
+    repo: Option<String>,
+) -> Result<IssueRef> {
+    Ok(IssueRef::Jira {
+        host: host.context("Missing 'jira_host' query param")?,
+        issue_key,
+        owner: owner.context("Missing 'owner' query param")?,
+        repo: repo.context("Missing 'repo' query param")?,
+    })
 }

@@ -72,28 +72,15 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
     }
 
     if let Some(id) = ado_work_item_id {
-        let org = ado_org.context("Missing 'org' query param")?;
-        let project = ado_project.context("Missing 'project' query param")?;
-        let repo = ado_repo.unwrap_or_else(|| project.clone());
         return Ok((
-            IssueRef::AzureDevOps {
-                org,
-                project,
-                repo,
-                id,
-            },
+            super::azure::resolve_worktree_params(ado_org, ado_project, ado_repo, id)?,
             opts,
         ));
     }
 
     if let Some(issue_key) = jira_issue_key {
         return Ok((
-            IssueRef::Jira {
-                host: jira_host.context("Missing 'jira_host' query param")?,
-                issue_key,
-                owner: owner.context("Missing 'owner' query param")?,
-                repo: repo.context("Missing 'repo' query param")?,
-            },
+            super::jira::resolve_worktree_params(jira_host, issue_key, owner, repo)?,
             opts,
         ));
     }
