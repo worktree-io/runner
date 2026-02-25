@@ -1,6 +1,8 @@
 use anyhow::Result;
 
-use super::{worktree_url, DeepLinkOptions, IssueRef};
+use crate::issue::{DeepLinkOptions, IssueRef};
+
+use super::worktree_url;
 
 impl IssueRef {
     /// Like [`parse`] but also returns any [`DeepLinkOptions`] embedded in a

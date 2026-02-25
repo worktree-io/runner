@@ -1,16 +1,6 @@
-mod azure;
-mod centy;
-mod gh;
-mod github;
-mod gitlab;
-mod jira;
-mod options;
-mod shorthand;
-mod worktree_url;
-
 use anyhow::{bail, Result};
 
-use super::IssueRef;
+use crate::issue::{DeepLinkOptions, IssueRef};
 
 impl IssueRef {
     /// Parse any of the supported input formats:
@@ -31,37 +21,39 @@ impl IssueRef {
         let s = s.trim();
 
         if s.starts_with("worktree://") {
-            let (issue, _opts) = worktree_url::parse_worktree_url(s)?;
+            let (issue, _opts) = super::worktree_url::parse_worktree_url(s)?;
             return Ok(issue);
         }
 
         if s.starts_with("https://github.com") || s.starts_with("http://github.com") {
-            return github::parse_github_url(s);
+            return super::github::parse_github_url(s);
         }
+
         if s.starts_with("https://dev.azure.com") || s.starts_with("http://dev.azure.com") {
-            return azure::parse_azure_devops_url(s);
+            return super::azure::parse_azure_devops_url(s);
         }
+
         if s.starts_with("https://gitlab.com") || s.starts_with("http://gitlab.com") {
-            return gitlab::parse_gitlab_url(s);
+            return super::gitlab::parse_gitlab_url(s);
         }
 
         if s.contains(".atlassian.net/browse/") {
-            return jira::parse_jira_browse_url(s);
+            return super::jira::parse_jira_browse_url(s);
         }
 
         if s.starts_with("centy:") {
-            return centy::parse_centy(s);
+            return super::centy::parse_centy(s);
         }
 
         if s.starts_with("gh:") {
-            return gh::parse_gh(s);
+            return super::gh::parse_gh(s);
         }
 
         if s.starts_with("gl:") {
-            return gitlab::parse_gl(s);
+            return super::gitlab::parse_gl(s);
         }
 
-        if let Some(result) = shorthand::try_parse_shorthand(s) {
+        if let Some(result) = super::shorthand::try_parse_shorthand(s) {
             return result;
         }
 
@@ -83,5 +75,19 @@ impl IssueRef {
              - gh:<number>\n\
              - gl:<number>"
         )
+    }
+
+    /// Like [`parse`] but also returns any [`DeepLinkOptions`] embedded in a
+    /// `worktree://` URL (e.g. the `editor` query param).
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `s` cannot be parsed as a valid issue reference.
+    pub fn parse_with_options(s: &str) -> Result<(Self, DeepLinkOptions)> {
+        let s = s.trim();
+        if s.starts_with("worktree://") {
+            return super::worktree_url::parse_worktree_url(s);
+        }
+        Ok((Self::parse(s)?, DeepLinkOptions::default()))
     }
 }
