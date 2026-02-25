@@ -37,11 +37,9 @@ impl IssueRef {
         if s.starts_with("https://github.com") || s.starts_with("http://github.com") {
             return github::parse_github_url(s);
         }
-
         if s.starts_with("https://dev.azure.com") || s.starts_with("http://dev.azure.com") {
             return azure::parse_azure_devops_url(s);
         }
-
         if s.starts_with("https://gitlab.com") || s.starts_with("http://gitlab.com") {
             return gitlab::parse_gitlab_url(s);
         }

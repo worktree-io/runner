@@ -1,7 +1,6 @@
+use crate::issue::{DeepLinkOptions, IssueRef};
 use anyhow::{bail, Context, Result};
 use url::Url;
-
-use crate::issue::{DeepLinkOptions, IssueRef};
 
 pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)> {
     let url = Url::parse(s).with_context(|| format!("Invalid URL: {s}"))?;
@@ -18,7 +17,6 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
     let mut jira_host = None;
     let mut jira_issue_key = None;
     let mut gitlab_host: Option<String> = None;
-
     for (key, val) in url.query_pairs() {
         match key.as_ref() {
             "owner" => owner = Some(val.into_owned()),
@@ -55,13 +53,10 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
             _ => {}
         }
     }
-
     let opts = DeepLinkOptions { editor };
-
     if let Some(url_str) = url_param {
         return Ok((super::github::parse_github_url(&url_str)?, opts));
     }
-
     if let Some(id) = linear_id {
         return Ok((
             IssueRef::Linear {
@@ -72,21 +67,18 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
             opts,
         ));
     }
-
     if let Some(id) = ado_work_item_id {
         return Ok((
             super::azure::resolve_worktree_params(ado_org, ado_project, ado_repo, id)?,
             opts,
         ));
     }
-
     if let Some(issue_key) = jira_issue_key {
         return Ok((
             super::jira::resolve_worktree_params(jira_host, issue_key, owner, repo)?,
             opts,
         ));
     }
-
     if gitlab_host.is_some() {
         return Ok((
             IssueRef::GitLab {
@@ -97,7 +89,6 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
             opts,
         ));
     }
-
     Ok((
         IssueRef::GitHub {
             owner: owner.context("Missing 'owner' query param")?,
