@@ -8,13 +8,11 @@ mod paths;
 pub use deep_link::DeepLinkOptions;
 
 #[cfg(test)]
-mod tests;
-
+mod azure_tests;
 #[cfg(test)]
 mod linear_tests;
-
 #[cfg(test)]
-mod azure_tests;
+mod tests;
 
 #[cfg(test)]
 mod azure_paths_tests;

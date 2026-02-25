@@ -92,5 +92,5 @@ pub(super) fn parse_gl(s: &str) -> Result<IssueRef> {
 }
 
 #[cfg(test)]
-#[path = "gitlab_tests.rs"]
+#[path = "gitlab_parse_tests.rs"]
 mod tests;
