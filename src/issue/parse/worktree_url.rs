@@ -34,9 +34,7 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
                 }
                 linear_id = Some(id);
             }
-            "url" => {
-                url_param = Some(val.into_owned());
-            }
+            "url" => url_param = Some(val.into_owned()),
             "editor" => editor = Some(val.into_owned()),
             "org" => ado_org = Some(val.into_owned()),
             "project" => ado_project = Some(val.into_owned()),

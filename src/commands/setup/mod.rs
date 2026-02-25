@@ -23,6 +23,12 @@ pub fn cmd_setup() -> Result<()> {
         Err(e) => eprintln!("Warning: could not read editor choice: {e}"),
     }
 
+    match prompt::prompt_ttl() {
+        Ok(Some(ttl)) => config.workspace.ttl = Some(ttl),
+        Ok(None) => {}
+        Err(e) => eprintln!("Warning: could not read TTL choice: {e}"),
+    }
+
     if config.hooks.pre_open.is_none() {
         config.hooks.pre_open = Some(pre_open_hook.to_string());
     }

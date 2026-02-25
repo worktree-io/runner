@@ -1,16 +1,18 @@
 use std::path::PathBuf;
 
+mod deep_link;
 mod impls;
 mod parse;
 mod paths;
 
+pub use deep_link::DeepLinkOptions;
+
+#[cfg(test)]
+mod azure_tests;
 #[cfg(test)]
 mod linear_tests;
 #[cfg(test)]
 mod tests;
-
-#[cfg(test)]
-mod azure_tests;
 
 #[cfg(test)]
 mod azure_paths_tests;
@@ -28,14 +30,6 @@ mod jira_tests;
 mod gitlab_tests;
 #[cfg(test)]
 mod local_tests;
-
-/// Options extracted from a `worktree://` deep link.
-#[derive(Debug, Clone, Default)]
-pub struct DeepLinkOptions {
-    /// Editor override from the `editor` query param. May be a symbolic name
-    /// (`cursor`, `code`, `zed`, `nvim`, etc.) or a raw percent-decoded command.
-    pub editor: Option<String>,
-}
 
 /// A reference to an issue that identifies a workspace.
 #[derive(Debug, Clone, PartialEq, Eq)]
