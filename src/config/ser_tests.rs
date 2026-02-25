@@ -12,6 +12,7 @@ fn test_default_output_structure() {
     assert!(s.contains("[editor]"));
     assert!(s.contains("[open]"));
     assert!(s.contains("[hooks]"));
+    assert!(s.contains("[workspace]"));
     assert!(s.contains("# Editor configuration."));
     assert!(s.contains("# Workspace open behavior."));
     assert!(s.contains("# Hook scripts run around the open command."));

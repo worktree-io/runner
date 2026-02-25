@@ -6,6 +6,7 @@ use crate::git::{
     detect_default_branch, git_fetch,
 };
 use crate::issue::IssueRef;
+use crate::ttl::WorkspaceRegistry;
 
 /// An open (or newly created) git worktree for a given issue.
 pub struct Workspace {
@@ -76,6 +77,11 @@ impl Workspace {
                 &base_branch,
                 branch_exists,
             )?;
+        }
+
+        if let Ok(mut registry) = WorkspaceRegistry::load() {
+            registry.register(worktree_path.clone());
+            let _ = registry.save();
         }
 
         Ok(Self {

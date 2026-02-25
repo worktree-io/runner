@@ -59,6 +59,15 @@ impl Config {
             out.push_str("# Script run after opening the workspace.\n");
             writeln!(out, "\"post:open\" = {}", toml_quoted(post)).unwrap();
         }
+        out.push('\n');
+
+        // [workspace] ---------------------------------------------------------
+        out.push_str("# Workspace lifecycle configuration.\n");
+        out.push_str("[workspace]\n");
+        if let Some(ttl) = &self.workspace.ttl {
+            out.push_str("# Maximum age of a workspace before it is considered expired.\n");
+            writeln!(out, "ttl = {}", toml_quoted(&ttl.to_string())).unwrap();
+        }
 
         out
     }
@@ -71,3 +80,7 @@ mod ser_tests;
 #[cfg(test)]
 #[path = "ser_multiline_tests.rs"]
 mod ser_multiline_tests;
+
+#[cfg(test)]
+#[path = "ser_workspace_tests.rs"]
+mod ser_workspace_tests;

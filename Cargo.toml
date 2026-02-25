@@ -21,13 +21,15 @@ cargo-husky = { version = "1", default-features = false, features = ["user-hooks
 tempfile    = "3"
 
 [dependencies]
-clap    = { version = "4", features = ["derive"] }
-serde   = { version = "1", features = ["derive"] }
-toml    = "1"
-anyhow  = "1"
-url     = "2"
-dirs    = "6"
-uuid    = { version = "1", features = ["v4"] }
+clap             = { version = "4", features = ["derive"] }
+serde            = { version = "1", features = ["derive"] }
+toml             = "1"
+anyhow           = "1"
+url              = "2"
+dirs             = "6"
+uuid             = { version = "1", features = ["v4"] }
+humantime        = "2"
+humantime-serde  = "1"
 
 [lints.rust]
 unsafe_code = "forbid"
