@@ -1,9 +1,9 @@
 ---
 displayNumber: 28
-status: in-progress
+status: closed
 priority: 2
 createdAt: 2026-02-25T22:59:54.369267+00:00
-updatedAt: 2026-02-25T23:01:07.717865+00:00
+updatedAt: 2026-02-25T23:18:33.239313+00:00
 ---
 
 # setup command does not configure workspace TTL
