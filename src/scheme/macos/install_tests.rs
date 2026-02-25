@@ -55,3 +55,17 @@ fn test_launch_agent_plist_content_app_path() {
     let content = launch_agent_plist_content(app);
     assert!(content.contains("/Users/test/Applications/WorktreeRunner.app"));
 }
+
+#[test]
+fn test_launch_agent_plist_content_start_interval() {
+    let app = std::path::Path::new("/Users/test/Applications/WorktreeRunner.app");
+    let content = launch_agent_plist_content(app);
+    assert!(
+        content.contains("StartInterval"),
+        "plist must contain StartInterval"
+    );
+    assert!(
+        content.contains("3600"),
+        "StartInterval must be 3600 seconds"
+    );
+}
