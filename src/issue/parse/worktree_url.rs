@@ -1,7 +1,6 @@
+use crate::issue::{DeepLinkOptions, IssueRef};
 use anyhow::{bail, Context, Result};
 use url::Url;
-
-use crate::issue::{DeepLinkOptions, IssueRef};
 
 pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)> {
     let url = Url::parse(s).with_context(|| format!("Invalid URL: {s}"))?;
