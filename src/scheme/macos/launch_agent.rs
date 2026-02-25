@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use std::process::Command;
 
 pub(super) fn install_launch_agent(app: &std::path::Path) -> Result<()> {
     let agents_dir = dirs::home_dir()
@@ -13,6 +14,22 @@ pub(super) fn install_launch_agent(app: &std::path::Path) -> Result<()> {
             plist_path.display()
         )
     })?;
+    let uid = Command::new("id")
+        .arg("-u")
+        .output()
+        .context("Failed to run `id -u`")?;
+    let uid = String::from_utf8_lossy(&uid.stdout).trim().to_string();
+    let domain = format!("gui/{uid}");
+    // Unload any existing instance before bootstrapping (ignore errors).
+    let _ = Command::new("launchctl")
+        .args(["bootout", &domain])
+        .arg(&plist_path)
+        .status();
+    // Load the agent immediately so the current session is covered.
+    let _ = Command::new("launchctl")
+        .args(["bootstrap", &domain])
+        .arg(&plist_path)
+        .status();
     Ok(())
 }
 
@@ -33,6 +50,8 @@ pub(super) fn launch_agent_plist_content(app: &std::path::Path) -> String {
          \t</array>\n\
          \t<key>RunAtLoad</key>\n\
          \t<true/>\n\
+         \t<key>StartInterval</key>\n\
+         \t<integer>3600</integer>\n\
          </dict>\n\
          </plist>\n",
         lsregister = super::super::LSREGISTER,
