@@ -14,6 +14,12 @@ pub(super) fn build_hook_context(issue: &IssueRef, worktree_path: &std::path::Pa
             repo,
             id,
         } => (format!("{org}/{project}"), repo.clone(), id.to_string()),
+        IssueRef::Jira {
+            owner,
+            repo,
+            issue_key,
+            ..
+        } => (owner.clone(), repo.clone(), issue_key.clone()),
         IssueRef::Local {
             project_path,
             display_number,

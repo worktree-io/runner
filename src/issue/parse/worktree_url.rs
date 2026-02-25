@@ -15,6 +15,8 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
     let mut ado_project = None;
     let mut ado_repo = None;
     let mut ado_work_item_id = None;
+    let mut jira_host = None;
+    let mut jira_issue_key = None;
 
     for (key, val) in url.query_pairs() {
         match key.as_ref() {
@@ -46,6 +48,8 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
                         .with_context(|| format!("Invalid work item ID: {val}"))?,
                 );
             }
+            "jira_host" => jira_host = Some(val.into_owned()),
+            "jira_issue_key" => jira_issue_key = Some(val.into_owned()),
             _ => {}
         }
     }
@@ -77,6 +81,18 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
                 project,
                 repo,
                 id,
+            },
+            opts,
+        ));
+    }
+
+    if let Some(issue_key) = jira_issue_key {
+        return Ok((
+            IssueRef::Jira {
+                host: jira_host.context("Missing 'jira_host' query param")?,
+                issue_key,
+                owner: owner.context("Missing 'owner' query param")?,
+                repo: repo.context("Missing 'repo' query param")?,
             },
             opts,
         ));

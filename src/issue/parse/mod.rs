@@ -2,6 +2,7 @@ mod azure;
 mod centy;
 mod gh;
 mod github;
+mod jira;
 mod shorthand;
 mod worktree_url;
 
@@ -40,6 +41,10 @@ impl IssueRef {
             return azure::parse_azure_devops_url(s);
         }
 
+        if s.contains(".atlassian.net/browse/") {
+            return jira::parse_jira_browse_url(s);
+        }
+
         if s.starts_with("centy:") {
             return centy::parse_centy(s);
         }
@@ -60,6 +65,7 @@ impl IssueRef {
              - worktree://open?owner=owner&repo=repo&issue=42\n\
              - worktree://open?owner=owner&repo=repo&linear_id=<uuid>\n\
              - worktree://open?org=org&project=project&repo=repo&work_item_id=42\n\
+             - worktree://open?jira_host=host&jira_issue_key=PROJ-42&owner=owner&repo=repo\n\
              - owner/repo#42\n\
              - owner/repo@<linear-uuid>\n\
              - org/project/repo!42\n\

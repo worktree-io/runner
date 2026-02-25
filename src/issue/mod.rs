@@ -23,6 +23,9 @@ mod uuid_tests;
 mod parse_tests;
 
 #[cfg(test)]
+mod jira_tests;
+
+#[cfg(test)]
 mod local_tests;
 
 /// Options extracted from a `worktree://` deep link.
@@ -65,6 +68,17 @@ pub enum IssueRef {
         repo: String,
         /// Work item ID.
         id: u64,
+    },
+    /// A Jira issue paired with a GitHub repo that hosts the code.
+    Jira {
+        /// Jira instance host (e.g. `acme.atlassian.net`).
+        host: String,
+        /// Jira issue key (e.g. `PROJ-42`).
+        issue_key: String,
+        /// GitHub organization or user name that hosts the code.
+        owner: String,
+        /// Repository name.
+        repo: String,
     },
     /// A local Centy issue — the repository itself is the source, no remote clone needed.
     Local {

@@ -20,7 +20,9 @@ impl IssueRef {
     #[must_use]
     pub fn bare_clone_path(&self) -> PathBuf {
         match self {
-            Self::GitHub { owner, repo, .. } | Self::Linear { owner, repo, .. } => dirs::home_dir()
+            Self::GitHub { owner, repo, .. }
+            | Self::Linear { owner, repo, .. }
+            | Self::Jira { owner, repo, .. } => dirs::home_dir()
                 .expect("could not determine home directory")
                 .join("worktrees")
                 .join("github")

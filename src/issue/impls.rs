@@ -8,6 +8,7 @@ impl IssueRef {
             Self::GitHub { number, .. } => format!("issue-{number}"),
             Self::Linear { id, .. } => format!("linear-{id}"),
             Self::AzureDevOps { id, .. } => format!("workitem-{id}"),
+            Self::Jira { issue_key, .. } => format!("jira-{}", issue_key.to_lowercase()),
             Self::Local { display_number, .. } => format!("issue-{display_number}"),
         }
     }
@@ -26,7 +27,9 @@ impl IssueRef {
     #[must_use]
     pub fn clone_url(&self) -> String {
         match self {
-            Self::GitHub { owner, repo, .. } | Self::Linear { owner, repo, .. } => {
+            Self::GitHub { owner, repo, .. }
+            | Self::Linear { owner, repo, .. }
+            | Self::Jira { owner, repo, .. } => {
                 format!("https://github.com/{owner}/{repo}.git")
             }
             Self::AzureDevOps {
