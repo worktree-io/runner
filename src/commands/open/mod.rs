@@ -2,7 +2,15 @@ mod editor;
 mod hook_ctx;
 
 use anyhow::Result;
-use worktree_io::{config::Config, hooks::run_hook, issue::IssueRef, opener, workspace::Workspace};
+use std::time::SystemTime;
+use worktree_io::{
+    config::Config,
+    hooks::run_hook,
+    issue::IssueRef,
+    opener,
+    ttl::{self, WorkspaceRegistry},
+    workspace::Workspace,
+};
 
 use hook_ctx::build_hook_context;
 
@@ -22,6 +30,24 @@ pub fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result
     }
 
     let config = Config::load()?;
+
+    if config.workspace.auto_prune {
+        if let Some(ttl_val) = &config.workspace.ttl {
+            if let Ok(mut registry) = WorkspaceRegistry::load() {
+                let now = SystemTime::now();
+                let expired = ttl::prune(&registry.workspace, ttl_val, now);
+                let expired_paths: Vec<_> = expired.iter().map(|r| r.path.clone()).collect();
+                for path in &expired_paths {
+                    eprintln!("Pruning expired workspace at {}…", path.display());
+                    let _ = std::fs::remove_dir_all(path);
+                }
+                registry
+                    .workspace
+                    .retain(|r| !expired_paths.contains(&r.path));
+                let _ = registry.save();
+            }
+        }
+    }
     let hook_ctx = build_hook_context(&issue, &workspace.path);
 
     if let Some(script) = &config.hooks.pre_open {

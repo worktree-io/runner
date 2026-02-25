@@ -6,6 +6,7 @@ fn test_workspace_section_present_in_default() {
     assert!(s.contains("[workspace]"));
     assert!(s.contains("# Workspace lifecycle configuration."));
     assert!(!s.contains("ttl ="));
+    assert!(!s.contains("auto_prune ="));
 }
 
 #[test]
@@ -25,4 +26,28 @@ fn test_workspace_ttl_round_trips() {
     let s = c.to_toml_with_comments();
     let parsed: Config = toml::from_str(&s).unwrap();
     assert!(parsed.workspace.ttl.is_some());
+}
+
+#[test]
+fn test_auto_prune_absent_by_default() {
+    let s = Config::default().to_toml_with_comments();
+    assert!(!s.contains("auto_prune ="));
+}
+
+#[test]
+fn test_auto_prune_present_when_true() {
+    let mut c = Config::default();
+    c.set_value("workspace.auto_prune", "true").unwrap();
+    let s = c.to_toml_with_comments();
+    assert!(s.contains("auto_prune = true"));
+    assert!(s.contains("# When true, expired worktrees are pruned each time `open` is invoked."));
+}
+
+#[test]
+fn test_auto_prune_round_trips() {
+    let mut c = Config::default();
+    c.set_value("workspace.auto_prune", "true").unwrap();
+    let s = c.to_toml_with_comments();
+    let parsed: Config = toml::from_str(&s).unwrap();
+    assert!(parsed.workspace.auto_prune);
 }
