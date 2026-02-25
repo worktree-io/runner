@@ -17,6 +17,7 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
     let mut ado_work_item_id = None;
     let mut jira_host = None;
     let mut jira_issue_key = None;
+    let mut gitlab_host: Option<String> = None;
 
     for (key, val) in url.query_pairs() {
         match key.as_ref() {
@@ -50,6 +51,7 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
             }
             "jira_host" => jira_host = Some(val.into_owned()),
             "jira_issue_key" => jira_issue_key = Some(val.into_owned()),
+            "gitlab_host" => gitlab_host = Some(val.into_owned()),
             _ => {}
         }
     }
@@ -81,6 +83,17 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
     if let Some(issue_key) = jira_issue_key {
         return Ok((
             super::jira::resolve_worktree_params(jira_host, issue_key, owner, repo)?,
+            opts,
+        ));
+    }
+
+    if gitlab_host.is_some() {
+        return Ok((
+            IssueRef::GitLab {
+                owner: owner.context("Missing 'owner' query param")?,
+                repo: repo.context("Missing 'repo' query param")?,
+                number: issue_num.context("Missing 'issue' query param")?,
+            },
             opts,
         ));
     }

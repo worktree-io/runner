@@ -6,6 +6,11 @@ pub(super) fn build_hook_context(issue: &IssueRef, worktree_path: &std::path::Pa
             owner,
             repo,
             number,
+        }
+        | IssueRef::GitLab {
+            owner,
+            repo,
+            number,
         } => (owner.clone(), repo.clone(), number.to_string()),
         IssueRef::Linear { owner, repo, id } => (owner.clone(), repo.clone(), id.clone()),
         IssueRef::AzureDevOps {
