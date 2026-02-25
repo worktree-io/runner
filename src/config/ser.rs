@@ -68,6 +68,12 @@ impl Config {
             out.push_str("# Maximum age of a workspace before it is considered expired.\n");
             writeln!(out, "ttl = {}", toml_quoted(&ttl.to_string())).unwrap();
         }
+        if self.workspace.auto_prune {
+            out.push_str(
+                "# When true, expired worktrees are pruned each time `open` is invoked.\n",
+            );
+            writeln!(out, "auto_prune = {}", self.workspace.auto_prune).unwrap();
+        }
 
         out
     }

@@ -56,14 +56,9 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
         return Ok((super::github::parse_github_url(&url_str)?, opts));
     }
     if let Some(id) = linear_id {
-        return Ok((
-            IssueRef::Linear {
-                owner: owner.context("Missing 'owner' query param")?,
-                repo: repo.context("Missing 'repo' query param")?,
-                id,
-            },
-            opts,
-        ));
+        let owner = owner.context("Missing 'owner' query param")?;
+        let repo = repo.context("Missing 'repo' query param")?;
+        return Ok((IssueRef::Linear { owner, repo, id }, opts));
     }
     if let Some(id) = ado_work_item_id {
         return Ok((

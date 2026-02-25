@@ -8,28 +8,23 @@ mod paths;
 pub use deep_link::DeepLinkOptions;
 
 #[cfg(test)]
-mod azure_tests;
-#[cfg(test)]
-mod linear_tests;
-#[cfg(test)]
-mod tests;
-
-#[cfg(test)]
 mod azure_paths_tests;
-
 #[cfg(test)]
-mod uuid_tests;
-
-#[cfg(test)]
-mod parse_tests;
-
-#[cfg(test)]
-mod jira_tests;
-
+mod azure_tests;
 #[cfg(test)]
 mod gitlab_tests;
 #[cfg(test)]
+mod jira_tests;
+#[cfg(test)]
+mod linear_tests;
+#[cfg(test)]
 mod local_tests;
+#[cfg(test)]
+mod parse_tests;
+#[cfg(test)]
+mod tests;
+#[cfg(test)]
+mod uuid_tests;
 
 /// A reference to an issue that identifies a workspace.
 #[derive(Debug, Clone, PartialEq, Eq)]

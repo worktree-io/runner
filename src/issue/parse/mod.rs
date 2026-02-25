@@ -4,12 +4,13 @@ mod gh;
 mod github;
 mod gitlab;
 mod jira;
+mod options;
 mod shorthand;
 mod worktree_url;
 
 use anyhow::{bail, Result};
 
-use super::{DeepLinkOptions, IssueRef};
+use super::IssueRef;
 
 impl IssueRef {
     /// Parse any of the supported input formats:
@@ -82,19 +83,5 @@ impl IssueRef {
              - gh:<number>\n\
              - gl:<number>"
         )
-    }
-
-    /// Like [`parse`] but also returns any [`DeepLinkOptions`] embedded in a
-    /// `worktree://` URL (e.g. the `editor` query param).
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if `s` cannot be parsed as a valid issue reference.
-    pub fn parse_with_options(s: &str) -> Result<(Self, DeepLinkOptions)> {
-        let s = s.trim();
-        if s.starts_with("worktree://") {
-            return worktree_url::parse_worktree_url(s);
-        }
-        Ok((Self::parse(s)?, DeepLinkOptions::default()))
     }
 }
