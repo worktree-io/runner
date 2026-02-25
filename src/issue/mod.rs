@@ -28,6 +28,9 @@ mod jira_tests;
 #[cfg(test)]
 mod local_tests;
 
+#[cfg(test)]
+mod gitlab_tests;
+
 /// Options extracted from a `worktree://` deep link.
 #[derive(Debug, Clone, Default)]
 pub struct DeepLinkOptions {
@@ -79,6 +82,15 @@ pub enum IssueRef {
         owner: String,
         /// Repository name.
         repo: String,
+    },
+    /// A GitLab issue identified by owner, repo, and number.
+    GitLab {
+        /// GitLab group or user name.
+        owner: String,
+        /// Repository name.
+        repo: String,
+        /// Issue number.
+        number: u64,
     },
     /// A local Centy issue — the repository itself is the source, no remote clone needed.
     Local {

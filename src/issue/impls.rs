@@ -5,7 +5,9 @@ impl IssueRef {
     #[must_use]
     pub fn workspace_dir_name(&self) -> String {
         match self {
-            Self::GitHub { number, .. } => format!("issue-{number}"),
+            Self::GitHub { number, .. } | Self::GitLab { number, .. } => {
+                format!("issue-{number}")
+            }
             Self::Linear { id, .. } => format!("linear-{id}"),
             Self::AzureDevOps { id, .. } => format!("workitem-{id}"),
             Self::Jira { issue_key, .. } => format!("jira-{}", issue_key.to_lowercase()),
@@ -31,6 +33,9 @@ impl IssueRef {
             | Self::Linear { owner, repo, .. }
             | Self::Jira { owner, repo, .. } => {
                 format!("https://github.com/{owner}/{repo}.git")
+            }
+            Self::GitLab { owner, repo, .. } => {
+                format!("https://gitlab.com/{owner}/{repo}.git")
             }
             Self::AzureDevOps {
                 org, project, repo, ..

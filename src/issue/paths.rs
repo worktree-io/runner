@@ -28,6 +28,12 @@ impl IssueRef {
                 .join("github")
                 .join(owner)
                 .join(repo),
+            Self::GitLab { owner, repo, .. } => dirs::home_dir()
+                .expect("could not determine home directory")
+                .join("worktrees")
+                .join("gitlab")
+                .join(owner)
+                .join(repo),
             Self::AzureDevOps {
                 org, project, repo, ..
             } => dirs::home_dir()
