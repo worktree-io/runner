@@ -7,17 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-02-25
+
 ### Added
+- Workspace TTL management and registry: `Ttl` type, `WorkspaceRecord`, and `WorkspaceRegistry` persisted to `~/.config/worktree/workspaces.toml`; new workspaces are auto-registered on `worktree open` ([#39](https://github.com/worktree-io/runner/pull/39))
 - `centy:<number>` shorthand: resolves a Centy issue by walking up to the nearest `.centy/` ancestor directory
 - `gh:<number>` shorthand: resolves a GitHub issue against the `origin` remote of the current git repository
-- Linux: bundle PNG icon via `include_bytes!` and install to `~/.local/share/icons/hicolor/256x256/apps/worktree-runner.png` during `worktree scheme install` ([#25](https://github.com/worktree-io/runner/issues/25))
-- Linux: add `Icon=worktree-runner` field to the `worktree-runner.desktop` entry ([#25](https://github.com/worktree-io/runner/issues/25))
+- Linux: bundle PNG icon via `include_bytes!` and install to `~/.local/share/icons/hicolor/256x256/apps/worktree-runner.png` during `worktree scheme install` ([#37](https://github.com/worktree-io/runner/pull/37))
+- Linux: add `Icon=worktree-runner` field to the `worktree-runner.desktop` entry ([#37](https://github.com/worktree-io/runner/pull/37))
 
 ### Fixed
-- Ad-hoc code-sign `WorktreeRunner.app` after `osacompile` so Gatekeeper does not quarantine or evict the unsigned bundle ([#22](https://github.com/worktree-io/runner/issues/22))
-- Install a `~/Library/LaunchAgents/io.worktree.runner.plist` that re-registers the `worktree://` URL scheme via `lsregister` at login, restoring the handler if Launch Services forgets it after a reboot ([#22](https://github.com/worktree-io/runner/issues/22))
-- `worktree scheme uninstall` now also removes the LaunchAgent plist ([#22](https://github.com/worktree-io/runner/issues/22))
-- Linux: `worktree scheme uninstall` now also removes the PNG icon file ([#25](https://github.com/worktree-io/runner/issues/25))
+- Linux: `worktree scheme uninstall` now also removes the PNG icon file ([#37](https://github.com/worktree-io/runner/pull/37))
+- macOS: call `launchctl bootout` then `launchctl bootstrap gui/<uid>` immediately after writing the `LaunchAgent` plist so the `worktree://` URL scheme is active in the current session without requiring a logout ([#41](https://github.com/worktree-io/runner/pull/41), fixes [#27](https://github.com/worktree-io/runner/issues/27))
+- macOS: add `StartInterval 3600` to the `LaunchAgent` plist so `lsregister` re-runs every hour and recovers from macOS Launch Services database resets mid-session ([#41](https://github.com/worktree-io/runner/pull/41), fixes [#27](https://github.com/worktree-io/runner/issues/27))
 
 ## [0.9.0] - 2026-02-23
 
@@ -134,6 +136,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release with CI/CD pipeline publishing cross-platform release artifacts ([#1](https://github.com/worktree-io/runner/pull/1))
 
+[Unreleased]: https://github.com/worktree-io/runner/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/worktree-io/runner/compare/v0.10.1...v0.11.0
+[0.10.1]: https://github.com/worktree-io/runner/compare/v0.10.0...v0.10.1
+[0.10.0]: https://github.com/worktree-io/runner/compare/v0.9.0...v0.10.0
+[0.9.0]: https://github.com/worktree-io/runner/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/worktree-io/runner/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/worktree-io/runner/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/worktree-io/runner/compare/v0.7.0...v0.7.1
