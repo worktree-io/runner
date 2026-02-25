@@ -3,28 +3,18 @@ use url::Url;
 
 use crate::issue::{DeepLinkOptions, IssueRef};
 
+use super::params::UrlParams;
+
 pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)> {
     let url = Url::parse(s).with_context(|| format!("Invalid URL: {s}"))?;
-    let mut owner = None;
-    let mut repo = None;
-    let mut issue_num = None;
-    let mut linear_id = None;
-    let mut url_param = None;
-    let mut editor = None;
-    let mut ado_org = None;
-    let mut ado_project = None;
-    let mut ado_repo = None;
-    let mut ado_work_item_id = None;
-    let mut jira_host = None;
-    let mut jira_issue_key = None;
-    let mut gitlab_host: Option<String> = None;
+    let mut p = UrlParams::default();
 
     for (key, val) in url.query_pairs() {
         match key.as_ref() {
-            "owner" => owner = Some(val.into_owned()),
-            "repo" => repo = Some(val.into_owned()),
+            "owner" => p.owner = Some(val.into_owned()),
+            "repo" => p.repo = Some(val.into_owned()),
             "issue" => {
-                issue_num = Some(
+                p.issue_num = Some(
                     val.parse::<u64>()
                         .with_context(|| format!("Invalid issue number: {val}"))?,
                 );
@@ -34,65 +24,63 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
                 if uuid::Uuid::parse_str(&id).is_err() {
                     bail!("Invalid Linear issue UUID: {id}");
                 }
-                linear_id = Some(id);
+                p.linear_id = Some(id);
             }
-            "url" => {
-                url_param = Some(val.into_owned());
-            }
-            "editor" => editor = Some(val.into_owned()),
-            "org" => ado_org = Some(val.into_owned()),
-            "project" => ado_project = Some(val.into_owned()),
-            "ado_repo" => ado_repo = Some(val.into_owned()),
+            "url" => p.url_param = Some(val.into_owned()),
+            "editor" => p.editor = Some(val.into_owned()),
+            "org" => p.ado_org = Some(val.into_owned()),
+            "project" => p.ado_project = Some(val.into_owned()),
+            "ado_repo" => p.ado_repo = Some(val.into_owned()),
             "work_item_id" => {
-                ado_work_item_id = Some(
+                p.ado_work_item_id = Some(
                     val.parse::<u64>()
                         .with_context(|| format!("Invalid work item ID: {val}"))?,
                 );
             }
-            "jira_host" => jira_host = Some(val.into_owned()),
-            "jira_issue_key" => jira_issue_key = Some(val.into_owned()),
-            "gitlab_host" => gitlab_host = Some(val.into_owned()),
+            "jira_host" => p.jira_host = Some(val.into_owned()),
+            "jira_issue_key" => p.jira_issue_key = Some(val.into_owned()),
+            "gitlab_host" => p.gitlab_host = Some(val.into_owned()),
             _ => {}
         }
     }
 
-    let opts = DeepLinkOptions { editor };
+    let opts = DeepLinkOptions { editor: p.editor };
 
-    if let Some(url_str) = url_param {
+    if let Some(url_str) = p.url_param {
         return Ok((super::github::parse_github_url(&url_str)?, opts));
     }
 
-    if let Some(id) = linear_id {
+    if let Some(id) = p.linear_id {
         return Ok((
             IssueRef::Linear {
-                owner: owner.context("Missing 'owner' query param")?,
-                repo: repo.context("Missing 'repo' query param")?,
+                owner: p.owner.context("Missing 'owner' query param")?,
+                repo: p.repo.context("Missing 'repo' query param")?,
                 id,
             },
             opts,
         ));
     }
 
-    if let Some(id) = ado_work_item_id {
+    if let Some(id) = p.ado_work_item_id {
         return Ok((
-            super::azure::resolve_worktree_params(ado_org, ado_project, ado_repo, id)?,
+            super::azure::resolve_worktree_params(p.ado_org, p.ado_project, p.ado_repo, id)?,
             opts,
         ));
     }
 
-    if let Some(issue_key) = jira_issue_key {
+    if let Some(issue_key) = p.jira_issue_key {
         return Ok((
-            super::jira::resolve_worktree_params(jira_host, issue_key, owner, repo)?,
+            super::jira::resolve_worktree_params(p.jira_host, issue_key, p.owner, p.repo)?,
             opts,
         ));
     }
 
-    if gitlab_host.is_some() {
+    if p.gitlab_host.is_some() {
         return Ok((
             IssueRef::GitLab {
-                owner: owner.context("Missing 'owner' query param")?,
-                repo: repo.context("Missing 'repo' query param")?,
-                number: issue_num.context("Missing 'issue' query param")?,
+                owner: p.owner.context("Missing 'owner' query param")?,
+                repo: p.repo.context("Missing 'repo' query param")?,
+                number: p.issue_num.context("Missing 'issue' query param")?,
             },
             opts,
         ));
@@ -100,9 +88,9 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
 
     Ok((
         IssueRef::GitHub {
-            owner: owner.context("Missing 'owner' query param")?,
-            repo: repo.context("Missing 'repo' query param")?,
-            number: issue_num.context("Missing 'issue' query param")?,
+            owner: p.owner.context("Missing 'owner' query param")?,
+            repo: p.repo.context("Missing 'repo' query param")?,
+            number: p.issue_num.context("Missing 'issue' query param")?,
         },
         opts,
     ))
