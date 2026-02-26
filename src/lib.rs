@@ -10,6 +10,8 @@ pub mod hooks;
 pub mod issue;
 /// Editor and terminal openers.
 pub mod opener;
+/// Per-repository hook configuration loaded from `.worktree.toml`.
+pub mod repo_hooks;
 /// `worktree://` URL scheme registration.
 pub mod scheme;
 /// Workspace TTL management and registry.
