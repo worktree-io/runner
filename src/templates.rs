@@ -22,6 +22,11 @@ mod tests {
     }
 
     #[test]
+    fn worktree_toml_starts_with_comment() {
+        assert!(WORKTREE_TOML.starts_with('#'));
+    }
+
+    #[test]
     fn workspaces_toml_starts_with_comment() {
         assert!(WORKSPACES_TOML.starts_with('#'));
     }
