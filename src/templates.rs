@@ -14,11 +14,7 @@ mod tests {
 
     #[test]
     fn config_toml_in_sync_with_default() {
-        assert_eq!(
-            CONFIG_TOML,
-            Config::default().to_toml_with_comments(),
-            "assets/config.toml is out of sync with Config::default().to_toml_with_comments()"
-        );
+        assert_eq!(CONFIG_TOML, Config::default().to_toml_with_comments());
     }
 
     #[test]
