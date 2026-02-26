@@ -8,6 +8,7 @@ use worktree_io::{
     hooks::run_hook,
     issue::IssueRef,
     opener,
+    repo_hooks::{combined_script, RepoConfig},
     ttl::{self, WorkspaceRegistry},
     workspace::Workspace,
 };
@@ -50,7 +51,18 @@ pub fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result
     }
     let hook_ctx = build_hook_context(&issue, &workspace.path);
 
-    if let Some(script) = &config.hooks.pre_open {
+    let repo_config = RepoConfig::load_from(&workspace.path).unwrap_or_default();
+
+    let effective_pre = combined_script(
+        config.hooks.pre_open.as_deref(),
+        repo_config.hooks.pre_open.as_ref(),
+    );
+    let effective_post = combined_script(
+        config.hooks.post_open.as_deref(),
+        repo_config.hooks.post_open.as_ref(),
+    );
+
+    if let Some(script) = &effective_pre {
         eprintln!("Running pre:open hook…");
         run_hook(script, &hook_ctx)?;
     }
@@ -61,12 +73,12 @@ pub fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result
         if config.editor.command.is_none() {
             eprintln!("No editor configured. Run: worktree setup");
         }
-        config.editor.command.clone()
+        config.editor.command
     } else {
         None
     };
 
-    match (editor_cmd.as_deref(), config.hooks.post_open.as_deref()) {
+    match (editor_cmd.as_deref(), effective_post.as_deref()) {
         (Some(cmd), Some(script)) => {
             let rendered = hook_ctx.render(script);
             if !opener::open_with_hook(&workspace.path, cmd, &rendered)? {
