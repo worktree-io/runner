@@ -39,7 +39,10 @@
       "Bash(cargo llvm-cov:*)",
       "Bash(echo:*)",
       "Bash(centy update:*)",
-      "Bash(git rebase:*)"
+      "Bash(git rebase:*)",
+      "Bash(gh repo:*)",
+      "Bash(gh issue:*)",
+      "Bash(command:*)"
     ],
     "deny": ["Bash(gh issue create:*)", "Bash(cargo publish:*)"]
   },
