@@ -1,4 +1,25 @@
-use worktree_io::{hooks::HookContext, issue::IssueRef};
+use worktree_io::{
+    config::Config,
+    hooks::HookContext,
+    issue::IssueRef,
+    repo_hooks::{combined_script, RepoConfig},
+};
+
+pub(super) fn effective_hooks(
+    config: &Config,
+    workspace_path: &std::path::Path,
+) -> (Option<String>, Option<String>) {
+    let repo = RepoConfig::load_from(workspace_path).unwrap_or_default();
+    let pre = combined_script(
+        config.hooks.pre_open.as_deref(),
+        repo.hooks.pre_open.as_ref(),
+    );
+    let post = combined_script(
+        config.hooks.post_open.as_deref(),
+        repo.hooks.post_open.as_ref(),
+    );
+    (pre, post)
+}
 
 pub(super) fn build_hook_context(issue: &IssueRef, worktree_path: &std::path::Path) -> HookContext {
     let (owner, repo, issue_str) = match issue {

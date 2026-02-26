@@ -95,3 +95,7 @@ pub fn combined_script(global: Option<&str>, repo_entry: Option<&RepoHookEntry>)
 #[cfg(test)]
 #[path = "repo_hooks_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "repo_hooks_load_tests.rs"]
+mod load_tests;

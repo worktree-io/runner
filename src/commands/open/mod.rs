@@ -8,12 +8,11 @@ use worktree_io::{
     hooks::run_hook,
     issue::IssueRef,
     opener,
-    repo_hooks::{combined_script, RepoConfig},
     ttl::{self, WorkspaceRegistry},
     workspace::Workspace,
 };
 
-use hook_ctx::build_hook_context;
+use hook_ctx::{build_hook_context, effective_hooks};
 
 pub fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result<()> {
     let (issue, deep_link_opts) = IssueRef::parse_with_options(issue_ref)?;
@@ -50,17 +49,7 @@ pub fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result
         }
     }
     let hook_ctx = build_hook_context(&issue, &workspace.path);
-
-    let repo_config = RepoConfig::load_from(&workspace.path).unwrap_or_default();
-
-    let effective_pre = combined_script(
-        config.hooks.pre_open.as_deref(),
-        repo_config.hooks.pre_open.as_ref(),
-    );
-    let effective_post = combined_script(
-        config.hooks.post_open.as_deref(),
-        repo_config.hooks.post_open.as_ref(),
-    );
+    let (effective_pre, effective_post) = effective_hooks(&config, &workspace.path);
 
     if let Some(script) = &effective_pre {
         eprintln!("Running pre:open hook…");
