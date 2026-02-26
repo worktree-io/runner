@@ -20,4 +20,9 @@ mod tests {
             "assets/config.toml is out of sync with Config::default().to_toml_with_comments()"
         );
     }
+
+    #[test]
+    fn workspaces_toml_starts_with_comment() {
+        assert!(WORKSPACES_TOML.starts_with('#'));
+    }
 }
