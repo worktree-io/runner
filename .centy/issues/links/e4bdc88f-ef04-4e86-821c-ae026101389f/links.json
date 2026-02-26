@@ -1,0 +1,10 @@
+{
+  "links": [
+    {
+      "targetId": "550bcacd-6069-4735-ad02-5ab0ef7c4546",
+      "targetType": "issue",
+      "linkType": "blocked-by",
+      "createdAt": "2026-02-26T00:07:38.108344+00:00"
+    }
+  ]
+}
