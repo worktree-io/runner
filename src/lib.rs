@@ -12,6 +12,8 @@ pub mod issue;
 pub mod opener;
 /// Per-repository hook configuration loaded from `.worktree.toml`.
 pub mod repo_hooks;
+/// Scaffold template written to `.worktree.toml` when the file is absent.
+pub mod repo_hooks_scaffold;
 /// `worktree://` URL scheme registration.
 pub mod scheme;
 /// Workspace TTL management and registry.

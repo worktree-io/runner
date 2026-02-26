@@ -8,7 +8,7 @@ use worktree_io::{
     hooks::run_hook,
     issue::IssueRef,
     opener,
-    repo_hooks::scaffold_if_missing,
+    repo_hooks_scaffold::scaffold_if_missing,
     ttl::{self, WorkspaceRegistry},
     workspace::Workspace,
 };
