@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Centralized TOML templates as compile-time assets: extracted `.worktree.toml`, `config.toml`, and `workspaces.toml` scaffolds into `assets/` and embedded them via `include_str!` in a new `templates` module; added a test ensuring `assets/config.toml` stays in sync with `Config::default().to_toml_with_comments()`
+
 ## [0.12.1] - 2026-02-26
 
 ### Added
