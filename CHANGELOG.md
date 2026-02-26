@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-02-26
+
+### Added
+- Per-repo hooks via `.worktree.toml`: repositories can now define `pre:open` and `post:open` hook scripts scoped to the repo, with an `order` field (`before`, `after`, `replace`) controlling how they compose with global hooks ([#50](https://github.com/worktree-io/runner/pull/50))
+
 ## [0.12.0] - 2026-02-26
 
 ### Added
@@ -145,7 +150,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release with CI/CD pipeline publishing cross-platform release artifacts ([#1](https://github.com/worktree-io/runner/pull/1))
 
-[Unreleased]: https://github.com/worktree-io/runner/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/worktree-io/runner/compare/v0.12.1...HEAD
+[0.12.1]: https://github.com/worktree-io/runner/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/worktree-io/runner/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/worktree-io/runner/compare/v0.10.1...v0.11.0
 [0.10.1]: https://github.com/worktree-io/runner/compare/v0.10.0...v0.10.1
