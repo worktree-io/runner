@@ -16,6 +16,8 @@ pub mod repo_hooks;
 pub mod repo_hooks_scaffold;
 /// `worktree://` URL scheme registration.
 pub mod scheme;
+/// Compile-time TOML template assets embedded via `include_str!`.
+pub mod templates;
 /// Workspace TTL management and registry.
 pub mod ttl;
 /// Workspace creation and lifecycle.

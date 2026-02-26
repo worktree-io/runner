@@ -2,25 +2,7 @@ use std::path::Path;
 
 /// The commented-only scaffold written to `.worktree.toml` when the file is
 /// absent. Every line is a comment so the file has no effect until edited.
-pub const SCAFFOLD: &str = "# .worktree.toml — per-repo worktree configuration\n\
-# Commit this file to version-control to share settings with your team.\n\
-\n\
-# [hooks]\n\
-# Configure lifecycle hooks that run when a worktree for this repo is opened.\n\
-# Each hook is a shell command (string) executed in the worktree directory.\n\
-# Mustache templating is supported (same variables as global hooks).\n\
-#\n\
-# Hook ordering controls how a per-repo hook interacts with the global hook\n\
-# configured in the runner's main config. Allowed values:\n\
-#   \"before\"  — run the per-repo hook first, then the global hook\n\
-#   \"after\"   — run the global hook first, then the per-repo hook\n\
-#   \"replace\" — skip the global hook entirely, run only the per-repo hook\n\
-#\n\
-# \"pre:open\" = \"cargo build\"\n\
-# \"pre:open:order\" = \"before\"   # default: \"before\"\n\
-#\n\
-# \"post:open\" = \"npm install\"\n\
-# \"post:open:order\" = \"before\"  # default: \"before\"\n";
+pub const SCAFFOLD: &str = crate::templates::WORKTREE_TOML;
 
 /// Write [`SCAFFOLD`] to `<worktree_path>/.worktree.toml` if the file does not
 /// already exist.
