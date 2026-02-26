@@ -42,7 +42,8 @@
       "Bash(git rebase:*)",
       "Bash(gh repo:*)",
       "Bash(gh issue:*)",
-      "Bash(command:*)"
+      "Bash(command:*)",
+      "Bash(centy link:*)"
     ],
     "deny": ["Bash(gh issue create:*)", "Bash(cargo publish:*)"]
   },
