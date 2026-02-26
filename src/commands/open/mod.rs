@@ -8,6 +8,7 @@ use worktree_io::{
     hooks::run_hook,
     issue::IssueRef,
     opener,
+    repo_hooks_scaffold::scaffold_if_missing,
     ttl::{self, WorkspaceRegistry},
     workspace::Workspace,
 };
@@ -27,6 +28,10 @@ pub fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result
     if print_path {
         println!("{}", workspace.path.display());
         return Ok(());
+    }
+
+    if matches!(scaffold_if_missing(&workspace.path), Ok(true)) {
+        eprintln!("created .worktree.toml (no active config — edit to enable hooks)");
     }
 
     let config = Config::load()?;
