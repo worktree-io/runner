@@ -170,6 +170,53 @@ fn test_open_created() {
 }
 
 #[test]
+fn test_open_scaffold_created() {
+    let h = temp_home("op_scaffold");
+    setup_bare_clone(&h, "__sc__", "__sc__");
+    let out = run(&h, &["open", "__sc__/__sc__#1"]);
+    assert!(out.status.success());
+    let wt = h
+        .join("worktrees")
+        .join("github")
+        .join("__sc__")
+        .join("__sc__")
+        .join("issue-1");
+    let scaffold = wt.join(".worktree.toml");
+    assert!(scaffold.exists(), ".worktree.toml should have been created");
+    let contents = std::fs::read_to_string(&scaffold).unwrap();
+    assert!(
+        contents.contains("[hooks]"),
+        "scaffold should mention [hooks]"
+    );
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("created .worktree.toml"),
+        "expected scaffold log line in stderr: {stderr}"
+    );
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_open_scaffold_skipped_when_present() {
+    let h = temp_home("op_scaffold_skip");
+    let wt = pre_create_workspace(&h, "__sk__", "__sk__", 5);
+    std::fs::write(wt.join(".worktree.toml"), b"# custom").unwrap();
+    let out = run(&h, &["open", "__sk__/__sk__#5"]);
+    assert!(out.status.success());
+    let contents = std::fs::read_to_string(wt.join(".worktree.toml")).unwrap();
+    assert_eq!(
+        contents, "# custom",
+        "existing .worktree.toml must not be overwritten"
+    );
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        !stderr.contains("created .worktree.toml"),
+        "should not log scaffold when file already exists"
+    );
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
 fn test_open_deep_link_editor() {
     let h = temp_home("op_dl_ed");
     pre_create_workspace(&h, "__t__", "__t__", 3);
