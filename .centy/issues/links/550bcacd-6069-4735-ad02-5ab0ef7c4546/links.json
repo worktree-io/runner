@@ -1,0 +1,16 @@
+{
+  "links": [
+    {
+      "targetId": "e4bdc88f-ef04-4e86-821c-ae026101389f",
+      "targetType": "issue",
+      "linkType": "blocks",
+      "createdAt": "2026-02-26T00:07:38.108342+00:00"
+    },
+    {
+      "targetId": "6cc65408-84c2-405b-b7a9-4d6d3b8ec559",
+      "targetType": "issue",
+      "linkType": "blocks",
+      "createdAt": "2026-02-26T00:12:49.979684+00:00"
+    }
+  ]
+}
