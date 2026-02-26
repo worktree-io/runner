@@ -1,0 +1,25 @@
+FROM rust:1-slim-bookworm
+
+# git is required by the integration test suite (bare-clone, worktree tests).
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends git \
+ && rm -rf /var/lib/apt/lists/*
+
+# Provide a stable git identity so test commits don't fail.
+RUN git config --global user.email "ci@worktree.io" \
+ && git config --global user.name "CI"
+
+WORKDIR /src
+
+# Pre-fetch Cargo dependencies in a cacheable layer.
+COPY Cargo.toml Cargo.lock ./
+RUN mkdir -p src \
+ && echo "fn main(){}" > src/main.rs \
+ && cargo fetch --locked
+
+# Copy the full source tree (read-only bind-mount works too, but COPY is
+# simpler for CI image builds where no bind mount is available).
+COPY . .
+
+# By default run only the snapshot tests; the caller can override CMD.
+CMD ["cargo", "test", "--locked", "--test", "snapshot_tests"]
