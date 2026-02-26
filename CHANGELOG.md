@@ -7,8 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-02-27
+
 ### Added
-- Centralized TOML templates as compile-time assets: extracted `.worktree.toml`, `config.toml`, and `workspaces.toml` scaffolds into `assets/` and embedded them via `include_str!` in a new `templates` module; added a test ensuring `assets/config.toml` stays in sync with `Config::default().to_toml_with_comments()`
+- Scaffold `.worktree.toml` automatically when missing on `worktree open`: the file is created from the embedded template so repos get per-repo hook config on first open ([#52](https://github.com/worktree-io/runner/pull/52))
+- Centralized TOML templates as compile-time assets: extracted `.worktree.toml`, `config.toml`, and `workspaces.toml` scaffolds into `assets/` and embedded them via `include_str!` in a new `templates` module; added a test ensuring `assets/config.toml` stays in sync with `Config::default().to_toml_with_comments()` ([#57](https://github.com/worktree-io/runner/pull/57))
+- Docker-based snapshot tests for generated files: verifies that the TOML templates written to disk match their embedded `assets/` sources across a clean environment ([#56](https://github.com/worktree-io/runner/pull/56))
+
+### Fixed
+- Trap `SIGINT` in the bootstrap script so that pressing `^C` inside a worktree shell returns to the worktree directory instead of the original cwd ([#55](https://github.com/worktree-io/runner/pull/55))
 
 ## [0.12.1] - 2026-02-26
 
