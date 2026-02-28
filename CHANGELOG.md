@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-02-28
+
+### Added
+- `worktree restore` command to recover manually deleted worktree folders: scans the workspace registry for orphaned entries and recreates the working directory by pruning the stale git reference and re-adding the worktree at its original path ([#62](https://github.com/worktree-io/runner/pull/62))
+- "1 day" preset option for workspace TTL configuration during `worktree setup`
+
 ## [0.13.0] - 2026-02-27
 
 ### Added
