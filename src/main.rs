@@ -7,6 +7,7 @@ mod commands;
 use commands::config::{cmd_config, ConfigAction};
 use commands::open::cmd_open;
 use commands::prune::cmd_prune;
+use commands::restore::cmd_restore;
 use commands::scheme::{cmd_scheme, SchemeAction};
 use commands::setup::cmd_setup;
 
@@ -47,6 +48,8 @@ enum Commands {
     },
     /// Remove expired worktrees based on workspace.ttl config
     Prune,
+    /// Restore worktrees whose directories were manually deleted
+    Restore,
     /// Run first-time setup: detect editor, write config, register URL scheme
     Setup,
     /// Print the current version
@@ -65,6 +68,7 @@ fn main() -> Result<()> {
         } => cmd_open(&issue_ref, editor, print_path)?,
         Commands::Config { action } => cmd_config(action)?,
         Commands::Prune => cmd_prune()?,
+        Commands::Restore => cmd_restore()?,
         Commands::Scheme { action } => cmd_scheme(action)?,
         Commands::Setup => cmd_setup()?,
         Commands::Version => println!("{}", env!("CARGO_PKG_VERSION")),

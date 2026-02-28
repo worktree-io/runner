@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use crate::git::{
     bare_clone, branch_exists_local, branch_exists_remote, create_local_worktree, create_worktree,
-    detect_default_branch, git_fetch,
+    detect_default_branch, git_fetch, git_worktree_prune,
 };
 use crate::issue::IssueRef;
 use crate::ttl::WorkspaceRegistry;
@@ -45,6 +45,7 @@ impl Workspace {
             let branch = issue.branch_name();
             let branch_exists = branch_exists_local(project_path, &branch);
             std::fs::create_dir_all(worktree_path.parent().unwrap_or(&worktree_path))?;
+            let _ = git_worktree_prune(project_path);
             create_local_worktree(project_path, &worktree_path, &branch, branch_exists)?;
         } else {
             if bare_path.exists() {
@@ -70,6 +71,7 @@ impl Workspace {
                 branch,
                 worktree_path.display()
             );
+            let _ = git_worktree_prune(&bare_path);
             create_worktree(
                 &bare_path,
                 &worktree_path,

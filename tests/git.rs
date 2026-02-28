@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use worktree_io::git::{
     bare_clone, branch_exists_local, branch_exists_remote, create_local_worktree, create_worktree,
-    detect_default_branch, detect_local_default_branch, git_fetch,
+    detect_default_branch, detect_local_default_branch, git_fetch, git_worktree_prune,
 };
 
 fn git(dir: &Path, args: &[&str]) {
@@ -320,4 +320,37 @@ fn test_detect_local_default_branch_status_fails() {
     let result = detect_local_default_branch(&base);
     assert!(result.is_err());
     let _ = std::fs::remove_dir_all(&base);
+}
+
+#[test]
+fn test_git_worktree_prune_bad_repo() {
+    // Passing a non-git directory should cause `git worktree prune` to fail.
+    let dir = make_test_dir("wt-prune-bad");
+    let result = git_worktree_prune(&dir);
+    assert!(result.is_err(), "expected error for non-git dir");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn test_git_worktree_prune() {
+    let dir = make_test_dir("wt-prune");
+    let src = setup_source_repo(&dir);
+    let bare_repo = dir.join("bare.git");
+    bare_clone(src.to_str().unwrap(), &bare_repo).unwrap();
+
+    // Create a worktree, then delete it manually.
+    let wt = dir.join("issue-99");
+    create_worktree(&bare_repo, &wt, "issue-99", "main", false).unwrap();
+    assert!(wt.exists());
+    std::fs::remove_dir_all(&wt).unwrap();
+
+    // Prune should succeed and remove the stale ref.
+    git_worktree_prune(&bare_repo).unwrap();
+
+    // After pruning, we can add the same path again without conflict.
+    // The branch already exists locally so branch_exists = true.
+    create_worktree(&bare_repo, &wt, "issue-99", "main", true).unwrap();
+    assert!(wt.exists());
+
+    let _ = std::fs::remove_dir_all(&dir);
 }
