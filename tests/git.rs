@@ -323,6 +323,15 @@ fn test_detect_local_default_branch_status_fails() {
 }
 
 #[test]
+fn test_git_worktree_prune_bad_repo() {
+    // Passing a non-git directory should cause `git worktree prune` to fail.
+    let dir = make_test_dir("wt-prune-bad");
+    let result = git_worktree_prune(&dir);
+    assert!(result.is_err(), "expected error for non-git dir");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
 fn test_git_worktree_prune() {
     let dir = make_test_dir("wt-prune");
     let src = setup_source_repo(&dir);

@@ -394,6 +394,33 @@ fn test_restore_skips_missing_bare_clone() {
 }
 
 #[test]
+fn test_restore_non_git_bare_warns_and_fails() {
+    let h = temp_home("restore_non_git");
+    // A regular directory (not a git repo) acts as the "bare clone".
+    let fake_bare = h
+        .join("worktrees")
+        .join("github")
+        .join("__ng__")
+        .join("__ng__");
+    std::fs::create_dir_all(&fake_bare).unwrap();
+    // Orphaned registry entry pointing into the non-git directory.
+    let wt_path = fake_bare.join("issue-1");
+    write_registry(&h, &[(&wt_path, "2025-01-01T00:00:00Z")]);
+    let out = run(&h, &["restore"]);
+    assert!(out.status.success());
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("Warning: worktree prune failed"),
+        "expected prune warning, got: {stderr}"
+    );
+    assert!(
+        stderr.contains("Failed to restore"),
+        "expected failed-restore message, got: {stderr}"
+    );
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
 fn test_restore_recreates_deleted_worktree() {
     let h = temp_home("restore_ok");
     setup_bare_clone(&h, "__rr__", "__rr__");

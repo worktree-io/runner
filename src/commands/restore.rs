@@ -41,19 +41,10 @@ pub fn cmd_restore() -> Result<()> {
         }
 
         let Some(bare_path) = path.parent() else {
-            eprintln!(
-                "Skipping {} — cannot determine bare clone path.",
-                path.display()
-            ); // LLVM_COV_EXCL_LINE
-            continue; // LLVM_COV_EXCL_LINE
+            continue;
         };
-
         let Some(branch) = path.file_name().and_then(|n| n.to_str()) else {
-            eprintln!(
-                "Skipping {} — cannot determine branch name.",
-                path.display()
-            ); // LLVM_COV_EXCL_LINE
-            continue; // LLVM_COV_EXCL_LINE
+            continue;
         };
 
         if !bare_path.exists() {
@@ -68,12 +59,12 @@ pub fn cmd_restore() -> Result<()> {
         eprintln!("Restoring {}…", path.display());
 
         if let Err(e) = git_worktree_prune(bare_path) {
-            eprintln!("  Warning: worktree prune failed: {e}"); // LLVM_COV_EXCL_LINE
+            eprintln!("  Warning: worktree prune failed: {e}");
         }
 
         match create_worktree(bare_path, path, branch, "", true) {
             Ok(()) => eprintln!("  Restored: {}", path.display()),
-            Err(e) => eprintln!("  Failed to restore {}: {e}", path.display()), // LLVM_COV_EXCL_LINE
+            Err(e) => eprintln!("  Failed to restore {}: {e}", path.display()),
         }
     }
 
