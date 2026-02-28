@@ -47,4 +47,31 @@ impl IssueRef {
             }
         }
     }
+
+    /// Subdirectory name within a multi-workspace root: `<repo>-<id>`.
+    ///
+    /// For example, `GitHub { repo: "backend", number: 7 }` → `"backend-7"`.
+    ///
+    /// # Panics
+    ///
+    /// Panics for `IssueRef::Local` — local issues are not supported in
+    /// multi-workspace mode.
+    #[must_use]
+    pub fn multi_dir_name(&self) -> String {
+        match self {
+            Self::GitHub { repo, number, .. } | Self::GitLab { repo, number, .. } => {
+                format!("{repo}-{number}")
+            }
+            Self::Linear { repo, id, .. } => format!("{repo}-{id}"),
+            Self::AzureDevOps { repo, id, .. } => format!("{repo}-{id}"),
+            Self::Jira {
+                repo, issue_key, ..
+            } => {
+                format!("{repo}-{}", issue_key.to_lowercase())
+            }
+            Self::Local { .. } => {
+                unreachable!("multi_dir_name is not supported for IssueRef::Local")
+            }
+        }
+    }
 }

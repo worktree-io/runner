@@ -58,6 +58,23 @@
     "nttl",
     "noexp",
     "unconfigured",
-    "insta"
+    "insta",
+    "neumann",
+    "myproj",
+    "lovelace",
+    "ramanujan",
+    "dijkstra",
+    "babbage",
+    "feynman",
+    "turing",
+    "hopper",
+    "hawking",
+    "tesla",
+    "boole",
+    "shannon",
+    "knuth",
+    "euler",
+    "gauss",
+    "pascal"
   ]
 }

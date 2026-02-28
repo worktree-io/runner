@@ -468,3 +468,80 @@ fn test_restore_recreates_deleted_worktree() {
 
     std::fs::remove_dir_all(&h).ok();
 }
+
+#[test]
+fn test_open_multi_creates_unified_workspace() {
+    let h = temp_home("op_multi");
+    // Set up first bare clone via the existing helper.
+    setup_bare_clone(&h, "__ma__", "__ma__");
+    // Set up second bare clone by cloning the same source directly.
+    let src = h.join("_src_");
+    let bare2 = h
+        .join("worktrees")
+        .join("github")
+        .join("__mb__")
+        .join("__mb__");
+    std::fs::create_dir_all(&bare2).unwrap();
+    Command::new("git")
+        .args([
+            "clone",
+            "--bare",
+            src.to_str().unwrap(),
+            bare2.to_str().unwrap(),
+        ])
+        .env_remove("GIT_DIR")
+        .env_remove("GIT_WORK_TREE")
+        .env_remove("GIT_INDEX_FILE")
+        .status()
+        .unwrap();
+    git_in(
+        &bare2,
+        &[
+            "config",
+            "remote.origin.fetch",
+            "+refs/heads/*:refs/remotes/origin/*",
+        ],
+    );
+    git_in(&bare2, &["fetch", "origin"]);
+
+    let out = run(&h, &["open-multi", "__ma__/__ma__#1", "__mb__/__mb__#2"]);
+    assert!(
+        out.status.success(),
+        "open-multi failed — stderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+
+    let workspaces_dir = h.join("workspaces");
+    assert!(workspaces_dir.exists(), "~/workspaces/ should be created");
+    let mut entries = std::fs::read_dir(&workspaces_dir)
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+    assert_eq!(entries.len(), 1, "exactly one workspace should be created");
+    let ws_root = entries.pop().unwrap().path();
+    assert!(
+        ws_root.join("__ma__-1").exists(),
+        "__ma__-1 worktree missing"
+    );
+    assert!(
+        ws_root.join("__mb__-2").exists(),
+        "__mb__-2 worktree missing"
+    );
+
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_open_multi_requires_two_refs() {
+    let h = temp_home("op_multi_min");
+    let out = run(&h, &["open-multi", "acme/backend#1"]);
+    assert!(
+        !out.status.success(),
+        "should fail with fewer than two refs"
+    );
+    assert!(
+        String::from_utf8_lossy(&out.stderr).contains("at least two"),
+        "expected 'at least two' in error"
+    );
+    std::fs::remove_dir_all(&h).ok();
+}

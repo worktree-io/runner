@@ -20,6 +20,8 @@ mod linear_tests;
 #[cfg(test)]
 mod local_tests;
 #[cfg(test)]
+mod multi_dir_name_tests;
+#[cfg(test)]
 mod parse_tests;
 #[cfg(test)]
 mod tests;
