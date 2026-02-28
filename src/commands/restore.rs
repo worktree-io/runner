@@ -40,12 +40,14 @@ pub fn cmd_restore() -> Result<()> {
             continue;
         }
 
-        let Some(bare_path) = path.parent() else {
-            continue; // LLVM_COV_EXCL_LINE
-        };
+        // Paths ending in ".." (or other components with no file name) are
+        // invalid registry entries — skip them.
         let Some(branch) = path.file_name().and_then(|n| n.to_str()) else {
-            continue; // LLVM_COV_EXCL_LINE
+            continue;
         };
+        // If file_name() returned Some, the path is not a root, so parent()
+        // always returns Some here.
+        let bare_path = path.parent().expect("non-root path must have a parent");
 
         if !bare_path.exists() {
             eprintln!(

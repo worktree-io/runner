@@ -394,6 +394,18 @@ fn test_restore_skips_missing_bare_clone() {
 }
 
 #[test]
+fn test_restore_skips_path_with_no_file_name() {
+    let h = temp_home("restore_no_fname");
+    // A path ending in ".." has no file_name(); the restore command should
+    // silently skip it rather than panic.
+    let wt_path = std::path::PathBuf::from("/nonexistent_worktree_test_dir/repo/..");
+    write_registry(&h, &[(&wt_path, "2025-01-01T00:00:00Z")]);
+    let out = run(&h, &["restore"]);
+    assert!(out.status.success());
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
 fn test_restore_non_git_bare_warns_and_fails() {
     let h = temp_home("restore_non_git");
     // A regular directory (not a git repo) acts as the "bare clone".
