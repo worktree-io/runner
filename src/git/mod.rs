@@ -1,11 +1,13 @@
 mod branch;
 mod clone;
 mod local_branch;
+mod prune;
 mod remote;
 
 pub use branch::{branch_exists_remote, detect_default_branch};
 pub use clone::{bare_clone, git_fetch};
 pub use local_branch::{branch_exists_local, detect_local_default_branch};
+pub use prune::git_worktree_prune;
 pub use remote::get_remote_url;
 
 use anyhow::{bail, Context, Result};

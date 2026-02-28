@@ -341,3 +341,91 @@ fn test_prune_warns_on_remove_failure() {
     assert!(stderr.contains("Pruned 1 expired workspace(s)"));
     std::fs::remove_dir_all(&h).ok();
 }
+
+#[test]
+fn test_restore_no_orphans() {
+    let h = temp_home("restore_none");
+    // Registry is empty — nothing to restore.
+    let out = run(&h, &["restore"]);
+    assert!(out.status.success());
+    assert!(String::from_utf8_lossy(&out.stderr).contains("No orphaned worktrees found"));
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_restore_skips_local_worktrees() {
+    let h = temp_home("restore_local");
+    // Create a registry entry that looks like a local worktree (path doesn't exist).
+    let local_path = h
+        .join("worktrees")
+        .join("local")
+        .join("myproject")
+        .join("issue-5");
+    write_registry(&h, &[(&local_path, "2025-01-01T00:00:00Z")]);
+    let out = run(&h, &["restore"]);
+    assert!(out.status.success());
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("Skipping local worktree"),
+        "expected skip message for local worktree, got: {stderr}"
+    );
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_restore_skips_missing_bare_clone() {
+    let h = temp_home("restore_no_bare");
+    // Orphaned remote worktree whose bare clone no longer exists.
+    let wt_path = h
+        .join("worktrees")
+        .join("github")
+        .join("__rb__")
+        .join("__rb__")
+        .join("issue-1");
+    write_registry(&h, &[(&wt_path, "2025-01-01T00:00:00Z")]);
+    let out = run(&h, &["restore"]);
+    assert!(out.status.success());
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("bare clone no longer exists"),
+        "expected bare-clone-missing message, got: {stderr}"
+    );
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_restore_recreates_deleted_worktree() {
+    let h = temp_home("restore_ok");
+    setup_bare_clone(&h, "__rr__", "__rr__");
+
+    // First open to create the worktree.
+    let out = run(&h, &["open", "__rr__/__rr__#10"]);
+    assert!(out.status.success(), "open failed: {:?}", out.stderr);
+
+    let wt_path = h
+        .join("worktrees")
+        .join("github")
+        .join("__rr__")
+        .join("__rr__")
+        .join("issue-10");
+    assert!(wt_path.exists(), "worktree should exist after open");
+
+    // Simulate manual deletion.
+    std::fs::remove_dir_all(&wt_path).unwrap();
+    assert!(
+        !wt_path.exists(),
+        "worktree should be gone after manual delete"
+    );
+
+    // Restore should recreate it.
+    let out = run(&h, &["restore"]);
+    assert!(out.status.success(), "restore failed: {:?}", out.stderr);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("Restored"),
+        "expected 'Restored' in output, got: {stderr}"
+    );
+    assert!(wt_path.exists(), "worktree should exist after restore");
+
+    std::fs::remove_dir_all(&h).ok();
+}

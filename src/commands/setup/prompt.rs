@@ -2,7 +2,6 @@ use anyhow::Result;
 use worktree_io::ttl::Ttl;
 
 pub(super) fn prompt_ttl() -> Result<Option<Ttl>> {
-    // LLVM_COV_EXCL_LINE
     // LLVM_COV_EXCL_START
     use std::io::{BufRead, Write};
 
@@ -55,7 +54,6 @@ pub(super) fn prompt_ttl() -> Result<Option<Ttl>> {
     // LLVM_COV_EXCL_STOP
 }
 pub(super) fn prompt_editor(detected: &[(&str, &str)]) -> Result<Option<String>> {
-    // LLVM_COV_EXCL_LINE
     // LLVM_COV_EXCL_START
     use std::io::{BufRead, Write};
 
