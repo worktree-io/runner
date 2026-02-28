@@ -6,6 +6,7 @@ use clap::{Parser, Subcommand};
 mod commands;
 use commands::config::{cmd_config, ConfigAction};
 use commands::open::cmd_open;
+use commands::open_multi::cmd_open_multi;
 use commands::prune::cmd_prune;
 use commands::restore::cmd_restore;
 use commands::scheme::{cmd_scheme, SchemeAction};
@@ -35,6 +36,13 @@ enum Commands {
         /// Print the workspace path and exit without opening anything
         #[arg(long)]
         print_path: bool,
+    },
+    /// Open multiple repos as a unified workspace under ~/workspaces/<name>/
+    #[command(name = "open-multi")]
+    OpenMulti {
+        /// Issue references (owner/repo#N or full GitHub URL), at least two
+        #[arg(value_name = "REF", num_args = 1..)]
+        refs: Vec<String>,
     },
     /// Manage worktree configuration
     Config {
@@ -66,6 +74,7 @@ fn main() -> Result<()> {
             editor,
             print_path,
         } => cmd_open(&issue_ref, editor, print_path)?,
+        Commands::OpenMulti { refs } => cmd_open_multi(&refs)?,
         Commands::Config { action } => cmd_config(action)?,
         Commands::Prune => cmd_prune()?,
         Commands::Restore => cmd_restore()?,

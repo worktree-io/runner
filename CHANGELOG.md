@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-02-28
+
+### Added
+- `worktree open-multi` command for opening multiple repos as a single unified workspace: each argument is an issue reference (`owner/repo#N` or a full GitHub URL), worktrees are created under `~/workspaces/<random-name>/` with sub-directories named `<repo>-<issue>`, and the workspace root is registered for TTL pruning
+
 ## [0.14.0] - 2026-02-28
 
 ### Added

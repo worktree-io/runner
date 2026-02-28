@@ -8,6 +8,10 @@ pub mod git;
 pub mod hooks;
 /// Issue reference types and parsing.
 pub mod issue;
+/// Multi-repo unified workspace creation.
+pub mod multi_workspace;
+/// Random human-friendly workspace name generator.
+pub mod name_gen;
 /// Editor and terminal openers.
 pub mod opener;
 /// Per-repository hook configuration loaded from `.worktree.toml`.
