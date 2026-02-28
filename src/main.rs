@@ -55,7 +55,11 @@ enum Commands {
         action: SchemeAction,
     },
     /// Remove expired worktrees based on workspace.ttl config
-    Prune,
+    Prune {
+        /// Emit a JSON report to stdout instead of human-readable output
+        #[arg(long)]
+        json: bool,
+    },
     /// Restore worktrees whose directories were manually deleted
     Restore,
     /// Run first-time setup: detect editor, write config, register URL scheme
@@ -76,7 +80,7 @@ fn main() -> Result<()> {
         } => cmd_open(&issue_ref, editor, print_path)?,
         Commands::OpenMulti { refs } => cmd_open_multi(&refs)?,
         Commands::Config { action } => cmd_config(action)?,
-        Commands::Prune => cmd_prune()?,
+        Commands::Prune { json } => cmd_prune(json)?,
         Commands::Restore => cmd_restore()?,
         Commands::Scheme { action } => cmd_scheme(action)?,
         Commands::Setup => cmd_setup()?,

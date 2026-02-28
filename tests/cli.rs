@@ -308,7 +308,7 @@ fn test_prune_no_expired() {
     write_config(&h, "[workspace]\nttl = \"7days\"\n");
     let out = run(&h, &["prune"]);
     assert!(out.status.success());
-    assert!(String::from_utf8_lossy(&out.stderr).contains("No expired workspaces found"));
+    assert!(String::from_utf8_lossy(&out.stderr).contains("none expired"));
     std::fs::remove_dir_all(&h).ok();
 }
 
@@ -339,6 +339,37 @@ fn test_prune_warns_on_remove_failure() {
     let stderr = String::from_utf8_lossy(&out.stderr);
     assert!(stderr.contains("Warning: failed to remove"));
     assert!(stderr.contains("Pruned 1 expired workspace(s)"));
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_prune_json_no_expired() {
+    let h = temp_home("prune_json_none");
+    write_config(&h, "[workspace]\nttl = \"7days\"\n");
+    let out = run(&h, &["prune", "--json"]);
+    assert!(out.status.success());
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("\"checked\":0"));
+    assert!(stdout.contains("\"pruned\":[]"));
+    assert!(stdout.contains("\"ttl\":\"7days\""));
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_prune_json_expired() {
+    let h = temp_home("prune_json_exp");
+    write_config(&h, "[workspace]\nttl = \"1s\"\n");
+    let ws = h.join("old-workspace");
+    std::fs::create_dir_all(&ws).unwrap();
+    write_registry(&h, &[(&ws, "2000-01-01T00:00:00Z")]);
+    let out = run(&h, &["prune", "--json"]);
+    assert!(out.status.success());
+    assert!(!ws.exists());
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("\"checked\":1"));
+    assert!(stdout.contains("\"path\":"));
+    assert!(stdout.contains("\"expired_at\":"));
+    assert!(stdout.contains("\"ttl\":\"1s\""));
     std::fs::remove_dir_all(&h).ok();
 }
 
