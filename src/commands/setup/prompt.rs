@@ -7,6 +7,7 @@ pub(super) fn prompt_ttl() -> Result<Option<Ttl>> {
     use std::io::{BufRead, Write};
 
     const PRESETS: &[(&str, &str)] = &[
+        ("1 day", "1day"),
         ("7 days", "7days"),
         ("30 days", "30days"),
         ("90 days", "90days"),
