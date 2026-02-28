@@ -41,10 +41,10 @@ pub fn cmd_restore() -> Result<()> {
         }
 
         let Some(bare_path) = path.parent() else {
-            continue;
+            continue; // LLVM_COV_EXCL_LINE
         };
         let Some(branch) = path.file_name().and_then(|n| n.to_str()) else {
-            continue;
+            continue; // LLVM_COV_EXCL_LINE
         };
 
         if !bare_path.exists() {
