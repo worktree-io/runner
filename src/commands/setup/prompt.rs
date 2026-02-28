@@ -5,7 +5,6 @@ pub(super) fn prompt_ttl() -> Result<Option<Ttl>> {
     // LLVM_COV_EXCL_LINE
     // LLVM_COV_EXCL_START
     use std::io::{BufRead, Write};
-
     const PRESETS: &[(&str, &str)] = &[
         ("1 day", "1day"),
         ("7 days", "7days"),
