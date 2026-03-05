@@ -15,7 +15,7 @@ use worktree_io::{
 
 use hook_ctx::{build_hook_context, effective_hooks};
 
-pub fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result<()> {
+pub fn cmd_open(issue_ref: &str, force_editor: bool) -> Result<()> {
     let (issue, deep_link_opts) = IssueRef::parse_with_options(issue_ref)?;
     let workspace = Workspace::open_or_create(issue.clone())?;
 
@@ -23,11 +23,6 @@ pub fn cmd_open(issue_ref: &str, force_editor: bool, print_path: bool) -> Result
         eprintln!("Created workspace at {}", workspace.path.display());
     } else {
         eprintln!("Workspace already exists at {}", workspace.path.display());
-    }
-
-    if print_path {
-        println!("{}", workspace.path.display());
-        return Ok(());
     }
 
     if matches!(scaffold_if_missing(&workspace.path), Ok(true)) {
