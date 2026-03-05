@@ -4,28 +4,39 @@ use worktree_io::{
     config::Config,
     hooks::{run_hook, HookContext},
     issue::IssueRef,
-    multi_workspace::create_multi_workspace,
+    multi_workspace::{create_multi_workspace, MultiSpec},
     opener,
 };
 
-/// Open multiple repos as a single unified workspace.
-///
-/// `refs` is a list of issue references such as `"acme/backend#7"` or a full
-/// GitHub issue URL.  Each reference is parsed independently; all worktrees
-/// are created under `~/workspaces/<random-name>/`.
-///
-/// # Errors
-///
-/// Returns an error if any reference cannot be parsed, any repo cannot be
-/// cloned, or the workspace root cannot be created.
 // LLVM_COV_EXCL_START
+/// Parse one argument as an issue reference or a bare `owner/repo` slug.
+/// Bare slugs are checked out on their default branch.
+fn parse_spec(s: &str) -> Result<MultiSpec> {
+    if let Ok((issue, _)) = IssueRef::parse_with_options(s) {
+        return Ok(MultiSpec::WithIssue(issue));
+    }
+    // Bare repo slug: owner/repo with exactly one slash and no issue marker.
+    if let Some((owner, repo)) = s.split_once('/') {
+        if !owner.is_empty() && !repo.is_empty() && !repo.contains('/') {
+            return Ok(MultiSpec::BareRepo {
+                owner: owner.to_string(),
+                repo: repo.to_string(),
+            });
+        }
+    }
+    bail!("could not parse {s:?} as an issue reference or bare repo slug (owner/repo)")
+}
+
+/// Open multiple repos as a single unified workspace under
+/// `~/workspaces/<random-name>/`. Each call creates a fresh workspace
+/// (not idempotent by design). At least two arguments are required.
 pub fn cmd_open_multi(refs: &[String]) -> Result<()> {
     if refs.len() < 2 {
-        bail!("open-multi requires at least two issue references");
+        bail!("open-multi requires at least two arguments");
     }
     let specs = refs
         .iter()
-        .map(|r| IssueRef::parse_with_options(r).map(|(issue, _)| issue))
+        .map(|r| parse_spec(r))
         .collect::<Result<Vec<_>>>()?;
 
     let workspaces_root = dirs::home_dir()
