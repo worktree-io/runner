@@ -34,9 +34,6 @@ enum Commands {
         /// Force open in editor
         #[arg(long)]
         editor: bool,
-        /// Print the workspace path and exit without opening anything
-        #[arg(long)]
-        print_path: bool,
     },
     /// Open multiple repos as a unified workspace under ~/workspaces/<name>/
     #[command(name = "open-multi")]
@@ -80,11 +77,7 @@ fn main() -> Result<()> {
     // LLVM_COV_EXCL_START
     let cli = Cli::parse();
     match cli.command {
-        Commands::Open {
-            issue_ref,
-            editor,
-            print_path,
-        } => cmd_open(&issue_ref, editor, print_path)?,
+        Commands::Open { issue_ref, editor } => cmd_open(&issue_ref, editor)?,
         Commands::OpenMulti { refs } => cmd_open_multi(&refs)?,
         Commands::Config { action } => cmd_config(action)?,
         Commands::List { json } => cmd_list(json)?,

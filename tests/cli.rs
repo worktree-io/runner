@@ -140,18 +140,6 @@ fn test_config_edit_no_editor() {
 }
 
 #[test]
-fn test_open_print_path() {
-    let h = temp_home("op_pp");
-    pre_create_workspace(&h, "__t__", "__t__", 1);
-    let out = run(&h, &["open", "--print-path", "__t__/__t__#1"]);
-    assert!(out.status.success());
-    assert!(String::from_utf8_lossy(&out.stdout)
-        .trim()
-        .ends_with("issue-1"));
-    std::fs::remove_dir_all(&h).ok();
-}
-
-#[test]
 fn test_open_no_editor() {
     let h = temp_home("op_no_ed");
     pre_create_workspace(&h, "__t__", "__t__", 2);
