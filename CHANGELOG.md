@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `worktree open-multi` command for opening multiple repos as a single unified workspace: each argument is an issue reference (`owner/repo#N` or a full GitHub URL), worktrees are created under `~/workspaces/<random-name>/` with sub-directories named `<repo>-<issue>`, and the workspace root is registered for TTL pruning
+- Bare repo slug support in `worktree open-multi`: arguments without an issue number (e.g. `acme/web`) check out the default branch and use `<repo>/` as the folder name; mixed mode (issue refs and bare slugs together) is fully supported ([#68](https://github.com/worktree-io/runner/pull/68))
+
+### Removed
+- `--print-path` flag from `worktree open`: scripting and `cd` use cases should use a dedicated subcommand rather than a flag that silently changes `open` behavior ([#67](https://github.com/worktree-io/runner/pull/67))
 
 ## [0.14.0] - 2026-02-28
 
@@ -171,12 +175,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release with CI/CD pipeline publishing cross-platform release artifacts ([#1](https://github.com/worktree-io/runner/pull/1))
 
-[Unreleased]: https://github.com/worktree-io/runner/compare/v0.12.1...HEAD
+[Unreleased]: https://github.com/worktree-io/runner/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/worktree-io/runner/compare/v0.14.0...v0.15.0
+[0.14.0]: https://github.com/worktree-io/runner/compare/v0.13.0...v0.14.0
+[0.13.0]: https://github.com/worktree-io/runner/compare/v0.12.1...v0.13.0
 [0.12.1]: https://github.com/worktree-io/runner/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/worktree-io/runner/compare/v0.11.0...v0.12.0
-[0.11.0]: https://github.com/worktree-io/runner/compare/v0.10.1...v0.11.0
-[0.10.1]: https://github.com/worktree-io/runner/compare/v0.10.0...v0.10.1
-[0.10.0]: https://github.com/worktree-io/runner/compare/v0.9.0...v0.10.0
+[0.11.0]: https://github.com/worktree-io/runner/compare/v0.9.0...v0.11.0
 [0.9.0]: https://github.com/worktree-io/runner/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/worktree-io/runner/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/worktree-io/runner/compare/v0.7.1...v0.7.2
