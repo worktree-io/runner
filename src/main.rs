@@ -5,6 +5,7 @@ use clap::{Parser, Subcommand};
 
 mod commands;
 use commands::config::{cmd_config, ConfigAction};
+use commands::list::cmd_list;
 use commands::open::cmd_open;
 use commands::open_multi::cmd_open_multi;
 use commands::prune::cmd_prune;
@@ -54,6 +55,12 @@ enum Commands {
         #[command(subcommand)]
         action: SchemeAction,
     },
+    /// List all registered workspaces with their TTL status
+    List {
+        /// Emit a JSON report to stdout instead of human-readable output
+        #[arg(long)]
+        json: bool,
+    },
     /// Remove expired worktrees based on workspace.ttl config
     Prune {
         /// Emit a JSON report to stdout instead of human-readable output
@@ -80,6 +87,7 @@ fn main() -> Result<()> {
         } => cmd_open(&issue_ref, editor, print_path)?,
         Commands::OpenMulti { refs } => cmd_open_multi(&refs)?,
         Commands::Config { action } => cmd_config(action)?,
+        Commands::List { json } => cmd_list(json)?,
         Commands::Prune { json } => cmd_prune(json)?,
         Commands::Restore => cmd_restore()?,
         Commands::Scheme { action } => cmd_scheme(action)?,

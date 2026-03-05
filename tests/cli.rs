@@ -576,3 +576,99 @@ fn test_open_multi_requires_two_refs() {
     );
     std::fs::remove_dir_all(&h).ok();
 }
+
+#[test]
+fn test_list_empty() {
+    let h = temp_home("list_empty");
+    let out = run(&h, &["list"]);
+    assert!(out.status.success());
+    assert!(String::from_utf8_lossy(&out.stderr).contains("No workspaces registered"));
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_list_workspaces_no_ttl() {
+    let h = temp_home("list_no_ttl");
+    let ws = h.join("my-workspace");
+    std::fs::create_dir_all(&ws).unwrap();
+    write_registry(&h, &[(&ws, "2026-01-01T00:00:00Z")]);
+    let out = run(&h, &["list"]);
+    assert!(out.status.success());
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("1 workspace(s) registered:"),
+        "got: {stderr}"
+    );
+    assert!(stderr.contains(ws.to_str().unwrap()));
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_list_workspaces_ttl_not_expired() {
+    let h = temp_home("list_ttl_ok");
+    write_config(&h, "[workspace]\nttl = \"7days\"\n");
+    let ws = h.join("fresh-workspace");
+    std::fs::create_dir_all(&ws).unwrap();
+    write_registry(&h, &[(&ws, "2099-01-01T00:00:00Z")]);
+    let out = run(&h, &["list"]);
+    assert!(out.status.success());
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("(TTL: 7days)"), "got: {stderr}");
+    assert!(stderr.contains("expires in"), "got: {stderr}");
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_list_workspaces_ttl_expired() {
+    let h = temp_home("list_ttl_exp");
+    write_config(&h, "[workspace]\nttl = \"1s\"\n");
+    let ws = h.join("old-workspace");
+    std::fs::create_dir_all(&ws).unwrap();
+    write_registry(&h, &[(&ws, "2000-01-01T00:00:00Z")]);
+    let out = run(&h, &["list"]);
+    assert!(out.status.success());
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("EXPIRED"), "got: {stderr}");
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_list_json_empty() {
+    let h = temp_home("list_json_empty");
+    let out = run(&h, &["list", "--json"]);
+    assert!(out.status.success());
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("\"ttl\":null"), "got: {stdout}");
+    assert!(stdout.contains("\"workspaces\":[]"), "got: {stdout}");
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_list_json_no_ttl() {
+    let h = temp_home("list_json_no_ttl");
+    let ws = h.join("ws-a");
+    std::fs::create_dir_all(&ws).unwrap();
+    write_registry(&h, &[(&ws, "2026-01-01T00:00:00Z")]);
+    let out = run(&h, &["list", "--json"]);
+    assert!(out.status.success());
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("\"ttl\":null"), "got: {stdout}");
+    assert!(stdout.contains("\"expired\":false"), "got: {stdout}");
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_list_json_with_ttl() {
+    let h = temp_home("list_json_ttl");
+    write_config(&h, "[workspace]\nttl = \"1s\"\n");
+    let ws = h.join("old-ws");
+    std::fs::create_dir_all(&ws).unwrap();
+    write_registry(&h, &[(&ws, "2000-01-01T00:00:00Z")]);
+    let out = run(&h, &["list", "--json"]);
+    assert!(out.status.success());
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("\"ttl\":\"1s\""), "got: {stdout}");
+    assert!(stdout.contains("\"expired\":true"), "got: {stdout}");
+    assert!(stdout.contains("\"created_at\":"), "got: {stdout}");
+    std::fs::remove_dir_all(&h).ok();
+}
