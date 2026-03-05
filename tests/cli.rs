@@ -551,6 +551,82 @@ fn test_open_multi_creates_unified_workspace() {
 }
 
 #[test]
+fn test_open_no_hooks_skips_pre_hook() {
+    let h = temp_home("op_nohooks_pre");
+    pre_create_workspace(&h, "__t__", "__t__", 8);
+    // A pre hook that always fails — should be skipped with --no-hooks.
+    write_config(&h, "[hooks]\n\"pre:open\" = \"#!/bin/sh\\nexit 1\\n\"\n");
+    let out = run(&h, &["open", "--no-hooks", "__t__/__t__#8"]);
+    assert!(out.status.success(), "expected success with --no-hooks");
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_open_deep_link_no_hooks() {
+    let h = temp_home("op_dl_nohooks");
+    pre_create_workspace(&h, "__t__", "__t__", 9);
+    write_config(&h, "[hooks]\n\"pre:open\" = \"#!/bin/sh\\nexit 1\\n\"\n");
+    let url = "worktree://open?owner=__t__&repo=__t__&issue=9&no_hooks=1";
+    let out = run(&h, &["open", url]);
+    assert!(
+        out.status.success(),
+        "expected success with no_hooks=1 deep link"
+    );
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_open_multi_no_hooks_skips_hooks() {
+    let h = temp_home("op_multi_nohooks");
+    setup_bare_clone(&h, "__mc__", "__mc__");
+    let src = h.join("_src_");
+    let bare2 = h
+        .join("worktrees")
+        .join("github")
+        .join("__md__")
+        .join("__md__");
+    std::fs::create_dir_all(&bare2).unwrap();
+    Command::new("git")
+        .args([
+            "clone",
+            "--bare",
+            src.to_str().unwrap(),
+            bare2.to_str().unwrap(),
+        ])
+        .env_remove("GIT_DIR")
+        .env_remove("GIT_WORK_TREE")
+        .env_remove("GIT_INDEX_FILE")
+        .status()
+        .unwrap();
+    git_in(
+        &bare2,
+        &[
+            "config",
+            "remote.origin.fetch",
+            "+refs/heads/*:refs/remotes/origin/*",
+        ],
+    );
+    git_in(&bare2, &["fetch", "origin"]);
+    // A pre hook that always fails — should be skipped with --no-hooks.
+    write_config(&h, "[hooks]\n\"pre:open\" = \"#!/bin/sh\\nexit 1\\n\"\n");
+    let out = run(
+        &h,
+        &[
+            "open-multi",
+            "--no-hooks",
+            "__mc__/__mc__#1",
+            "__md__/__md__#2",
+        ],
+    );
+    assert!(
+        out.status.success(),
+        "open-multi --no-hooks failed: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
 fn test_open_multi_requires_two_refs() {
     let h = temp_home("op_multi_min");
     let out = run(&h, &["open-multi", "acme/backend#1"]);

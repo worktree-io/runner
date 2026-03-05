@@ -30,7 +30,7 @@ fn parse_spec(s: &str) -> Result<MultiSpec> {
 /// Open multiple repos as a single unified workspace under
 /// `~/workspaces/<random-name>/`. Each call creates a fresh workspace
 /// (not idempotent by design). At least two arguments are required.
-pub fn cmd_open_multi(refs: &[String]) -> Result<()> {
+pub fn cmd_open_multi(refs: &[String], no_hooks: bool) -> Result<()> {
     if refs.len() < 2 {
         bail!("open-multi requires at least two arguments");
     }
@@ -56,9 +56,11 @@ pub fn cmd_open_multi(refs: &[String]) -> Result<()> {
         worktree_path: root.to_string_lossy().into_owned(),
     };
 
-    if let Some(script) = &config.hooks.pre_open {
-        eprintln!("Running pre:open hook…");
-        run_hook(script, &hook_ctx)?;
+    if !no_hooks {
+        if let Some(script) = &config.hooks.pre_open {
+            eprintln!("Running pre:open hook…");
+            run_hook(script, &hook_ctx)?;
+        }
     }
 
     let editor_cmd = if config.open.editor {
@@ -67,7 +69,12 @@ pub fn cmd_open_multi(refs: &[String]) -> Result<()> {
         None
     };
 
-    match (editor_cmd.as_deref(), config.hooks.post_open.as_deref()) {
+    let post = if no_hooks {
+        None
+    } else {
+        config.hooks.post_open.as_deref()
+    };
+    match (editor_cmd.as_deref(), post) {
         (Some(cmd), Some(script)) => {
             let rendered = hook_ctx.render(script);
             if !opener::open_with_hook(&root, cmd, &rendered)? {

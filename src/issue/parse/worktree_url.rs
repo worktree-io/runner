@@ -10,6 +10,7 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
     let mut linear_id = None;
     let mut url_param = None;
     let mut editor = None;
+    let mut no_hooks = false;
     let mut ado_org = None;
     let mut ado_project = None;
     let mut ado_repo = None;
@@ -36,6 +37,7 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
             }
             "url" => url_param = Some(val.into_owned()),
             "editor" => editor = Some(val.into_owned()),
+            "no_hooks" => no_hooks = val == "1",
             "org" => ado_org = Some(val.into_owned()),
             "project" => ado_project = Some(val.into_owned()),
             "ado_repo" => ado_repo = Some(val.into_owned()),
@@ -51,7 +53,7 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
             _ => {}
         }
     }
-    let opts = DeepLinkOptions { editor };
+    let opts = DeepLinkOptions { editor, no_hooks };
     if let Some(url_str) = url_param {
         return Ok((super::github::parse_github_url(&url_str)?, opts));
     }
