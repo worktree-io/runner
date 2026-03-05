@@ -88,39 +88,35 @@ editor = true
 
 ### Hooks
 
-Run shell scripts automatically when a workspace is opened. Define them in your `config.toml` under `[hooks]`:
+Run shell scripts automatically when a workspace is opened.
 
-```toml
-[hooks]
-"pre:open" = """
-#!/usr/bin/env bash
-set -euo pipefail
-echo "Setting up {{owner}}/{{repo}}#{{issue}}"
-cd {{worktree_path}}
-npm install
-"""
+| Layer | Configured in | Scope |
+| ----- | ------------- | ----- |
+| **Global** | `config.toml` under `[hooks]` | All repos |
+| **Per-repo** | `.worktree.toml` in the repo root under `[hooks]` | That repo only |
 
-"post:open" = """
-#!/usr/bin/env bash
-curl -s https://hooks.example.com/notify \
-  --data "repo={{repo}}&branch={{branch}}"
-"""
-```
+Both layers use the same hook names and template variables. For `open-multi`, each hook fires once per repo with that repo's context.
 
 | Hook | When it runs |
 | ---- | ------------ |
 | `pre:open` | After the worktree is created, before the editor launches |
 | `post:open` | After the editor launches |
 
-Both hooks support Mustache-style template variables:
-
-| Variable | Description |
-| -------- | ----------- |
+| Template variable | Description |
+| ----------------- | ----------- |
 | `{{owner}}` | GitHub owner / org |
 | `{{repo}}` | Repository name |
 | `{{issue}}` | Issue number |
 | `{{branch}}` | Branch name (e.g. `issue-42`) |
 | `{{worktree_path}}` | Absolute path to the worktree directory |
+
+Per-repo hooks compose with the global hook via an `order` field:
+
+| `order` | Behavior |
+| ------- | -------- |
+| `before` *(default)* | Per-repo script runs first, then global |
+| `after` | Global script runs first, then per-repo |
+| `replace` | Only the per-repo script runs; global is suppressed |
 
 A non-zero exit code prints a warning but does not abort the open.
 
