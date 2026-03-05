@@ -34,6 +34,9 @@ enum Commands {
         /// Force open in editor
         #[arg(long)]
         editor: bool,
+        /// Skip pre/post-open hooks
+        #[arg(long)]
+        no_hooks: bool,
     },
     /// Open multiple repos as a unified workspace under ~/workspaces/<name>/
     #[command(name = "open-multi")]
@@ -41,6 +44,9 @@ enum Commands {
         /// Issue references (owner/repo#N or full GitHub URL), at least two
         #[arg(value_name = "REF", num_args = 1..)]
         refs: Vec<String>,
+        /// Skip pre/post-open hooks
+        #[arg(long)]
+        no_hooks: bool,
     },
     /// Manage worktree configuration
     Config {
@@ -73,12 +79,14 @@ enum Commands {
 }
 
 fn main() -> Result<()> {
-    // LLVM_COV_EXCL_LINE
-    // LLVM_COV_EXCL_START
     let cli = Cli::parse();
     match cli.command {
-        Commands::Open { issue_ref, editor } => cmd_open(&issue_ref, editor)?,
-        Commands::OpenMulti { refs } => cmd_open_multi(&refs)?,
+        Commands::Open {
+            issue_ref,
+            editor,
+            no_hooks,
+        } => cmd_open(&issue_ref, editor, no_hooks)?,
+        Commands::OpenMulti { refs, no_hooks } => cmd_open_multi(&refs, no_hooks)?,
         Commands::Config { action } => cmd_config(action)?,
         Commands::List { json } => cmd_list(json)?,
         Commands::Prune { json } => cmd_prune(json)?,
@@ -88,5 +96,4 @@ fn main() -> Result<()> {
         Commands::Version => println!("{}", env!("CARGO_PKG_VERSION")),
     }
     Ok(())
-    // LLVM_COV_EXCL_STOP
 }

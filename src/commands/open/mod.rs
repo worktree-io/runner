@@ -15,7 +15,7 @@ use worktree_io::{
 
 use hook_ctx::{build_hook_context, effective_hooks};
 
-pub fn cmd_open(issue_ref: &str, force_editor: bool) -> Result<()> {
+pub fn cmd_open(issue_ref: &str, force_editor: bool, no_hooks: bool) -> Result<()> {
     let (issue, deep_link_opts) = IssueRef::parse_with_options(issue_ref)?;
     let workspace = Workspace::open_or_create(issue.clone())?;
 
@@ -49,7 +49,11 @@ pub fn cmd_open(issue_ref: &str, force_editor: bool) -> Result<()> {
         }
     }
     let hook_ctx = build_hook_context(&issue, &workspace.path);
-    let (effective_pre, effective_post) = effective_hooks(&config, &workspace.path);
+    let (effective_pre, effective_post) = if no_hooks || deep_link_opts.no_hooks {
+        (None, None)
+    } else {
+        effective_hooks(&config, &workspace.path)
+    };
 
     if let Some(script) = &effective_pre {
         eprintln!("Running pre:open hook…");

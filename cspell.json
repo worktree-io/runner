@@ -75,6 +75,7 @@
     "knuth",
     "euler",
     "gauss",
-    "pascal"
+    "pascal",
+    "nohooks"
   ]
 }
