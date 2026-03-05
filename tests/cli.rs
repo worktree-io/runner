@@ -358,6 +358,34 @@ fn test_prune_json_expired() {
     assert!(stdout.contains("\"path\":"));
     assert!(stdout.contains("\"expired_at\":"));
     assert!(stdout.contains("\"ttl\":\"1s\""));
+    assert!(stdout.contains("\"freed_bytes\":"));
+    assert!(stdout.contains("\"total_freed_bytes\":"));
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_prune_shows_freed_space() {
+    let h = temp_home("prune_freed");
+    write_config(&h, "[workspace]\nttl = \"1s\"\n");
+    let ws = h.join("freed-workspace");
+    std::fs::create_dir_all(&ws).unwrap();
+    std::fs::write(ws.join("data.txt"), b"hello world").unwrap();
+    let sub = ws.join("subdir");
+    std::fs::create_dir_all(&sub).unwrap();
+    std::fs::write(sub.join("more.txt"), b"more data here").unwrap();
+    write_registry(&h, &[(&ws, "2000-01-01T00:00:00Z")]);
+    let out = run(&h, &["prune"]);
+    assert!(out.status.success());
+    assert!(!ws.exists());
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("freed:"),
+        "expected 'freed:' in output: {stderr}"
+    );
+    assert!(
+        stderr.contains("Total freed:"),
+        "expected 'Total freed:' in output: {stderr}"
+    );
     std::fs::remove_dir_all(&h).ok();
 }
 
