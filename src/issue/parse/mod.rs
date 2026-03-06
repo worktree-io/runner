@@ -22,6 +22,7 @@ impl IssueRef {
     /// - `owner/repo@<linear-uuid>`
     /// - `centy:<number>` (context-aware: finds nearest `.centy/` ancestor)
     /// - `gh:<number>` (context-aware: resolves against the `origin` GitHub remote)
+    /// - `owner/repo` (ad-hoc: auto-generates a random branch name)
     ///
     /// # Errors
     ///
@@ -65,6 +66,16 @@ impl IssueRef {
             return result;
         }
 
+        if let Some((owner, repo)) = s.split_once('/') {
+            if !owner.is_empty() && !repo.is_empty() && !repo.contains('/') {
+                return Ok(Self::Adhoc {
+                    owner: owner.to_string(),
+                    repo: repo.to_string(),
+                    name: crate::name_gen::generate_name(),
+                });
+            }
+        }
+
         bail!(
             "Could not parse issue reference: {s:?}\n\
              Supported formats:\n\
@@ -80,6 +91,7 @@ impl IssueRef {
              - owner/repo@<linear-uuid>\n\
              - org/project/repo!42\n\
              - centy:<number>\n\
+             - owner/repo (ad-hoc with random branch)\n\
              - gh:<number>\n\
              - gl:<number>"
         )

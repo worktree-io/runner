@@ -84,12 +84,17 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
             opts,
         ));
     }
-    Ok((
+    let owner = owner.context("Missing 'owner' query param")?;
+    let repo = repo.context("Missing 'repo' query param")?;
+    let issue = if let Some(number) = issue_num {
         IssueRef::GitHub {
-            owner: owner.context("Missing 'owner' query param")?,
-            repo: repo.context("Missing 'repo' query param")?,
-            number: issue_num.context("Missing 'issue' query param")?,
-        },
-        opts,
-    ))
+            owner,
+            repo,
+            number,
+        }
+    } else {
+        let name = crate::name_gen::generate_name();
+        IssueRef::Adhoc { owner, repo, name }
+    };
+    Ok((issue, opts))
 }

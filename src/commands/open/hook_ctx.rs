@@ -46,6 +46,9 @@ pub(super) fn build_hook_context(issue: &IssueRef, worktree_path: &std::path::Pa
             issue_key,
             ..
         } => (owner.clone(), repo.clone(), issue_key.clone()),
+        IssueRef::Adhoc {
+            owner, repo, name, ..
+        } => (owner.clone(), repo.clone(), name.clone()),
         IssueRef::Local {
             project_path,
             display_number,
