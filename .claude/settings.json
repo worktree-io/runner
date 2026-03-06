@@ -44,7 +44,8 @@
       "Bash(gh issue:*)",
       "Bash(command:*)",
       "Bash(centy link:*)",
-      "Bash(worktree:*)"
+      "Bash(worktree:*)",
+      "Bash(git status:*)"
     ],
     "deny": ["Bash(gh issue create:*)", "Bash(cargo publish:*)"]
   },
