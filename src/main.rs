@@ -28,9 +28,9 @@ struct Cli {
 enum Commands {
     /// Parse an issue reference, create a worktree, and open it
     Open {
-        /// Issue reference: GitHub URL, worktree:// deep link, or owner/repo#N
+        /// Issue reference (omit to detect from current repo's origin remote)
         #[arg(value_name = "REF")]
-        issue_ref: String,
+        issue_ref: Option<String>,
         /// Force open in editor
         #[arg(long)]
         editor: bool,
@@ -85,7 +85,7 @@ fn main() -> Result<()> {
             issue_ref,
             editor,
             no_hooks,
-        } => cmd_open(&issue_ref, editor, no_hooks)?,
+        } => cmd_open(issue_ref.as_deref(), editor, no_hooks)?,
         Commands::OpenMulti { refs, no_hooks } => cmd_open_multi(&refs, no_hooks)?,
         Commands::Config { action } => cmd_config(action)?,
         Commands::List { json } => cmd_list(json)?,

@@ -12,6 +12,7 @@ impl IssueRef {
             Self::AzureDevOps { id, .. } => format!("workitem-{id}"),
             Self::Jira { issue_key, .. } => format!("jira-{}", issue_key.to_lowercase()),
             Self::Local { display_number, .. } => format!("issue-{display_number}"),
+            Self::RemoteBranch { branch, .. } => branch.clone(),
         }
     }
 
@@ -45,6 +46,12 @@ impl IssueRef {
             Self::Local { .. } => {
                 unreachable!("clone_url is never called for IssueRef::Local")
             }
+            Self::RemoteBranch {
+                host, owner, repo, ..
+            } => match host.as_str() {
+                "gitlab" => format!("https://gitlab.com/{owner}/{repo}.git"),
+                _ => format!("https://github.com/{owner}/{repo}.git"),
+            },
         }
     }
 
@@ -71,6 +78,9 @@ impl IssueRef {
             }
             Self::Local { .. } => {
                 unreachable!("multi_dir_name is not supported for IssueRef::Local")
+            }
+            Self::RemoteBranch { .. } => {
+                unreachable!("multi_dir_name is not supported for RemoteBranch")
             }
         }
     }

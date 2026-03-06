@@ -57,6 +57,12 @@ pub(super) fn build_hook_context(issue: &IssueRef, worktree_path: &std::path::Pa
                 .into_owned();
             (project_name, String::new(), display_number.to_string())
         }
+        IssueRef::RemoteBranch {
+            owner,
+            repo,
+            branch,
+            ..
+        } => (owner.clone(), repo.clone(), branch.clone()),
     };
     HookContext {
         owner,

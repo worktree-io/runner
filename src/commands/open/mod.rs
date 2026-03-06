@@ -6,7 +6,7 @@ use std::time::SystemTime;
 use worktree_io::{
     config::Config,
     hooks::run_hook,
-    issue::IssueRef,
+    issue::{DeepLinkOptions, IssueRef},
     opener,
     repo_hooks_scaffold::scaffold_if_missing,
     ttl::{self, WorkspaceRegistry},
@@ -15,8 +15,11 @@ use worktree_io::{
 
 use hook_ctx::{build_hook_context, effective_hooks};
 
-pub fn cmd_open(issue_ref: &str, force_editor: bool, no_hooks: bool) -> Result<()> {
-    let (issue, deep_link_opts) = IssueRef::parse_with_options(issue_ref)?;
+pub fn cmd_open(issue_ref: Option<&str>, force_editor: bool, no_hooks: bool) -> Result<()> {
+    let (issue, deep_link_opts) = match issue_ref {
+        Some(r) => IssueRef::parse_with_options(r)?,
+        None => (IssueRef::from_current_repo()?, DeepLinkOptions::default()),
+    };
     let workspace = Workspace::open_or_create(issue.clone())?;
 
     if workspace.created {

@@ -43,6 +43,14 @@ impl IssueRef {
                 .join(org)
                 .join(project)
                 .join(repo),
+            Self::RemoteBranch {
+                host, owner, repo, ..
+            } => dirs::home_dir()
+                .expect("could not determine home directory")
+                .join("worktrees")
+                .join(host)
+                .join(owner)
+                .join(repo),
             Self::Local { project_path, .. } => {
                 let project_name = project_path
                     .file_name()

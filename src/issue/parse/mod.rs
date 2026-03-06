@@ -1,5 +1,6 @@
 mod azure;
 mod centy;
+mod detect;
 mod gh;
 mod github;
 mod gitlab;
