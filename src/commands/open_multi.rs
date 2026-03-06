@@ -12,17 +12,20 @@ use worktree_io::{
 /// Parse one argument as an issue reference or a bare `owner/repo` slug.
 /// Bare slugs are checked out on their default branch.
 fn parse_spec(s: &str) -> Result<MultiSpec> {
+    // Bare repo slug first: owner/repo with no issue markers.
+    let has_marker = s.contains('#') || s.contains('!') || s.contains('@') || s.contains(':');
+    if !has_marker {
+        if let Some((owner, repo)) = s.split_once('/') {
+            if !owner.is_empty() && !repo.is_empty() && !repo.contains('/') {
+                return Ok(MultiSpec::BareRepo {
+                    owner: owner.to_string(),
+                    repo: repo.to_string(),
+                });
+            }
+        }
+    }
     if let Ok((issue, _)) = IssueRef::parse_with_options(s) {
         return Ok(MultiSpec::WithIssue(issue));
-    }
-    // Bare repo slug: owner/repo with exactly one slash and no issue marker.
-    if let Some((owner, repo)) = s.split_once('/') {
-        if !owner.is_empty() && !repo.is_empty() && !repo.contains('/') {
-            return Ok(MultiSpec::BareRepo {
-                owner: owner.to_string(),
-                repo: repo.to_string(),
-            });
-        }
     }
     bail!("could not parse {s:?} as an issue reference or bare repo slug (owner/repo)")
 }

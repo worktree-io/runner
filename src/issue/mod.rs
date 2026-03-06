@@ -1,12 +1,12 @@
 use std::path::PathBuf;
-
 mod deep_link;
 mod impls;
 mod parse;
 mod paths;
-
 pub use deep_link::DeepLinkOptions;
 
+#[cfg(test)]
+mod adhoc_tests;
 #[cfg(test)]
 mod azure_paths_tests;
 #[cfg(test)]
@@ -80,6 +80,15 @@ pub enum IssueRef {
         repo: String,
         /// Issue number.
         number: u64,
+    },
+    /// A bare repo opened without a specific issue — random branch name.
+    Adhoc {
+        /// GitHub organization or user name.
+        owner: String,
+        /// Repository name.
+        repo: String,
+        /// Auto-generated name (e.g. `bold_turing`).
+        name: String,
     },
     /// A local Centy issue — the repository itself is the source, no remote clone needed.
     Local {
