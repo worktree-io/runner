@@ -3,10 +3,11 @@ mod def;
 mod impls;
 mod parse;
 mod paths;
-
 pub use deep_link::DeepLinkOptions;
 pub use def::IssueRef;
 
+#[cfg(test)]
+mod adhoc_tests;
 #[cfg(test)]
 mod azure_paths_tests;
 #[cfg(test)]

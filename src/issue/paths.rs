@@ -22,7 +22,8 @@ impl IssueRef {
         match self {
             Self::GitHub { owner, repo, .. }
             | Self::Linear { owner, repo, .. }
-            | Self::Jira { owner, repo, .. } => dirs::home_dir()
+            | Self::Jira { owner, repo, .. }
+            | Self::Adhoc { owner, repo, .. } => dirs::home_dir()
                 .expect("could not determine home directory")
                 .join("worktrees")
                 .join("github")

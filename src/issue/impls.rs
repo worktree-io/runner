@@ -8,6 +8,7 @@ impl IssueRef {
             Self::GitHub { number, .. } | Self::GitLab { number, .. } => {
                 format!("issue-{number}")
             }
+            Self::Adhoc { name, .. } => name.clone(),
             Self::Linear { id, .. } => format!("linear-{id}"),
             Self::AzureDevOps { id, .. } => format!("workitem-{id}"),
             Self::Jira { issue_key, .. } => format!("jira-{}", issue_key.to_lowercase()),
@@ -32,7 +33,8 @@ impl IssueRef {
         match self {
             Self::GitHub { owner, repo, .. }
             | Self::Linear { owner, repo, .. }
-            | Self::Jira { owner, repo, .. } => {
+            | Self::Jira { owner, repo, .. }
+            | Self::Adhoc { owner, repo, .. } => {
                 format!("https://github.com/{owner}/{repo}.git")
             }
             Self::GitLab { owner, repo, .. } => {
@@ -69,6 +71,7 @@ impl IssueRef {
             Self::GitHub { repo, number, .. } | Self::GitLab { repo, number, .. } => {
                 format!("{repo}-{number}")
             }
+            Self::Adhoc { repo, name, .. } => format!("{repo}-{name}"),
             Self::Linear { repo, id, .. } => format!("{repo}-{id}"),
             Self::AzureDevOps { repo, id, .. } => format!("{repo}-{id}"),
             Self::Jira {

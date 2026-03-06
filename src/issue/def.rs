@@ -53,6 +53,15 @@ pub enum IssueRef {
         /// Issue number.
         number: u64,
     },
+    /// A bare repo opened without a specific issue — random branch name.
+    Adhoc {
+        /// GitHub organization or user name.
+        owner: String,
+        /// Repository name.
+        repo: String,
+        /// Auto-generated name (e.g. `bold_turing`).
+        name: String,
+    },
     /// A local Centy issue — the repository itself is the source, no remote clone needed.
     Local {
         /// Absolute path to the local project repository.
