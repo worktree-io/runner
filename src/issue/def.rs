@@ -69,15 +69,4 @@ pub enum IssueRef {
         /// Human-readable issue number shown in the branch name.
         display_number: u32,
     },
-    /// A repo detected from the current directory's git remote — just repo + branch.
-    RemoteBranch {
-        /// Host segment for path routing (e.g. `"github"`, `"gitlab"`).
-        host: String,
-        /// Organization or user name.
-        owner: String,
-        /// Repository name.
-        repo: String,
-        /// Branch name to use for the worktree.
-        branch: String,
-    },
 }

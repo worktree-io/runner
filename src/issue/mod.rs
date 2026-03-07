@@ -25,8 +25,6 @@ mod multi_dir_name_tests;
 #[cfg(test)]
 mod parse_tests;
 #[cfg(test)]
-mod remote_branch_tests;
-#[cfg(test)]
 mod tests;
 #[cfg(test)]
 mod uuid_tests;

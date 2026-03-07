@@ -5,8 +5,8 @@ use crate::issue::IssueRef;
 impl IssueRef {
     /// Detect the repository from the current working directory.
     ///
-    /// Reads the `origin` remote URL and current branch, then creates
-    /// an [`Self::RemoteBranch`].
+    /// Reads the `origin` remote URL and creates an [`Self::Adhoc`] with
+    /// a randomly generated branch name.
     ///
     /// # Errors
     ///
@@ -20,24 +20,13 @@ impl IssueRef {
             "Not inside a git repository with an 'origin' remote.\n\
                  Run `worktree open <REF>` with an explicit issue reference.",
         )?;
-        let branch = crate::git::detect_local_default_branch(&cwd)
-            .context("Could not detect current branch")?;
+        let name = crate::name_gen::generate_name();
 
         if let Some((owner, repo)) = super::gh::parse_github_remote_url(&remote_url) {
-            return Ok(Self::RemoteBranch {
-                host: "github".into(),
-                owner,
-                repo,
-                branch,
-            });
+            return Ok(Self::Adhoc { owner, repo, name });
         }
         if let Some((owner, repo)) = super::gitlab::parse_gitlab_remote_url(&remote_url) {
-            return Ok(Self::RemoteBranch {
-                host: "gitlab".into(),
-                owner,
-                repo,
-                branch,
-            });
+            return Ok(Self::Adhoc { owner, repo, name });
         }
         bail!(
             "Remote URL {remote_url:?} is not a supported GitHub or GitLab URL.\n\
