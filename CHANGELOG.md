@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `--no-hooks` flag for `worktree open` and `worktree open-multi`: skips all `pre:open` and `post:open` hooks for a single invocation ([#69](https://github.com/worktree-io/runner/pull/69))
 - `worktree prune` now reports freed disk space per folder and the total reclaimed across all pruned workspaces ([#70](https://github.com/worktree-io/runner/pull/70))
+- `worktree open` accepts bare `owner/repo` with an auto-generated random branch name ([#71](https://github.com/worktree-io/runner/pull/71))
+- `worktree open` with no ref detects the repo from the current working directory ([#72](https://github.com/worktree-io/runner/pull/72))
 
 ## [0.15.0] - 2026-02-28
 
