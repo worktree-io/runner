@@ -17,6 +17,7 @@ impl Config {
                 .ttl
                 .map_or_else(String::new, |t| t.to_string())),
             "workspace.auto_prune" => Ok(self.workspace.auto_prune.to_string()),
+            "workspace.temp" => Ok(self.workspace.temp.to_string()),
             _ => anyhow::bail!("Unknown config key: {key}"),
         }
     }
@@ -48,6 +49,11 @@ impl Config {
             }
             "workspace.auto_prune" => {
                 self.workspace.auto_prune = value
+                    .parse::<bool>()
+                    .with_context(|| format!("Invalid boolean value: {value}"))?;
+            }
+            "workspace.temp" => {
+                self.workspace.temp = value
                     .parse::<bool>()
                     .with_context(|| format!("Invalid boolean value: {value}"))?;
             }

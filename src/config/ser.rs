@@ -74,6 +74,10 @@ impl Config {
             );
             writeln!(out, "auto_prune = {}", self.workspace.auto_prune).unwrap();
         }
+        if self.workspace.temp {
+            out.push_str("# When true, worktrees are stored under the OS temp directory.\n");
+            writeln!(out, "temp = {}", self.workspace.temp).unwrap();
+        }
 
         out
     }
