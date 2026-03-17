@@ -51,3 +51,27 @@ fn test_auto_prune_round_trips() {
     let parsed: Config = toml::from_str(&s).unwrap();
     assert!(parsed.workspace.auto_prune);
 }
+
+#[test]
+fn test_temp_absent_by_default() {
+    let s = Config::default().to_toml_with_comments();
+    assert!(!s.contains("temp ="));
+}
+
+#[test]
+fn test_temp_present_when_true() {
+    let mut c = Config::default();
+    c.set_value("workspace.temp", "true").unwrap();
+    let s = c.to_toml_with_comments();
+    assert!(s.contains("temp = true"));
+    assert!(s.contains("# When true, worktrees are stored under the OS temp directory."));
+}
+
+#[test]
+fn test_temp_round_trips() {
+    let mut c = Config::default();
+    c.set_value("workspace.temp", "true").unwrap();
+    let s = c.to_toml_with_comments();
+    let parsed: Config = toml::from_str(&s).unwrap();
+    assert!(parsed.workspace.temp);
+}

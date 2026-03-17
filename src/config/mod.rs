@@ -10,6 +10,9 @@ mod ops_tests;
 #[path = "ops_auto_prune_tests.rs"]
 mod ops_auto_prune_tests;
 
+#[cfg(test)]
+#[path = "ops_temp_tests.rs"]
+mod ops_temp_tests;
 use serde::{Deserialize, Serialize};
 
 use crate::ttl::Ttl;
@@ -38,6 +41,9 @@ pub struct WorkspaceConfig {
     /// When true, expired worktrees are pruned each time `open` is invoked.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub auto_prune: bool,
+    /// When true, worktrees are stored under the OS temp directory.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub temp: bool,
 }
 
 /// Shell scripts executed before and after opening a workspace.
