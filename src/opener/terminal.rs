@@ -2,6 +2,16 @@ use anyhow::{Context, Result};
 use std::path::Path;
 use std::process::{Command, Stdio};
 
+fn spawn_prog(cmd: &str, args: &[&str]) -> Result<bool> {
+    Command::new(cmd)
+        .args(args)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()?;
+    Ok(true)
+}
+
 /// Write a bootstrap script (hook + `exec "${SHELL:-sh}"`) to a temp file and
 /// spawn the terminal running it. Returns `true` if the command was recognised
 /// as a terminal emulator, `false` otherwise (IDE / unknown command).
@@ -50,45 +60,28 @@ pub(super) fn try_terminal_with_init(
             .spawn()?;
         Ok(true)
     } else if cmd_lower.contains("open -a terminal") {
-        Command::new("open")
-            .args(["-a", "Terminal", tmp_str])
-            .stdin(Stdio::null())
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()?;
-        Ok(true)
+        spawn_prog("open", &["-a", "Terminal", tmp_str])
     } else if cmd_lower.starts_with("alacritty") {
-        Command::new("alacritty")
-            .args(["--working-directory", path_str, "-e", "sh", tmp_str])
-            .stdin(Stdio::null())
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()?;
-        Ok(true)
+        spawn_prog(
+            "alacritty",
+            &["--working-directory", path_str, "-e", "sh", tmp_str],
+        )
     } else if cmd_lower.starts_with("kitty") {
-        Command::new("kitty")
-            .args(["--directory", path_str, "sh", tmp_str])
-            .stdin(Stdio::null())
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()?;
-        Ok(true)
+        spawn_prog("kitty", &["--directory", path_str, "sh", tmp_str])
     } else if cmd_lower.starts_with("wezterm") {
-        Command::new("wezterm")
-            .args(["start", "--cwd", path_str, "--", "sh", tmp_str])
-            .stdin(Stdio::null())
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()?;
-        Ok(true)
+        spawn_prog(
+            "wezterm",
+            &["start", "--cwd", path_str, "--", "sh", tmp_str],
+        )
     } else if cmd_lower.contains("ghostty") {
-        Command::new("ghostty")
-            .args(["-e", "sh", tmp_str])
-            .stdin(Stdio::null())
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()?;
-        Ok(true)
+        spawn_prog("ghostty", &["-e", "sh", tmp_str])
+    } else if cmd_lower.starts_with("tmux") {
+        let sub = if std::env::var_os("TMUX").is_some() {
+            "new-window"
+        } else {
+            "new-session"
+        };
+        spawn_prog("tmux", &[sub, "-c", path_str, "sh", tmp_str])
     } else {
         Ok(false)
     }

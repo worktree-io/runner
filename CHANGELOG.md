@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-03-18
+
+### Added
+- tmux terminal support: set `editor = "tmux"` in config or pass `--editor tmux` to open a new worktree in a new tmux window (when inside tmux) or a new tmux session (when outside tmux)
+
 ## [0.16.1] - 2026-03-07
 
 ### Fixed

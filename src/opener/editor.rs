@@ -18,6 +18,7 @@ pub fn resolve_editor_command(name: &str) -> String {
         ("wezterm", "wezterm start --cwd ."),
         ("wt", "wt -d ."),
         ("windowsterminal", "wt -d ."),
+        ("tmux", "tmux"),
     ];
     for &(sym, cmd) in candidates {
         if name.eq_ignore_ascii_case(sym) {
