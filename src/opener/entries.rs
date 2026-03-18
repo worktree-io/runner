@@ -30,12 +30,18 @@ const BASE: &[(&[&str], &str, &str, &str)] = &[
     (&["nvim"], "Neovim", "nvim .", "nvim"),
     (&["vim"], "Vim", "vim .", "vim"),
     (&["tmux"], "tmux", "tmux", "tmux"),
-    (&["alacritty"], "Alacritty", "alacritty --working-directory .", "alacritty"),
+    (
+        &["alacritty"],
+        "Alacritty",
+        "alacritty --working-directory .",
+        "alacritty",
+    ),
     (&["kitty"], "Kitty", "kitty --directory .", "kitty"),
     (&["wezterm"], "WezTerm", "wezterm start --cwd .", "wezterm"),
 ];
 
 /// All supported editor/terminal entries for the current platform.
+#[must_use]
 #[allow(unused_mut)]
 pub fn all_entries() -> Vec<EditorEntry> {
     let mut v: Vec<EditorEntry> = BASE
