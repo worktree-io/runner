@@ -77,13 +77,13 @@ pub fn cmd_open(issue_ref: Option<&str>, force_editor: bool, no_hooks: bool) -> 
     match (editor_cmd.as_deref(), effective_post.as_deref()) {
         (Some(cmd), Some(script)) => {
             let rendered = hook_ctx.render(script);
-            if !opener::open_with_hook(&workspace.path, cmd, &rendered)? {
+            if !opener::open_with_hook(&workspace.path, cmd, &rendered, config.editor.background)? {
                 eprintln!("Running post:open hook…");
                 run_hook(script, &hook_ctx)?;
             }
         }
         (Some(cmd), None) => {
-            opener::open_in_editor(&workspace.path, cmd)?;
+            opener::open_in_editor(&workspace.path, cmd, config.editor.background)?;
         }
         (None, Some(script)) => {
             eprintln!("Running post:open hook…");

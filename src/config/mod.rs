@@ -63,6 +63,9 @@ pub struct HooksConfig {
 pub struct EditorConfig {
     /// Command to launch the editor, e.g. "code ." or "nvim ."
     pub command: Option<String>,
+    /// When true, the editor opens in the background (fire-and-forget).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub background: bool,
 }
 
 /// Controls how the workspace is opened.
@@ -80,21 +83,5 @@ impl Default for OpenConfig {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn test_config_default() {
-        let c = Config::default();
-        assert!(c.editor.command.is_none());
-        assert!(c.open.editor);
-        assert!(c.hooks.pre_open.is_none());
-    }
-    #[test]
-    fn test_editor_config_default() {
-        assert!(EditorConfig::default().command.is_none());
-    }
-    #[test]
-    fn test_open_config_default() {
-        assert!(OpenConfig::default().editor);
-    }
-}
+#[path = "mod_tests.rs"]
+mod tests;

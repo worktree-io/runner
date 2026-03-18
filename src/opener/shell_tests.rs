@@ -35,19 +35,22 @@ fn test_augmented_path_on_windows_returns_current() {
 }
 #[test]
 fn test_run_shell_command_empty() {
-    assert!(run_shell_command("").is_err());
+    assert!(run_shell_command("", false).is_err());
 }
 #[cfg(not(windows))]
 #[test]
 fn test_run_shell_command_success() {
-    run_shell_command("true").unwrap();
+    run_shell_command("true", false).unwrap();
+    run_shell_command("true", true).unwrap();
 }
 #[cfg(windows)]
 #[test]
 fn test_run_shell_command_success_windows() {
-    run_shell_command("cmd /C echo hello").unwrap();
+    run_shell_command("cmd /C echo hello", false).unwrap();
+    run_shell_command("cmd /C echo hello", true).unwrap();
 }
 #[test]
 fn test_run_shell_command_bad_program() {
-    assert!(run_shell_command("__nonexistent_xyz_wt__").is_err());
+    assert!(run_shell_command("__nonexistent_xyz_wt__", true).is_err());
+    assert!(run_shell_command("__nonexistent_xyz_wt__", false).is_err());
 }

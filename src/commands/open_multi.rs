@@ -80,12 +80,12 @@ pub fn cmd_open_multi(refs: &[String], no_hooks: bool) -> Result<()> {
     match (editor_cmd.as_deref(), post) {
         (Some(cmd), Some(script)) => {
             let rendered = hook_ctx.render(script);
-            if !opener::open_with_hook(&root, cmd, &rendered)? {
+            if !opener::open_with_hook(&root, cmd, &rendered, config.editor.background)? {
                 eprintln!("Running post:open hook…");
                 run_hook(script, &hook_ctx)?;
             }
         }
-        (Some(cmd), None) => opener::open_in_editor(&root, cmd)?,
+        (Some(cmd), None) => opener::open_in_editor(&root, cmd, config.editor.background)?,
         (None, Some(script)) => {
             eprintln!("Running post:open hook…");
             run_hook(script, &hook_ctx)?;

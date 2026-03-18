@@ -81,3 +81,17 @@ fn test_escapes_special_chars() {
         Some(r#"cmd "with" quotes"#)
     );
 }
+
+#[test]
+fn test_background_serialization() {
+    assert!(!Config::default()
+        .to_toml_with_comments()
+        .contains("background ="));
+    let mut c = Config::default();
+    c.editor.background = true;
+    let s = c.to_toml_with_comments();
+    assert!(s.contains("background = true"));
+    assert!(s.contains("# When true, the editor opens in the background"));
+    let parsed: Config = toml::from_str(&s).unwrap();
+    assert!(parsed.editor.background);
+}

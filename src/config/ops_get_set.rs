@@ -11,6 +11,7 @@ impl Config {
     pub fn get_value(&self, key: &str) -> Result<String> {
         match key {
             "editor" | "editor.command" => Ok(self.editor.command.clone().unwrap_or_default()),
+            "editor.background" => Ok(self.editor.background.to_string()),
             "open.editor" => Ok(self.open.editor.to_string()),
             "workspace.ttl" => Ok(self
                 .workspace
@@ -32,6 +33,11 @@ impl Config {
         match key {
             "editor" | "editor.command" => {
                 self.editor.command = (!value.is_empty()).then(|| value.to_string());
+            }
+            "editor.background" => {
+                self.editor.background = value
+                    .parse::<bool>()
+                    .with_context(|| format!("Invalid boolean value: {value}"))?;
             }
             "open.editor" => {
                 self.open.editor = value

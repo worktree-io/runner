@@ -22,20 +22,28 @@ pub fn augmented_path() -> String {
     parts.join(":")
 }
 
-pub(super) fn run_shell_command(cmd: &str) -> Result<()> {
+pub(super) fn run_shell_command(cmd: &str, background: bool) -> Result<()> {
     let mut parts = shlex_split(cmd);
     if parts.is_empty() {
         bail!("Empty command");
     }
     let program = parts.remove(0);
-    Command::new(&program)
+    let mut builder = Command::new(&program);
+    builder
         .args(&parts)
         .env("PATH", augmented_path())
         .stdin(Stdio::null())
         .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .spawn()
-        .with_context(|| format!("Failed to spawn {program}"))?;
+        .stderr(Stdio::null());
+    if background {
+        builder
+            .spawn()
+            .with_context(|| format!("Failed to spawn {program}"))?;
+    } else {
+        builder
+            .status()
+            .with_context(|| format!("Failed to run {program}"))?;
+    }
     Ok(())
 }
 

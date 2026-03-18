@@ -39,6 +39,10 @@ impl Config {
             out.push_str("# Command to launch the editor, e.g. \"code .\" or \"nvim .\"\n");
             writeln!(out, "command = {}", toml_quoted(cmd)).unwrap();
         }
+        if self.editor.background {
+            out.push_str("# When true, the editor opens in the background (fire-and-forget).\n");
+            writeln!(out, "background = {}", self.editor.background).unwrap();
+        }
         out.push('\n');
 
         // [open] --------------------------------------------------------------
