@@ -117,6 +117,16 @@ fn test_config_set_and_get() {
 }
 
 #[test]
+fn test_config_set_editor_alias() {
+    let h = temp_home("cfg_editor_alias");
+    run(&h, &["config", "set", "editor", "nvim ."]);
+    let out = run(&h, &["config", "get", "editor"]);
+    assert!(out.status.success());
+    assert_eq!(String::from_utf8_lossy(&out.stdout).trim(), "nvim .");
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
 fn test_config_edit_with_editor() {
     let h = temp_home("cfg_edit_ed");
     write_config(&h, "[editor]\ncommand = \"echo .\"\n");
