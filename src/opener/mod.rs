@@ -1,4 +1,6 @@
 mod editor;
+/// Unified table of all supported editors and terminals.
+pub mod entries;
 mod shell;
 mod terminal;
 #[cfg(windows)]

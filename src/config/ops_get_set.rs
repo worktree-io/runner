@@ -10,7 +10,7 @@ impl Config {
     /// Returns an error if `key` is not a recognised config key.
     pub fn get_value(&self, key: &str) -> Result<String> {
         match key {
-            "editor.command" => Ok(self.editor.command.clone().unwrap_or_default()),
+            "editor" | "editor.command" => Ok(self.editor.command.clone().unwrap_or_default()),
             "open.editor" => Ok(self.open.editor.to_string()),
             "workspace.ttl" => Ok(self
                 .workspace
@@ -30,7 +30,7 @@ impl Config {
     /// value cannot be parsed (e.g. a non-boolean for `open.editor`).
     pub fn set_value(&mut self, key: &str, value: &str) -> Result<()> {
         match key {
-            "editor.command" => {
+            "editor" | "editor.command" => {
                 self.editor.command = (!value.is_empty()).then(|| value.to_string());
             }
             "open.editor" => {

@@ -1,36 +1,15 @@
+use super::entries::all_entries;
+
 /// Map a short editor name (e.g. "terminal", "vscode", "cursor") to a shell command.
 #[must_use]
 pub fn resolve_editor_command(name: &str) -> String {
-    let candidates: &[(&str, &str)] = &[
-        ("vscode", "code ."),
-        ("cursor", "cursor ."),
-        ("code", "code ."),
-        ("zed", "zed ."),
-        ("subl", "subl ."),
-        ("nvim", "nvim ."),
-        ("vim", "vim ."),
-        ("iterm", "open -a iTerm ."),
-        ("iterm2", "open -a iTerm ."),
-        ("warp", "open -a Warp ."),
-        ("ghostty", "open -a Ghostty ."),
-        ("alacritty", "alacritty --working-directory ."),
-        ("kitty", "kitty --directory ."),
-        ("wezterm", "wezterm start --cwd ."),
-        ("wt", "wt -d ."),
-        ("windowsterminal", "wt -d ."),
-        ("tmux", "tmux"),
-    ];
-    for &(sym, cmd) in candidates {
-        if name.eq_ignore_ascii_case(sym) {
-            return cmd.to_string();
+    for entry in all_entries() {
+        if entry.aliases.iter().any(|&a| a.eq_ignore_ascii_case(name)) {
+            return entry.command.to_string();
         }
     }
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
     if name.eq_ignore_ascii_case("terminal") {
-        #[cfg(target_os = "macos")]
-        return "open -a Terminal .".to_string();
-        #[cfg(target_os = "windows")]
-        return "wt -d .".to_string();
-        #[cfg(not(any(target_os = "macos", target_os = "windows")))]
         return "xterm".to_string();
     }
     name.to_string()

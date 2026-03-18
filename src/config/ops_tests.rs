@@ -87,3 +87,10 @@ fn test_set_value_workspace_ttl_invalid() {
         .set_value("workspace.ttl", "not-a-duration")
         .is_err());
 }
+#[test]
+fn test_editor_alias() {
+    let mut c = Config::default();
+    c.set_value("editor", "nvim").unwrap();
+    assert_eq!(c.editor.command.as_deref(), Some("nvim"));
+    assert_eq!(c.get_value("editor").unwrap(), "nvim");
+}

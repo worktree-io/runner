@@ -117,6 +117,16 @@ fn test_config_set_and_get() {
 }
 
 #[test]
+fn test_config_set_editor_alias() {
+    let h = temp_home("cfg_editor_alias");
+    run(&h, &["config", "set", "editor", "nvim ."]);
+    let out = run(&h, &["config", "get", "editor"]);
+    assert!(out.status.success());
+    assert_eq!(String::from_utf8_lossy(&out.stdout).trim(), "nvim .");
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
 fn test_config_edit_with_editor() {
     let h = temp_home("cfg_edit_ed");
     write_config(&h, "[editor]\ncommand = \"echo .\"\n");
@@ -762,5 +772,83 @@ fn test_list_json_with_ttl() {
     assert!(stdout.contains("\"ttl\":\"1s\""), "got: {stdout}");
     assert!(stdout.contains("\"expired\":true"), "got: {stdout}");
     assert!(stdout.contains("\"created_at\":"), "got: {stdout}");
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_open_adhoc_bare_repo() {
+    let h = temp_home("op_adhoc");
+    setup_bare_clone(&h, "__tad__", "__tad__");
+    let out = run(&h, &["open", "__tad__/__tad__"]);
+    assert!(
+        out.status.success(),
+        "open adhoc failed — stderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    // A worktree with a random adjective_noun name should exist inside the bare clone.
+    let bare = h
+        .join("worktrees")
+        .join("github")
+        .join("__tad__")
+        .join("__tad__");
+    let found = std::fs::read_dir(&bare)
+        .unwrap()
+        .filter_map(std::result::Result::ok)
+        .filter(|e| e.file_type().is_ok_and(|t| t.is_dir()))
+        .any(|e| e.file_name().to_string_lossy().contains('_'));
+    assert!(
+        found,
+        "expected an adjective_noun worktree dir inside the bare clone"
+    );
+    std::fs::remove_dir_all(&h).ok();
+}
+
+#[test]
+fn test_open_multi_bare_repos() {
+    let h = temp_home("op_multi_bare");
+    setup_bare_clone(&h, "__ta__", "__ta__");
+    let src = h.join("_src_");
+    let bare2 = h
+        .join("worktrees")
+        .join("github")
+        .join("__tb__")
+        .join("__tb__");
+    std::fs::create_dir_all(&bare2).unwrap();
+    Command::new("git")
+        .args([
+            "clone",
+            "--bare",
+            src.to_str().unwrap(),
+            bare2.to_str().unwrap(),
+        ])
+        .env_remove("GIT_DIR")
+        .env_remove("GIT_WORK_TREE")
+        .env_remove("GIT_INDEX_FILE")
+        .status()
+        .unwrap();
+    git_in(
+        &bare2,
+        &[
+            "config",
+            "remote.origin.fetch",
+            "+refs/heads/*:refs/remotes/origin/*",
+        ],
+    );
+    git_in(&bare2, &["fetch", "origin"]);
+    let out = run(&h, &["open-multi", "__ta__/__ta__", "__tb__/__tb__"]);
+    assert!(
+        out.status.success(),
+        "open-multi bare repos failed — stderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let workspaces_dir = h.join("workspaces");
+    let entries: Vec<_> = std::fs::read_dir(&workspaces_dir)
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+    assert_eq!(entries.len(), 1, "expected one workspace group");
+    let ws_root = entries[0].path();
+    assert!(ws_root.join("__ta__").exists(), "__ta__ worktree missing");
+    assert!(ws_root.join("__tb__").exists(), "__tb__ worktree missing");
     std::fs::remove_dir_all(&h).ok();
 }

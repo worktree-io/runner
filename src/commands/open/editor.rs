@@ -18,7 +18,9 @@ mod tests {
         );
         assert_eq!(resolve_editor_command("kitty"), "kitty --directory .");
         assert_eq!(resolve_editor_command("wezterm"), "wezterm start --cwd .");
+        #[cfg(target_os = "windows")]
         assert_eq!(resolve_editor_command("wt"), "wt -d .");
+        #[cfg(target_os = "windows")]
         assert_eq!(resolve_editor_command("windowsterminal"), "wt -d .");
     }
     #[test]
