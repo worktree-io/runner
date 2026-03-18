@@ -56,7 +56,7 @@ pub fn cmd_config(action: ConfigAction) -> Result<()> {
                 .command
                 .or_else(|| std::env::var("EDITOR").ok())
                 .context("No editor configured. Run: worktree config set editor.command \"code .\", or set the $EDITOR environment variable")?;
-            opener::open_in_editor(&path, &command)?;
+            opener::open_in_editor(&path, &command, false)?;
         }
     }
     Ok(())

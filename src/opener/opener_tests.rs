@@ -8,15 +8,20 @@ fn test_app_exists_nonexistent() {
 fn test_open_with_hook_ide_no_terminal() {
     let p = std::path::Path::new("/tmp");
     // "code ." is not a terminal, and no /Applications/iTerm.app etc in CI
-    let _ = open_with_hook(p, "echo .", "true");
+    let _ = open_with_hook(p, "echo .", "true", false);
 }
 #[test]
 fn test_open_in_editor_dot_substitution() {
     let p = std::path::Path::new("/tmp/myproject");
-    open_in_editor(p, "echo .").unwrap();
+    open_in_editor(p, "echo .", false).unwrap();
 }
 #[test]
 fn test_open_in_editor_no_dot() {
     let p = std::path::Path::new("/tmp/myproject");
-    open_in_editor(p, "echo").unwrap();
+    open_in_editor(p, "echo", false).unwrap();
+}
+#[test]
+fn test_open_in_editor_background() {
+    let p = std::path::Path::new("/tmp/myproject");
+    open_in_editor(p, "echo", true).unwrap();
 }

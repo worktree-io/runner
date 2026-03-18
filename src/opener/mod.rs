@@ -64,14 +64,14 @@ fn open_hook_in_auto_terminal(path: &Path, init_script: &str) -> Result<bool> {
 /// # Errors
 ///
 /// Returns an error if the editor or terminal command fails to spawn.
-pub fn open_with_hook(path: &Path, command: &str, init_script: &str) -> Result<bool> {
-    if terminal::try_terminal_with_init(path, command, init_script)? {
+pub fn open_with_hook(path: &Path, cmd: &str, init: &str, background: bool) -> Result<bool> {
+    if terminal::try_terminal_with_init(path, cmd, init)? {
         // LLVM_COV_EXCL_START
         return Ok(true);
         // LLVM_COV_EXCL_STOP
     }
-    open_in_editor(path, command)?;
-    open_hook_in_auto_terminal(path, init_script)
+    open_in_editor(path, cmd, background)?;
+    open_hook_in_auto_terminal(path, init)
 }
 
 /// Open the workspace path in the configured editor.
@@ -80,7 +80,7 @@ pub fn open_with_hook(path: &Path, command: &str, init_script: &str) -> Result<b
 ///
 /// Returns an error if the workspace path is not valid UTF-8 or the editor
 /// command fails to spawn.
-pub fn open_in_editor(path: &Path, command: &str) -> Result<()> {
+pub fn open_in_editor(path: &Path, command: &str, background: bool) -> Result<()> {
     let path_str = path
         .to_str()
         .context("Workspace path contains non-UTF-8 characters")?;
@@ -91,7 +91,7 @@ pub fn open_in_editor(path: &Path, command: &str) -> Result<()> {
         format!("{command} {path_str}")
     };
 
-    shell::run_shell_command(&cmd_str)
+    shell::run_shell_command(&cmd_str, background)
         .with_context(|| format!("Failed to open editor with command: {cmd_str}"))
 }
 
