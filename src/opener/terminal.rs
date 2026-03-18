@@ -76,12 +76,19 @@ pub(super) fn try_terminal_with_init(
     } else if cmd_lower.contains("ghostty") {
         spawn_prog("ghostty", &["-e", "sh", tmp_str])
     } else if cmd_lower.starts_with("tmux") {
-        let sub = if std::env::var_os("TMUX").is_some() {
-            "new-window"
-        } else {
-            "new-session"
-        };
-        spawn_prog("tmux", &[sub, "-c", path_str, "sh", tmp_str])
+        let parent_name = path.parent().and_then(|p| p.file_name());
+        let sn = parent_name.and_then(|n| n.to_str()).unwrap_or("session");
+        let file_name = path.file_name();
+        let wn = file_name.and_then(|n| n.to_str()).unwrap_or("worktree");
+        let exists = Command::new("tmux")
+            .args(["has-session", "-t", sn])
+            .stderr(Stdio::null())
+            .status()
+            .is_ok_and(|s| s.success());
+        let sub = if exists { "new-window" } else { "new-session" };
+        let flag = if exists { "-t" } else { "-s" };
+        let tmux_args = [sub, flag, sn, "-n", wn, "-c", path_str, "sh", tmp_str];
+        spawn_prog("tmux", &tmux_args)
     } else {
         Ok(false)
     }
