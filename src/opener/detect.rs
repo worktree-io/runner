@@ -41,4 +41,24 @@ mod tests {
         let editors = available_entries();
         assert!(editors.iter().any(|e| e.display == "Terminal"));
     }
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn test_macos_app_exists_system_path() {
+        // Safari is always present in /Applications on macOS
+        assert!(macos_app_exists("Safari"));
+    }
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn test_macos_app_not_exists_covers_user_closure() {
+        // Forces execution of the is_some_and closure (system path absent)
+        assert!(!macos_app_exists("__NonExistentApp__xyz123__"));
+    }
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn test_is_available_macos_app() {
+        assert!(is_available(&DetectMethod::MacosApp("Safari")));
+        assert!(!is_available(&DetectMethod::MacosApp(
+            "__NonExistentApp__xyz123__"
+        )));
+    }
 }
