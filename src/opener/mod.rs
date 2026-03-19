@@ -1,3 +1,5 @@
+/// Detection of available editors/terminals on the current system.
+pub mod detect;
 mod editor;
 /// Unified table of all supported editors and terminals.
 pub mod entries;
@@ -19,23 +21,10 @@ fn app_exists(name: &str) -> bool {
         || std::path::Path::new(&format!("/System/Applications/{name}.app")).exists()
 }
 
-/// Check whether Windows Terminal (`wt`) is available on `PATH`.
-#[cfg(windows)]
-fn wt_exists() -> bool {
-    std::process::Command::new("where")
-        .arg("wt")
-        .stdin(std::process::Stdio::null())
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::null())
-        .status()
-        .map(|s| s.success())
-        .unwrap_or(false)
-}
-
 /// For the IDE case: find an available terminal app and run `init_script` inside it.
 fn open_hook_in_auto_terminal(path: &Path, init_script: &str) -> Result<bool> {
     #[cfg(windows)]
-    if wt_exists() && terminal::try_terminal_with_init(path, "wt", init_script)? {
+    if which::which("wt").is_ok() && terminal::try_terminal_with_init(path, "wt", init_script)? {
         return Ok(true);
     }
 
