@@ -1,8 +1,9 @@
-/// Detection of available editors/terminals on the current system.
-pub mod detect;
+/// Return only the editors/terminals available on the current system.
+pub mod available_entries;
 mod editor;
 /// Unified table of all supported editors and terminals.
 pub mod entries;
+mod is_available;
 mod shell;
 mod terminal;
 #[cfg(windows)]
