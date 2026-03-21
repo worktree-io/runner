@@ -83,7 +83,7 @@ pub fn cmd_open(issue_ref: Option<&str>, force_editor: bool, no_hooks: bool) -> 
             }
         }
         (Some(cmd), None) => {
-            opener::open_in_editor(&workspace.path, cmd, config.editor.background)?;
+            opener::open_editor_or_terminal(&workspace.path, cmd, config.editor.background)?;
         }
         (None, Some(script)) => {
             eprintln!("Running post:open hook…");
