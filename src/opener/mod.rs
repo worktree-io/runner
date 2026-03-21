@@ -28,7 +28,10 @@ fn open_hook_in_auto_terminal(path: &Path, init_script: &str) -> Result<bool> {
     if which::which("wt").is_ok() && terminal::try_terminal_with_init(path, "wt", init_script)? {
         return Ok(true);
     }
-
+    if which::which("tmux").is_ok() && terminal::try_terminal_with_init(path, "tmux", init_script)?
+    {
+        return Ok(true);
+    }
     #[cfg(target_os = "macos")]
     {
         let candidates: &[(&str, &str)] = &[
@@ -45,7 +48,6 @@ fn open_hook_in_auto_terminal(path: &Path, init_script: &str) -> Result<bool> {
             // LLVM_COV_EXCL_STOP
         }
     }
-
     Ok(false)
 }
 
@@ -56,9 +58,7 @@ fn open_hook_in_auto_terminal(path: &Path, init_script: &str) -> Result<bool> {
 /// Returns an error if the editor or terminal command fails to spawn.
 pub fn open_with_hook(path: &Path, cmd: &str, init: &str, background: bool) -> Result<bool> {
     if terminal::try_terminal_with_init(path, cmd, init)? {
-        // LLVM_COV_EXCL_START
         return Ok(true);
-        // LLVM_COV_EXCL_STOP
     }
     open_in_editor(path, cmd, background)?;
     open_hook_in_auto_terminal(path, init)
@@ -74,7 +74,6 @@ pub fn open_in_editor(path: &Path, command: &str, background: bool) -> Result<()
     let path_str = path
         .to_str()
         .context("Workspace path contains non-UTF-8 characters")?;
-
     let cmd_str = if command.contains(" . ") || command.ends_with(" .") || command == "." {
         command.replacen(" .", &format!(" {path_str}"), 1)
     } else {
@@ -83,6 +82,17 @@ pub fn open_in_editor(path: &Path, command: &str, background: bool) -> Result<()
 
     shell::run_shell_command(&cmd_str, background)
         .with_context(|| format!("Failed to open editor with command: {cmd_str}"))
+}
+
+/// Open `path` with `cmd`; uses terminal-specific logic if `cmd` is a known terminal,
+/// otherwise opens as an editor.
+/// # Errors
+/// Returns an error if the spawn or editor command fails.
+pub fn open_editor_or_terminal(path: &Path, cmd: &str, background: bool) -> Result<()> {
+    if !terminal::try_terminal_with_init(path, cmd, "")? {
+        open_in_editor(path, cmd, background)?;
+    }
+    Ok(())
 }
 
 #[cfg(test)]

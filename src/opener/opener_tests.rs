@@ -25,3 +25,8 @@ fn test_open_in_editor_background() {
     let p = std::path::Path::new("/tmp/myproject");
     open_in_editor(p, "echo", true).unwrap();
 }
+#[test]
+fn test_open_editor_or_terminal_ide() {
+    let p = std::path::Path::new("/tmp/myproject");
+    open_editor_or_terminal(p, "echo .", false).unwrap();
+}
