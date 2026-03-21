@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `is_terminal` field on `EditorEntry` to distinguish terminal emulators from IDE editors
+
+### Changed
+- Refactored `opener/detect.rs` into focused submodules: `available_entries` and `is_available`, each colocated with their tests
+
+## [0.17.2] - 2026-03-18
+
+### Added
+- `workspace.temp` config flag: when enabled, worktrees are created under the OS temp directory instead of `~/workspaces/` ([#77](https://github.com/worktree-io/runner/pull/77))
+- tmux: session is now named after the repository and window after the worktree branch ([#78](https://github.com/worktree-io/runner/pull/78))
+- `editor.background` config option for terminal sessions: controls whether the terminal opens in the foreground or background ([#79](https://github.com/worktree-io/runner/pull/79))
+- `available_entries()` exposed as a public library API (uses the `which` crate for PATH detection)
+
 ## [0.17.1] - 2026-03-18
 
 ### Fixed
@@ -198,7 +212,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release with CI/CD pipeline publishing cross-platform release artifacts ([#1](https://github.com/worktree-io/runner/pull/1))
 
-[Unreleased]: https://github.com/worktree-io/runner/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/worktree-io/runner/compare/v0.17.2...HEAD
+[0.17.2]: https://github.com/worktree-io/runner/compare/v0.17.1...v0.17.2
+[0.17.1]: https://github.com/worktree-io/runner/compare/v0.17.0...v0.17.1
+[0.17.0]: https://github.com/worktree-io/runner/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/worktree-io/runner/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/worktree-io/runner/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/worktree-io/runner/compare/v0.13.0...v0.14.0
