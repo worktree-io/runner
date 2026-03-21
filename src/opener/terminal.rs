@@ -87,7 +87,7 @@ pub(super) fn try_terminal_with_init(
             .is_ok_and(|s| s.success());
         let sub = if exists { "new-window" } else { "new-session" };
         let flag = if exists { "-t" } else { "-s" };
-        let tmux_args = [sub, flag, sn, "-n", wn, "-c", path_str, "sh", tmp_str];
+        let tmux_args = [sub, "-d", flag, sn, "-n", wn, "-c", path_str, "sh", tmp_str];
         spawn_prog("tmux", &tmux_args)
     } else {
         Ok(false)
