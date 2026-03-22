@@ -47,7 +47,8 @@
       "Bash(worktree:*)",
       "Bash(git status:*)",
       "Bash(cat:*)",
-      "Bash(xargs basename:*)"
+      "Bash(xargs basename:*)",
+      "Bash(tmux -V)"
     ],
     "deny": ["Bash(gh issue create:*)", "Bash(cargo publish:*)"]
   },
