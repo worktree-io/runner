@@ -1,7 +1,9 @@
+use anyhow::Result;
 use worktree_io::{
     config::Config,
-    hooks::HookContext,
+    hooks::{run_hook, HookContext},
     issue::IssueRef,
+    opener,
     repo_hooks::{combined_script, RepoConfig},
 };
 
@@ -68,4 +70,31 @@ pub(super) fn build_hook_context(issue: &IssueRef, worktree_path: &std::path::Pa
         branch: issue.branch_name(),
         worktree_path: worktree_path.to_string_lossy().into_owned(),
     }
+}
+
+pub(super) fn launch_editor(
+    workspace: &std::path::Path,
+    cmd: Option<&str>,
+    post_hook: Option<&str>,
+    background: bool,
+    ctx: &HookContext,
+) -> Result<()> {
+    match (cmd, post_hook) {
+        (Some(c), Some(s)) => {
+            let rendered = ctx.render(s);
+            if !opener::open_with_hook(workspace, c, &rendered, background)? {
+                eprintln!("Running post:open hook…");
+                run_hook(s, ctx)?;
+            }
+        }
+        (Some(c), None) => {
+            opener::open_editor_or_terminal(workspace, c, background)?;
+        }
+        (None, Some(s)) => {
+            eprintln!("Running post:open hook…");
+            run_hook(s, ctx)?;
+        }
+        (None, None) => {}
+    }
+    Ok(())
 }

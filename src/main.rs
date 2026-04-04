@@ -2,7 +2,6 @@
 #![allow(missing_docs)] // binary crate; public API lives in the library
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-
 mod commands;
 use commands::config::{cmd_config, ConfigAction};
 use commands::list::cmd_list;
@@ -12,7 +11,6 @@ use commands::prune::cmd_prune;
 use commands::restore::cmd_restore;
 use commands::scheme::{cmd_scheme, SchemeAction};
 use commands::setup::cmd_setup;
-
 #[derive(Parser)]
 #[command(
     name = "worktree",
@@ -23,7 +21,6 @@ struct Cli {
     #[command(subcommand)]
     command: Commands,
 }
-
 #[derive(Subcommand)]
 enum Commands {
     /// Parse an issue reference, create a worktree, and open it
@@ -37,6 +34,9 @@ enum Commands {
         /// Skip pre/post-open hooks
         #[arg(long)]
         no_hooks: bool,
+        /// Skip opening editor/terminal (hooks still run); useful for programmatic invocation
+        #[arg(long)]
+        headless: bool,
     },
     /// Open multiple repos as a unified workspace under ~/workspaces/<name>/
     #[command(name = "open-multi")]
@@ -85,7 +85,8 @@ fn main() -> Result<()> {
             issue_ref,
             editor,
             no_hooks,
-        } => cmd_open(issue_ref.as_deref(), editor, no_hooks)?,
+            headless,
+        } => cmd_open(issue_ref.as_deref(), editor, no_hooks, headless)?,
         Commands::OpenMulti { refs, no_hooks } => cmd_open_multi(&refs, no_hooks)?,
         Commands::Config { action } => cmd_config(action)?,
         Commands::List { json } => cmd_list(json)?,

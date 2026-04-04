@@ -7,15 +7,19 @@ use worktree_io::{
     config::Config,
     hooks::run_hook,
     issue::{DeepLinkOptions, IssueRef},
-    opener,
     repo_hooks_scaffold::scaffold_if_missing,
     ttl::{self, WorkspaceRegistry},
     workspace::Workspace,
 };
 
-use hook_ctx::{build_hook_context, effective_hooks};
+use hook_ctx::{build_hook_context, effective_hooks, launch_editor};
 
-pub fn cmd_open(issue_ref: Option<&str>, force_editor: bool, no_hooks: bool) -> Result<()> {
+pub fn cmd_open(
+    issue_ref: Option<&str>,
+    force_editor: bool,
+    no_hooks: bool,
+    headless: bool,
+) -> Result<()> {
     let (issue, deep_link_opts) = match issue_ref {
         Some(r) => IssueRef::parse_with_options(r)?,
         None => (IssueRef::from_current_repo()?, DeepLinkOptions::default()),
@@ -63,6 +67,13 @@ pub fn cmd_open(issue_ref: Option<&str>, force_editor: bool, no_hooks: bool) -> 
         run_hook(script, &hook_ctx)?;
     }
 
+    if headless {
+        if let Some(script) = &effective_post {
+            eprintln!("Running post:open hook…");
+            run_hook(script, &hook_ctx)?;
+        }
+        return Ok(());
+    }
     let editor_cmd: Option<String> = if let Some(editor_name) = deep_link_opts.editor {
         Some(editor::resolve_editor_command(&editor_name))
     } else if force_editor || config.open.editor {
@@ -73,25 +84,13 @@ pub fn cmd_open(issue_ref: Option<&str>, force_editor: bool, no_hooks: bool) -> 
     } else {
         None
     };
-
-    match (editor_cmd.as_deref(), effective_post.as_deref()) {
-        (Some(cmd), Some(script)) => {
-            let rendered = hook_ctx.render(script);
-            if !opener::open_with_hook(&workspace.path, cmd, &rendered, config.editor.background)? {
-                eprintln!("Running post:open hook…");
-                run_hook(script, &hook_ctx)?;
-            }
-        }
-        (Some(cmd), None) => {
-            opener::open_editor_or_terminal(&workspace.path, cmd, config.editor.background)?;
-        }
-        (None, Some(script)) => {
-            eprintln!("Running post:open hook…");
-            run_hook(script, &hook_ctx)?;
-        }
-        (None, None) => {}
-    }
-
+    launch_editor(
+        &workspace.path,
+        editor_cmd.as_deref(),
+        effective_post.as_deref(),
+        config.editor.background,
+        &hook_ctx,
+    )?;
     Ok(())
 }
 
