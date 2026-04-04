@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.5] - 2026-04-05
+
 ### Added
+- `--headless` flag for `worktree open`: skips opening the editor or terminal, useful for scripting and CI ([#85](https://github.com/worktree-io/runner/pull/85))
 - `is_terminal` field on `EditorEntry` to distinguish terminal emulators from IDE editors
 
 ### Changed
