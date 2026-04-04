@@ -48,7 +48,11 @@
       "Bash(git status:*)",
       "Bash(cat:*)",
       "Bash(xargs basename:*)",
-      "Bash(tmux -V)"
+      "Bash(tmux -V)",
+      "Bash(tmux list-sessions:*)",
+      "Bash(tmux list-windows:*)",
+      "Bash(gh run:*)",
+      "mcp__playwright__browser_network_requests"
     ],
     "deny": ["Bash(gh issue create:*)", "Bash(cargo publish:*)"]
   },
