@@ -23,16 +23,14 @@ fn test_load_from_empty_toml() {
 }
 
 #[test]
-fn test_load_from_with_hooks() {
+fn test_load_from_with_hooks_under_table() {
     let dir = tempfile::tempdir().unwrap();
     let toml = r#"
-[hooks."pre:open"]
-script = "npm install"
-order = "before"
-
-[hooks."post:open"]
-script = "echo done"
-order = "after"
+[hooks]
+"pre:open" = "npm install"
+"pre:open:order" = "before"
+"post:open" = "echo done"
+"post:open:order" = "after"
 "#;
     std::fs::write(dir.path().join(".worktree.toml"), toml.as_bytes()).unwrap();
     let cfg = RepoConfig::load_from(dir.path()).unwrap();
@@ -45,10 +43,24 @@ order = "after"
 }
 
 #[test]
+fn test_load_from_user_actual_file_format() {
+    // Mirrors the real .worktree.toml a user produces by uncommenting the
+    // hook lines from the scaffold without uncommenting the `[hooks]`
+    // header. Regression test for the silent-no-op bug.
+    let dir = tempfile::tempdir().unwrap();
+    let toml = "\"post:open\" = \"cargo build\"\n\"post:open:order\" = \"before\"\n";
+    std::fs::write(dir.path().join(".worktree.toml"), toml).unwrap();
+    let cfg = RepoConfig::load_from(dir.path()).unwrap();
+    let post = cfg.hooks.post_open.expect("post:open should parse");
+    assert_eq!(post.script, "cargo build");
+    assert_eq!(post.order, HookOrder::Before);
+}
+
+#[test]
 fn test_load_from_order_defaults_to_before() {
     let dir = tempfile::tempdir().unwrap();
-    let toml = "[hooks.\"pre:open\"]\nscript = \"echo hi\"\n";
-    std::fs::write(dir.path().join(".worktree.toml"), toml.as_bytes()).unwrap();
+    let toml = "\"pre:open\" = \"echo hi\"\n";
+    std::fs::write(dir.path().join(".worktree.toml"), toml).unwrap();
     let cfg = RepoConfig::load_from(dir.path()).unwrap();
     assert_eq!(cfg.hooks.pre_open.unwrap().order, HookOrder::Before);
 }
@@ -56,8 +68,8 @@ fn test_load_from_order_defaults_to_before() {
 #[test]
 fn test_load_from_replace_order() {
     let dir = tempfile::tempdir().unwrap();
-    let toml = "[hooks.\"pre:open\"]\nscript = \"cargo build\"\norder = \"replace\"\n";
-    std::fs::write(dir.path().join(".worktree.toml"), toml.as_bytes()).unwrap();
+    let toml = "\"pre:open\" = \"cargo build\"\n\"pre:open:order\" = \"replace\"\n";
+    std::fs::write(dir.path().join(".worktree.toml"), toml).unwrap();
     let cfg = RepoConfig::load_from(dir.path()).unwrap();
     assert_eq!(cfg.hooks.pre_open.unwrap().order, HookOrder::Replace);
 }

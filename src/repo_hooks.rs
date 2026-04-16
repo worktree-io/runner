@@ -1,10 +1,7 @@
 use std::path::Path;
 
-use serde::{Deserialize, Serialize};
-
 /// Declares how a per-repo hook relates to the matching global hook.
-#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
-#[serde(rename_all = "lowercase")]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub enum HookOrder {
     /// Run the per-repo hook first, then the global hook.
     #[default]
@@ -15,27 +12,24 @@ pub enum HookOrder {
     Replace,
 }
 
-/// A single per-repo hook with its script and its ordering relationship to the
+/// A single per-repo hook with its script and ordering relationship to the
 /// global hook.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct RepoHookEntry {
     /// The hook script. Supports the same Mustache-style placeholders as
     /// global hooks: `{{owner}}`, `{{repo}}`, `{{issue}}`, `{{branch}}`,
     /// `{{worktree_path}}`.
     pub script: String,
-    /// How this hook relates to the global hook. Defaults to `before`.
-    #[serde(default)]
+    /// How this hook relates to the global hook. Defaults to [`HookOrder::Before`].
     pub order: HookOrder,
 }
 
-/// Per-repo hooks configuration from `.worktree.toml`.
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+/// Per-repo hooks configuration parsed from `.worktree.toml`.
+#[derive(Debug, Clone, Default)]
 pub struct RepoHooksConfig {
     /// Script run before the workspace is opened.
-    #[serde(rename = "pre:open", skip_serializing_if = "Option::is_none", default)]
     pub pre_open: Option<RepoHookEntry>,
     /// Script run after the workspace is opened.
-    #[serde(rename = "post:open", skip_serializing_if = "Option::is_none", default)]
     pub post_open: Option<RepoHookEntry>,
 }
 
@@ -44,8 +38,7 @@ pub struct RepoHooksConfig {
 ///
 /// The file is version-controlled alongside the repo so that every developer
 /// who uses `worktree-io` gets the same lifecycle hooks automatically.
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(default)]
+#[derive(Debug, Clone, Default)]
 pub struct RepoConfig {
     /// Lifecycle hooks scoped to this repository.
     pub hooks: RepoHooksConfig,
@@ -54,13 +47,20 @@ pub struct RepoConfig {
 impl RepoConfig {
     /// Load `.worktree.toml` from `worktree_path`.
     ///
-    /// Returns `None` if the file does not exist or cannot be parsed, so the
-    /// caller can safely fall back to global-only behavior.
+    /// Returns `None` when the file is missing. When the file exists but
+    /// cannot be parsed, prints a warning to stderr and also returns `None`
+    /// so the caller falls back to global-only behavior.
     #[must_use]
     pub fn load_from(worktree_path: &Path) -> Option<Self> {
         let path = worktree_path.join(".worktree.toml");
-        let contents = std::fs::read_to_string(path).ok()?;
-        toml::from_str(&contents).ok()
+        let contents = std::fs::read_to_string(&path).ok()?;
+        match crate::repo_hooks_parse::parse(&contents) {
+            Ok(cfg) => Some(cfg),
+            Err(e) => {
+                eprintln!("warning: ignoring {}: {e}", path.display());
+                None
+            }
+        }
     }
 }
 

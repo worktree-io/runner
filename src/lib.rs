@@ -16,6 +16,8 @@ pub mod name_gen;
 pub mod opener;
 /// Per-repository hook configuration loaded from `.worktree.toml`.
 pub mod repo_hooks;
+/// Parser for the `.worktree.toml` flat-key hook syntax.
+pub mod repo_hooks_parse;
 /// Scaffold template written to `.worktree.toml` when the file is absent.
 pub mod repo_hooks_scaffold;
 /// `worktree://` URL scheme registration.

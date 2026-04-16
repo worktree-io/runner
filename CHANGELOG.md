@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Per-repo hooks in `.worktree.toml` are now actually loaded. The deserializer previously expected a nested `[hooks."pre:open"]` table with `script`/`order` fields, while the scaffold documented the flat form (`"pre:open" = "..."` with `"pre:open:order" = "..."`). Configs following the documented form were silently parsed as no-ops. The loader now accepts the flat form both at the document root and under an explicit `[hooks]` table, and surfaces parse errors to stderr instead of swallowing them.
+
 ## [0.17.5] - 2026-04-05
 
 ### Added
