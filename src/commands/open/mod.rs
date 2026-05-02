@@ -12,13 +12,14 @@ use worktree_io::{
     workspace::Workspace,
 };
 
-use hook_ctx::{build_hook_context, effective_hooks, launch_editor};
+use hook_ctx::{build_hook_context, effective_hooks, launch_editor, load_worktree_io_script};
 
 pub fn cmd_open(
     issue_ref: Option<&str>,
     force_editor: bool,
     no_hooks: bool,
     headless: bool,
+    script: Option<&str>,
 ) -> Result<()> {
     let (issue, deep_link_opts) = match issue_ref {
         Some(r) => IssueRef::parse_with_options(r)?,
@@ -56,7 +57,9 @@ pub fn cmd_open(
         }
     }
     let hook_ctx = build_hook_context(&issue, &workspace.path);
-    let (effective_pre, effective_post) = if no_hooks || deep_link_opts.no_hooks {
+    let (effective_pre, effective_post) = if let Some(name) = script {
+        (None, Some(load_worktree_io_script(&workspace.path, name)?))
+    } else if no_hooks || deep_link_opts.no_hooks {
         (None, None)
     } else {
         effective_hooks(&config, &workspace.path)

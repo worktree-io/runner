@@ -1,4 +1,5 @@
-use anyhow::Result;
+use anyhow::{bail, Context, Result};
+use std::path::{Component, Path};
 use worktree_io::{
     config::Config,
     hooks::{run_hook, HookContext},
@@ -6,6 +7,20 @@ use worktree_io::{
     opener,
     repo_hooks::{combined_script, RepoConfig},
 };
+
+/// Load a named script from `<worktree_path>/.worktree-io/<name>`.
+///
+/// Rejects names that contain path separators or `..` to prevent directory
+/// traversal outside `.worktree-io/`.
+pub(super) fn load_worktree_io_script(worktree_path: &Path, name: &str) -> Result<String> {
+    let components: Vec<_> = Path::new(name).components().collect();
+    if !matches!(components.as_slice(), [Component::Normal(_)]) {
+        bail!("invalid script name {name:?} — must be a plain filename, no path separators");
+    }
+    let script_path = worktree_path.join(".worktree-io").join(name);
+    std::fs::read_to_string(&script_path)
+        .with_context(|| format!("script not found: {}", script_path.display()))
+}
 
 pub(super) fn effective_hooks(
     config: &Config,

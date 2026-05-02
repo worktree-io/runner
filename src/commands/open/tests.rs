@@ -1,4 +1,39 @@
 use super::*;
+use std::fs;
+use tempfile::TempDir;
+
+fn make_script(dir: &TempDir, name: &str, content: &str) {
+    let scripts = dir.path().join(".worktree-io");
+    fs::create_dir_all(&scripts).unwrap();
+    fs::write(scripts.join(name), content).unwrap();
+}
+
+#[test]
+fn test_load_worktree_io_script_ok() {
+    let dir = TempDir::new().unwrap();
+    make_script(&dir, "setup", "echo hello");
+    let content = load_worktree_io_script(dir.path(), "setup").unwrap();
+    assert_eq!(content, "echo hello");
+}
+
+#[test]
+fn test_load_worktree_io_script_missing() {
+    let dir = TempDir::new().unwrap();
+    let err = load_worktree_io_script(dir.path(), "missing").unwrap_err();
+    assert!(err.to_string().contains("script not found"));
+}
+
+#[test]
+fn test_load_worktree_io_script_rejects_traversal() {
+    let dir = TempDir::new().unwrap();
+    for bad in ["../evil", "foo/bar", ".", ".."] {
+        let err = load_worktree_io_script(dir.path(), bad).unwrap_err();
+        assert!(
+            err.to_string().contains("invalid script name"),
+            "expected rejection for {bad:?}, got: {err}"
+        );
+    }
+}
 
 #[test]
 fn test_build_hook_ctx_linear() {

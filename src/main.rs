@@ -37,6 +37,9 @@ enum Commands {
         /// Skip opening editor/terminal (hooks still run); useful for programmatic invocation
         #[arg(long)]
         headless: bool,
+        /// Run a script from .worktree-io/ as post:open, replacing all other hooks
+        #[arg(long, value_name = "NAME")]
+        script: Option<String>,
     },
     /// Open multiple repos as a unified workspace under ~/workspaces/<name>/
     #[command(name = "open-multi")]
@@ -86,7 +89,14 @@ fn main() -> Result<()> {
             editor,
             no_hooks,
             headless,
-        } => cmd_open(issue_ref.as_deref(), editor, no_hooks, headless)?,
+            script,
+        } => cmd_open(
+            issue_ref.as_deref(),
+            editor,
+            no_hooks,
+            headless,
+            script.as_deref(),
+        )?,
         Commands::OpenMulti { refs, no_hooks } => cmd_open_multi(&refs, no_hooks)?,
         Commands::Config { action } => cmd_config(action)?,
         Commands::List { json } => cmd_list(json)?,
