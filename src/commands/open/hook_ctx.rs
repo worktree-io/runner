@@ -8,10 +8,6 @@ use worktree_io::{
     repo_hooks::{combined_script, RepoConfig},
 };
 
-/// Load a named script from `<worktree_path>/.worktree-io/<name>`.
-///
-/// Rejects names that contain path separators or `..` to prevent directory
-/// traversal outside `.worktree-io/`.
 pub(super) fn load_worktree_io_script(worktree_path: &Path, name: &str) -> Result<String> {
     let components: Vec<_> = Path::new(name).components().collect();
     if !matches!(components.as_slice(), [Component::Normal(_)]) {

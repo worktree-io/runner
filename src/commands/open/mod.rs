@@ -2,6 +2,7 @@ mod editor;
 mod hook_ctx;
 
 use anyhow::Result;
+use hook_ctx::{build_hook_context, effective_hooks, launch_editor, load_worktree_io_script};
 use std::time::SystemTime;
 use worktree_io::{
     config::Config,
@@ -11,8 +12,6 @@ use worktree_io::{
     ttl::{self, WorkspaceRegistry},
     workspace::Workspace,
 };
-
-use hook_ctx::{build_hook_context, effective_hooks, launch_editor, load_worktree_io_script};
 
 pub fn cmd_open(
     issue_ref: Option<&str>,
@@ -96,7 +95,6 @@ pub fn cmd_open(
     )?;
     Ok(())
 }
-
 #[cfg(test)]
 #[path = "tests.rs"]
 mod tests;
