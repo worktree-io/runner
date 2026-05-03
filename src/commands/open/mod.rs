@@ -80,5 +80,8 @@ pub fn cmd_open(
     Ok(())
 }
 #[cfg(test)]
+#[path = "hook_build_tests.rs"]
+mod hook_build_tests;
+#[cfg(test)]
 #[path = "tests.rs"]
 mod tests;
