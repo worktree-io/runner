@@ -1,4 +1,10 @@
-use worktree_io::{hooks::HookContext, issue::IssueRef};
+use std::time::SystemTime;
+use worktree_io::{
+    config::Config,
+    hooks::HookContext,
+    issue::IssueRef,
+    ttl::{self, WorkspaceRegistry},
+};
 
 pub(super) fn build_hook_context(issue: &IssueRef, worktree_path: &std::path::Path) -> HookContext {
     let (owner, repo, issue_str) = match issue {
@@ -46,5 +52,25 @@ pub(super) fn build_hook_context(issue: &IssueRef, worktree_path: &std::path::Pa
         issue: issue_str,
         branch: issue.branch_name(),
         worktree_path: worktree_path.to_string_lossy().into_owned(),
+    }
+}
+
+pub(super) fn run_auto_prune(config: &Config) {
+    if config.workspace.auto_prune {
+        if let Some(ttl_val) = &config.workspace.ttl {
+            if let Ok(mut registry) = WorkspaceRegistry::load() {
+                let now = SystemTime::now();
+                let expired = ttl::prune(&registry.workspace, ttl_val, now);
+                let expired_paths: Vec<_> = expired.iter().map(|r| r.path.clone()).collect();
+                for path in &expired_paths {
+                    eprintln!("Pruning expired workspace at {}…", path.display());
+                    let _ = std::fs::remove_dir_all(path);
+                }
+                registry
+                    .workspace
+                    .retain(|r| !expired_paths.contains(&r.path));
+                let _ = registry.save();
+            }
+        }
     }
 }

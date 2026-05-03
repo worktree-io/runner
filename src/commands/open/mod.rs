@@ -3,15 +3,13 @@ mod hook_build;
 mod hook_ctx;
 
 use anyhow::Result;
-use hook_build::build_hook_context;
+use hook_build::{build_hook_context, run_auto_prune};
 use hook_ctx::{effective_hooks, launch_editor, load_worktree_io_script};
-use std::time::SystemTime;
 use worktree_io::{
     config::Config,
     hooks::run_hook,
     issue::{DeepLinkOptions, IssueRef},
     repo_hooks_scaffold::scaffold_if_missing,
-    ttl::{self, WorkspaceRegistry},
     workspace::Workspace,
 };
 
@@ -40,23 +38,7 @@ pub fn cmd_open(
 
     let config = Config::load()?;
 
-    if config.workspace.auto_prune {
-        if let Some(ttl_val) = &config.workspace.ttl {
-            if let Ok(mut registry) = WorkspaceRegistry::load() {
-                let now = SystemTime::now();
-                let expired = ttl::prune(&registry.workspace, ttl_val, now);
-                let expired_paths: Vec<_> = expired.iter().map(|r| r.path.clone()).collect();
-                for path in &expired_paths {
-                    eprintln!("Pruning expired workspace at {}…", path.display());
-                    let _ = std::fs::remove_dir_all(path);
-                }
-                registry
-                    .workspace
-                    .retain(|r| !expired_paths.contains(&r.path));
-                let _ = registry.save();
-            }
-        }
-    }
+    run_auto_prune(&config);
     let hook_ctx = build_hook_context(&issue, &workspace.path);
     let (effective_pre, effective_post) = if let Some(name) = script {
         (None, Some(load_worktree_io_script(&workspace.path, name)?))
