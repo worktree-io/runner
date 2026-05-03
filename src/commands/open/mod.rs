@@ -1,8 +1,10 @@
 mod editor;
+mod hook_build;
 mod hook_ctx;
 
 use anyhow::Result;
-use hook_ctx::{build_hook_context, effective_hooks, launch_editor, load_worktree_io_script};
+use hook_build::build_hook_context;
+use hook_ctx::{effective_hooks, launch_editor, load_worktree_io_script};
 use std::time::SystemTime;
 use worktree_io::{
     config::Config,
