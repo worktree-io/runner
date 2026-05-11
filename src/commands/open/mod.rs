@@ -1,6 +1,7 @@
 mod editor;
 mod hook_build;
 mod hook_ctx;
+mod output;
 
 use anyhow::Result;
 use hook_build::{build_hook_context, run_auto_prune};
@@ -27,30 +28,17 @@ pub fn cmd_open(
         Some(r) => IssueRef::parse_with_options(r)?,
         None => (IssueRef::from_current_repo()?, DeepLinkOptions::default()),
     };
-    // Merge extra_env from CLI with any env pairs from deep link options.
     let mut merged_env = deep_link_opts.extra_env.clone();
     merged_env.extend(extra_env);
 
     let workspace = Workspace::open_or_create(issue.clone())?;
-
-    if json {
-        println!(
-            "{{\"path\":{:?},\"created\":{}}}",
-            workspace.path.display().to_string(),
-            workspace.created
-        );
-    } else if workspace.created {
-        eprintln!("Created workspace at {}", workspace.path.display());
-    } else {
-        eprintln!("Workspace already exists at {}", workspace.path.display());
-    }
+    output::report_workspace(&workspace, json);
 
     if matches!(scaffold_if_missing(&workspace.path), Ok(true)) && !json {
         eprintln!("created .worktree.toml (no active config — edit to enable hooks)");
     }
 
     let config = Config::load()?;
-
     run_auto_prune(&config);
     let mut hook_ctx = build_hook_context(&issue, &workspace.path);
     hook_ctx.extra_env = merged_env;
@@ -97,6 +85,7 @@ pub fn cmd_open(
     )?;
     Ok(())
 }
+
 #[cfg(test)]
 #[path = "hook_build_tests.rs"]
 mod hook_build_tests;

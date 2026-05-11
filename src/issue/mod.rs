@@ -7,6 +7,8 @@ pub use deep_link::DeepLinkOptions;
 pub use def::IssueRef;
 
 #[cfg(test)]
+mod adhoc_env_tests;
+#[cfg(test)]
 mod adhoc_tests;
 #[cfg(test)]
 mod azure_paths_tests;

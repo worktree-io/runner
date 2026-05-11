@@ -87,14 +87,14 @@ pub fn run_hook(script: &str, ctx: &HookContext) -> Result<()> {
         // LLVM_COV_EXCL_STOP
         _ => {}
     }
-
     Ok(())
 }
-
 #[cfg(test)]
-#[path = "hooks_tests.rs"]
-mod tests;
-
+#[path = "hooks_env_tests.rs"]
+mod env_tests;
 #[cfg(test)]
 #[path = "hooks_multiline_tests.rs"]
 mod multiline_tests;
+#[cfg(test)]
+#[path = "hooks_tests.rs"]
+mod tests;

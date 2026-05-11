@@ -8,6 +8,7 @@ mod jira;
 mod options;
 mod shorthand;
 mod worktree_url;
+mod worktree_url_params;
 
 use anyhow::{bail, Result};
 
@@ -54,15 +55,12 @@ impl IssueRef {
         if s.starts_with("centy:") {
             return centy::parse_centy(s);
         }
-
         if s.starts_with("gh:") {
             return gh::parse_gh(s);
         }
-
         if s.starts_with("gl:") {
             return gitlab::parse_gl(s);
         }
-
         if let Some(result) = shorthand::try_parse_shorthand(s) {
             return result;
         }
