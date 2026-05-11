@@ -76,6 +76,13 @@
     "euler",
     "gauss",
     "pascal",
-    "nohooks"
+    "nohooks",
+    "Ameliso",
+    "ameliso",
+    "AMELISO",
+    "HMAC",
+    "hmac",
+    "dgst",
+    "NOCOLON"
   ]
 }

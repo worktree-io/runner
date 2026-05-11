@@ -33,6 +33,12 @@ pub enum Commands {
         /// Run a script from .worktree-io/ as post:open, replacing all other hooks
         #[arg(long, value_name = "NAME")]
         script: Option<String>,
+        /// Environment variables to inject (KEY=VALUE), may be repeated
+        #[arg(long = "env", value_name = "KEY=VALUE", action = clap::ArgAction::Append)]
+        env: Vec<String>,
+        /// Output JSON with worktree path and created flag instead of human-readable text
+        #[arg(long)]
+        json: bool,
     },
     /// Open multiple repos as a unified workspace under ~/workspaces/<name>/
     #[command(name = "open-multi")]
@@ -72,4 +78,101 @@ pub enum Commands {
     Setup,
     /// Print the current version
     Version,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use clap::Parser;
+
+    fn parse(args: &[&str]) -> Commands {
+        Cli::parse_from(std::iter::once("worktree").chain(args.iter().copied())).command
+    }
+
+    #[test]
+    fn test_open_env_single() {
+        let cmd = parse(&["open", "acme/repo#1", "--env", "FOO=bar"]);
+        match cmd {
+            Commands::Open { env, .. } => {
+                assert_eq!(env, vec!["FOO=bar"]);
+            }
+            _other => panic!("unexpected command variant"),
+        }
+    }
+
+    #[test]
+    fn test_open_env_multiple() {
+        let cmd = parse(&[
+            "open",
+            "acme/repo#1",
+            "--env",
+            "FOO=bar",
+            "--env",
+            "BAZ=qux",
+        ]);
+        match cmd {
+            Commands::Open { env, .. } => {
+                assert_eq!(env, vec!["FOO=bar", "BAZ=qux"]);
+            }
+            _other => panic!("unexpected command variant"),
+        }
+    }
+
+    #[test]
+    fn test_open_env_empty_by_default() {
+        let cmd = parse(&["open", "acme/repo#1"]);
+        match cmd {
+            Commands::Open { env, .. } => {
+                assert!(env.is_empty());
+            }
+            _other => panic!("unexpected command variant"),
+        }
+    }
+
+    #[test]
+    fn test_open_json_flag() {
+        let cmd = parse(&["open", "acme/repo#1", "--json"]);
+        match cmd {
+            Commands::Open { json, .. } => {
+                assert!(json);
+            }
+            _other => panic!("unexpected command variant"),
+        }
+    }
+
+    #[test]
+    fn test_open_json_false_by_default() {
+        let cmd = parse(&["open", "acme/repo#1"]);
+        match cmd {
+            Commands::Open { json, .. } => {
+                assert!(!json);
+            }
+            _other => panic!("unexpected command variant"),
+        }
+    }
+
+    #[test]
+    fn test_open_env_and_json_together() {
+        let cmd = parse(&[
+            "open",
+            "acme/repo#1",
+            "--env",
+            "KEY=val",
+            "--json",
+            "--headless",
+        ]);
+        match cmd {
+            Commands::Open {
+                env,
+                json,
+                headless,
+                ..
+            } => {
+                assert_eq!(env, vec!["KEY=val"]);
+                assert!(json);
+                assert!(headless);
+            }
+            _other => panic!("unexpected command variant"),
+        }
+    }
 }

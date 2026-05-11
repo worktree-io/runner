@@ -52,6 +52,7 @@ pub(super) fn build_hook_context(issue: &IssueRef, worktree_path: &std::path::Pa
         issue: issue_str,
         branch: issue.branch_name(),
         worktree_path: worktree_path.to_string_lossy().into_owned(),
+        extra_env: vec![],
     }
 }
 
