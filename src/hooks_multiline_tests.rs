@@ -7,6 +7,7 @@ fn ctx() -> HookContext {
         issue: "42".into(),
         branch: "issue-42".into(),
         worktree_path: "/tmp/wt".into(),
+        extra_env: vec![],
     }
 }
 

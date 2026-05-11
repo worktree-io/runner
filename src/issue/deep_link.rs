@@ -6,4 +6,6 @@ pub struct DeepLinkOptions {
     pub editor: Option<String>,
     /// When `true` (set via `?no_hooks=1`), pre/post-open hooks are skipped.
     pub no_hooks: bool,
+    /// Extra environment variables from `env=KEY:VALUE` query params.
+    pub extra_env: Vec<(String, String)>,
 }

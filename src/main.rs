@@ -23,13 +23,28 @@ fn main() -> Result<()> {
             no_hooks,
             headless,
             script,
-        } => cmd_open(
-            issue_ref.as_deref(),
-            editor,
-            no_hooks,
-            headless,
-            script.as_deref(),
-        )?,
+            env,
+            json,
+        } => {
+            let extra_env: Vec<(String, String)> = env
+                .iter()
+                .filter_map(|kv| {
+                    let mut parts = kv.splitn(2, '=');
+                    let k = parts.next()?.to_string();
+                    let v = parts.next()?.to_string();
+                    Some((k, v))
+                })
+                .collect();
+            cmd_open(
+                issue_ref.as_deref(),
+                editor,
+                no_hooks,
+                headless,
+                script.as_deref(),
+                extra_env,
+                json,
+            )?;
+        }
         Commands::OpenMulti { refs, no_hooks } => cmd_open_multi(&refs, no_hooks)?,
         Commands::Config { action } => cmd_config(action)?,
         Commands::List { json } => cmd_list(json)?,

@@ -15,6 +15,8 @@ pub struct HookContext {
     pub branch: String,
     /// Absolute path to the worktree directory.
     pub worktree_path: String,
+    /// Extra environment variables to inject into the hook process.
+    pub extra_env: Vec<(String, String)>,
 }
 
 impl HookContext {
@@ -54,15 +56,24 @@ pub fn run_hook(script: &str, ctx: &HookContext) -> Result<()> {
     }
 
     #[cfg(windows)]
-    let result = Command::new("cmd")
-        .args([std::ffi::OsStr::new("/C"), tmp_path.as_os_str()])
-        .env("PATH", augmented_path())
-        .status();
+    let result = {
+        let mut cmd = Command::new("cmd");
+        cmd.args([std::ffi::OsStr::new("/C"), tmp_path.as_os_str()])
+            .env("PATH", augmented_path());
+        for (k, v) in &ctx.extra_env {
+            cmd.env(k, v);
+        }
+        cmd.status()
+    };
     #[cfg(not(windows))]
-    let result = Command::new("sh")
-        .arg(&tmp_path)
-        .env("PATH", augmented_path())
-        .status();
+    let result = {
+        let mut cmd = Command::new("sh");
+        cmd.arg(&tmp_path).env("PATH", augmented_path());
+        for (k, v) in &ctx.extra_env {
+            cmd.env(k, v);
+        }
+        cmd.status()
+    };
     let _ = std::fs::remove_file(&tmp_path);
 
     match result {

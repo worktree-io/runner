@@ -2,6 +2,7 @@ use crate::issue::{DeepLinkOptions, IssueRef};
 use anyhow::{bail, Context, Result};
 use url::Url;
 
+#[allow(clippy::too_many_lines)]
 pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)> {
     let url = Url::parse(s).with_context(|| format!("Invalid URL: {s}"))?;
     let mut owner = None;
@@ -18,6 +19,8 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
     let mut jira_host = None;
     let mut jira_issue_key = None;
     let mut gitlab_host: Option<String> = None;
+    let mut extra_env: Vec<(String, String)> = Vec::new();
+    let mut adhoc_name: Option<String> = None;
     for (key, val) in url.query_pairs() {
         match key.as_ref() {
             "owner" => owner = Some(val.into_owned()),
@@ -50,10 +53,22 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
             "jira_host" => jira_host = Some(val.into_owned()),
             "jira_issue_key" => jira_issue_key = Some(val.into_owned()),
             "gitlab_host" => gitlab_host = Some(val.into_owned()),
+            "env" => {
+                let kv = val.as_ref();
+                if let Some((k, v)) = kv.split_once(':') {
+                    extra_env.push((k.to_string(), v.to_string()));
+                }
+                // silently ignore malformed env params (no colon separator)
+            }
+            "adhoc" => adhoc_name = Some(val.into_owned()),
             _ => {}
         }
     }
-    let opts = DeepLinkOptions { editor, no_hooks };
+    let opts = DeepLinkOptions {
+        editor,
+        no_hooks,
+        extra_env,
+    };
     if let Some(url_str) = url_param {
         return Ok((super::github::parse_github_url(&url_str)?, opts));
     }
@@ -92,6 +107,8 @@ pub(super) fn parse_worktree_url(s: &str) -> Result<(IssueRef, DeepLinkOptions)>
             repo,
             number,
         }
+    } else if let Some(name) = adhoc_name {
+        IssueRef::Adhoc { owner, repo, name }
     } else {
         let name = crate::name_gen::generate_name();
         IssueRef::Adhoc { owner, repo, name }

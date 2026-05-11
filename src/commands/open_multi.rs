@@ -57,6 +57,7 @@ pub fn cmd_open_multi(refs: &[String], no_hooks: bool) -> Result<()> {
         issue: String::new(),
         branch: String::new(),
         worktree_path: root.to_string_lossy().into_owned(),
+        extra_env: vec![],
     };
 
     if !no_hooks {
