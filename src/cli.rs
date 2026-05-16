@@ -30,7 +30,7 @@ pub enum Commands {
         /// Skip opening editor/terminal (hooks still run); useful for programmatic invocation
         #[arg(long)]
         headless: bool,
-        /// Run a script from .worktree-io/ as post:open, replacing all other hooks
+        /// Run a script from .worktree/ as post:open, replacing all other hooks
         #[arg(long, value_name = "NAME")]
         script: Option<String>,
         /// Environment variables to inject (KEY=VALUE), may be repeated

@@ -12,7 +12,7 @@ pub(super) fn load_worktree_io_script(worktree_path: &Path, name: &str) -> Resul
     if !matches!(components.as_slice(), [Component::Normal(_)]) {
         bail!("invalid script name {name:?} — must be a plain filename, no path separators");
     }
-    let script_path = worktree_path.join(".worktree-io").join(name);
+    let script_path = worktree_path.join(".worktree").join(name);
     std::fs::read_to_string(&script_path)
         .with_context(|| format!("script not found: {}", script_path.display()))
 }

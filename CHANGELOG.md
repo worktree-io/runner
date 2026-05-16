@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-05-16
+
+### Added
+- `--script <NAME>` flag for `worktree open`: runs a named script from `.worktree/` in the repo root as the `post:open` hook, replacing all other hooks
+- `--env KEY=VALUE` flag for `worktree open`: injects extra environment variables into the hook process; repeatable for multiple vars
+- `--json` flag for `worktree open`: emits a JSON object with `path` and `created` fields for programmatic use
+- Adhoc `worktree://` deep link support: URLs without an issue number open a fresh worktree on the default branch with a generated branch name
+- `WORKTREE_OWNER`, `WORKTREE_REPO`, `WORKTREE_ISSUE`, `WORKTREE_BRANCH`, and `WORKTREE_PATH` environment variables injected into all hook scripts alongside the existing Mustache template variables
+- Agent-runner: lightweight Node.js webhook server (`agent-runner/`) that receives Ameliso test-run delegation webhooks and provisions local Claude Code agent sessions via `worktree open`; forwards `AMELISO_GRPC_ADDR`, `AMELISO_API_URL`, and `AMELISO_MCP_BIN` env vars for per-repo MCP configuration
+
 ## [0.17.6] - 2026-04-16
 
 ### Fixed
@@ -220,7 +230,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release with CI/CD pipeline publishing cross-platform release artifacts ([#1](https://github.com/worktree-io/runner/pull/1))
 
-[Unreleased]: https://github.com/worktree-io/runner/compare/v0.17.2...HEAD
+[Unreleased]: https://github.com/worktree-io/runner/compare/v0.18.0...HEAD
+[0.18.0]: https://github.com/worktree-io/runner/compare/v0.17.6...v0.18.0
+[0.17.6]: https://github.com/worktree-io/runner/compare/v0.17.5...v0.17.6
+[0.17.5]: https://github.com/worktree-io/runner/compare/v0.17.2...v0.17.5
 [0.17.2]: https://github.com/worktree-io/runner/compare/v0.17.1...v0.17.2
 [0.17.1]: https://github.com/worktree-io/runner/compare/v0.17.0...v0.17.1
 [0.17.0]: https://github.com/worktree-io/runner/compare/v0.16.0...v0.17.0

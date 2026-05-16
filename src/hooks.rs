@@ -59,7 +59,12 @@ pub fn run_hook(script: &str, ctx: &HookContext) -> Result<()> {
     let result = {
         let mut cmd = Command::new("cmd");
         cmd.args([std::ffi::OsStr::new("/C"), tmp_path.as_os_str()])
-            .env("PATH", augmented_path());
+            .env("PATH", augmented_path())
+            .env("WORKTREE_OWNER", &ctx.owner)
+            .env("WORKTREE_REPO", &ctx.repo)
+            .env("WORKTREE_ISSUE", &ctx.issue)
+            .env("WORKTREE_BRANCH", &ctx.branch)
+            .env("WORKTREE_PATH", &ctx.worktree_path);
         for (k, v) in &ctx.extra_env {
             cmd.env(k, v);
         }
@@ -68,7 +73,13 @@ pub fn run_hook(script: &str, ctx: &HookContext) -> Result<()> {
     #[cfg(not(windows))]
     let result = {
         let mut cmd = Command::new("sh");
-        cmd.arg(&tmp_path).env("PATH", augmented_path());
+        cmd.arg(&tmp_path)
+            .env("PATH", augmented_path())
+            .env("WORKTREE_OWNER", &ctx.owner)
+            .env("WORKTREE_REPO", &ctx.repo)
+            .env("WORKTREE_ISSUE", &ctx.issue)
+            .env("WORKTREE_BRANCH", &ctx.branch)
+            .env("WORKTREE_PATH", &ctx.worktree_path);
         for (k, v) in &ctx.extra_env {
             cmd.env(k, v);
         }

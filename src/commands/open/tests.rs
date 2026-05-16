@@ -3,7 +3,7 @@ use std::fs;
 use tempfile::TempDir;
 
 fn make_script(dir: &TempDir, name: &str, content: &str) {
-    let scripts = dir.path().join(".worktree-io");
+    let scripts = dir.path().join(".worktree");
     fs::create_dir_all(&scripts).unwrap();
     fs::write(scripts.join(name), content).unwrap();
 }

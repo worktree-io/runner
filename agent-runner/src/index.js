@@ -91,6 +91,18 @@ function spawnWorktreeSession(owner, repo, runId, caseIds) {
     `AMELISO_CASE_IDS=${caseIdsCsv}`,
   ];
 
+  // Forward MCP endpoint env vars so the per-repo hook can override .mcp.json
+  // for local dev (agent-runner sets AMELISO_GRPC_ADDR / AMELISO_API_URL in .env).
+  if (process.env.AMELISO_GRPC_ADDR) {
+    args.push("--env", `AMELISO_GRPC_ADDR=${process.env.AMELISO_GRPC_ADDR}`);
+  }
+  if (process.env.AMELISO_API_URL) {
+    args.push("--env", `AMELISO_API_URL=${process.env.AMELISO_API_URL}`);
+  }
+  if (process.env.AMELISO_MCP_BIN) {
+    args.push("--env", `AMELISO_MCP_BIN=${process.env.AMELISO_MCP_BIN}`);
+  }
+
   console.log(
     `[agent-runner] Spawning: worktree ${args.join(" ")}`
   );

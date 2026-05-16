@@ -36,6 +36,25 @@ fn test_run_hook_extra_env_injected() {
 
 #[cfg(not(windows))]
 #[test]
+fn test_run_hook_context_env_vars_injected() {
+    let f = std::env::temp_dir().join("worktree-test-ctx-env.txt");
+    let p = f.to_str().unwrap().to_string();
+    let _ = std::fs::remove_file(&f);
+    run_hook(
+        &format!(
+            "printf '%s:%s:%s:%s:%s' \"$WORKTREE_OWNER\" \"$WORKTREE_REPO\" \
+             \"$WORKTREE_ISSUE\" \"$WORKTREE_BRANCH\" \"$WORKTREE_PATH\" > '{p}'"
+        ),
+        &ctx(),
+    )
+    .unwrap();
+    let got = std::fs::read_to_string(&f).unwrap_or_default();
+    std::fs::remove_file(&f).ok();
+    assert_eq!(got, "acme:api:42:issue-42:/tmp/wt");
+}
+
+#[cfg(not(windows))]
+#[test]
 fn test_run_hook_multiple_extra_envs() {
     let f = std::env::temp_dir().join("worktree-test-multi-env.txt");
     let p = f.to_str().unwrap().to_string();
