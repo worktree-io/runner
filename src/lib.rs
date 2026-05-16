@@ -6,6 +6,7 @@ pub mod config;
 pub mod git;
 /// Pre/post-open hook execution.
 pub mod hooks;
+pub(crate) mod hooks_ctx;
 /// Issue reference types and parsing.
 pub mod issue;
 /// Multi-repo unified workspace creation.
