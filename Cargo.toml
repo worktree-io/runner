@@ -43,3 +43,5 @@ nursery = { level = "deny", priority = -1 }
 cargo = { level = "deny", priority = -1 }
 # Cannot control transitive dependency version conflicts
 multiple_crate_versions = "allow"
+# Forbid leftover `dbg!` debugging macros from reaching production
+dbg_macro = "deny"
