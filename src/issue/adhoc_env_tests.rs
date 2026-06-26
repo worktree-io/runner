@@ -18,7 +18,7 @@ fn parse_worktree_url_env_with_adhoc() {
     .unwrap();
     match r {
         IssueRef::Adhoc { name, .. } => assert_eq!(name, "run-42"),
-        other => panic!("expected Adhoc, got {other:?}"),
+        other => unreachable!("expected Adhoc, got {other:?}"),
     }
     assert_eq!(opts.extra_env.len(), 1);
     assert_eq!(
