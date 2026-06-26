@@ -14,7 +14,10 @@ use worktree_io::{
     workspace::Workspace,
 };
 
-#[allow(clippy::fn_params_excessive_bools)]
+#[allow(
+    clippy::fn_params_excessive_bools,
+    reason = "each bool maps directly to a distinct CLI flag (`--no-editor`, `--no-hooks`, `--headless`, `--force`); wrapping them in a flags struct would add indirection without clarity gains at the single call site"
+)]
 pub fn cmd_open(
     issue_ref: Option<&str>,
     force_editor: bool,

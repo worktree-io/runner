@@ -30,7 +30,7 @@ pub(super) fn try_terminal_with_init(
     }
     let path_escaped = path_str.replace('\'', "'\\''");
     // Single quotes around {path_escaped} are shell quoting, not Rust string delimiters.
-    #[allow(clippy::literal_string_with_formatting_args)]
+    #[allow(clippy::literal_string_with_formatting_args, reason = "`${SHELL:-sh}` and `${SHELL}` are POSIX shell variable expansions embedded in the script string, not Rust format arguments; the braces are intentional shell syntax")]
     let bootstrap = format!(
         "#!/bin/sh\ncd '{path_escaped}'\ntrap 'exec \"${{SHELL:-sh}}\"' INT\n{init_script}\nexec \"${{SHELL:-sh}}\"\n"
     );

@@ -1,5 +1,8 @@
 //! Worktree CLI binary — open GitHub issues as git worktree workspaces.
-#![allow(missing_docs)] // binary crate; public API lives in the library
+#![allow(
+    missing_docs,
+    reason = "binary crate — public API and its documentation live in the library crate, not the binary entry-point"
+)]
 use anyhow::Result;
 use clap::Parser;
 mod cli;

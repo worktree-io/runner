@@ -47,3 +47,11 @@ multiple_crate_versions = "allow"
 dbg_macro = "deny"
 # Forbid leftover `todo!` placeholders from reaching production
 todo = "deny"
+# Require every `#[allow(...)]` / `#![allow(...)]` attribute to carry a
+# `reason = "..."` string explaining WHY the lint is suppressed. Without a
+# reason, a suppression is opaque: a future reader can't tell whether the
+# `allow` is a deliberate policy decision, a temporary workaround, or an
+# accidental copy-paste. Documenting the reason turns each suppression into
+# self-explanatory code and makes it easy to re-evaluate or remove them as
+# the codebase evolves.
+allow_attributes_without_reason = "deny"
