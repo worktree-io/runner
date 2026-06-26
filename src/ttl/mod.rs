@@ -44,8 +44,7 @@ impl std::str::FromStr for Ttl {
 #[must_use]
 pub fn is_expired(record: &WorkspaceRecord, ttl: &Ttl, now: SystemTime) -> bool {
     now.duration_since(record.created_at)
-        .map(|age| age >= ttl.0)
-        .unwrap_or(false)
+        .is_ok_and(|age| age >= ttl.0)
 }
 
 /// Returns workspaces that are both present on disk and have exceeded the TTL.

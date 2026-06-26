@@ -71,8 +71,6 @@ fn test_run_auto_prune_with_ttl_no_expired() {
     let mut config = Config::default();
     config.workspace.auto_prune = true;
     // 1000-year TTL: no real registry entry can be this old, so nothing is pruned
-    config.workspace.ttl = Some(Ttl::new(std::time::Duration::from_secs(
-        1_000 * 365 * 24 * 3600,
-    )));
+    config.workspace.ttl = Some(Ttl::new(std::time::Duration::from_hours(1_000 * 365 * 24)));
     run_auto_prune(&config);
 }

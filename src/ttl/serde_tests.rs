@@ -17,7 +17,7 @@ struct RecordHelper {
 
 #[test]
 fn test_ttl_serde_round_trip() {
-    let original = Ttl::new(Duration::from_secs(7 * 24 * 3600));
+    let original = Ttl::new(Duration::from_hours(7 * 24));
     let s = toml::to_string(&TtlHelper { ttl: original }).unwrap();
     let parsed: TtlHelper = toml::from_str(&s).unwrap();
     assert_eq!(parsed.ttl.duration(), original.duration());
@@ -44,7 +44,7 @@ fn test_workspace_registry_serde_with_entries() {
 #[test]
 fn test_workspace_record_serde_round_trip() {
     let created_at = SystemTime::now()
-        .checked_sub(Duration::from_secs(3600))
+        .checked_sub(Duration::from_hours(1))
         .unwrap();
     let h = RecordHelper {
         workspace: vec![WorkspaceRecord {

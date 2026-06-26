@@ -45,3 +45,5 @@ cargo = { level = "deny", priority = -1 }
 multiple_crate_versions = "allow"
 # Forbid leftover `dbg!` debugging macros from reaching production
 dbg_macro = "deny"
+# Forbid leftover `todo!` placeholders from reaching production
+todo = "deny"
