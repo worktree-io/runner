@@ -42,7 +42,10 @@ const BASE: &[(&[&str], &str, &str, &str)] = &[
 
 /// All supported editor/terminal entries for the current platform.
 #[must_use]
-#[allow(unused_mut)]
+#[allow(
+    unused_mut,
+    reason = "`v` is mutated by `cfg`-gated blocks that push platform-specific entries on macOS and Linux; the binding must be `mut` for those platforms even though it appears unused on others"
+)]
 pub fn all_entries() -> Vec<EditorEntry> {
     let mut v: Vec<EditorEntry> = BASE
         .iter()
