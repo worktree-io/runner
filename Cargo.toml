@@ -47,3 +47,5 @@ multiple_crate_versions = "allow"
 dbg_macro = "deny"
 # Forbid leftover `todo!` placeholders from reaching production
 todo = "deny"
+# Forbid explicit `panic!` calls; unreachable arms belong in `unreachable!`
+panic = "deny"
