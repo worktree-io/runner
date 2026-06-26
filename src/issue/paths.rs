@@ -21,7 +21,7 @@ impl IssueRef {
     /// Panics if the home directory cannot be determined.
     #[must_use]
     pub fn bare_clone_path(&self) -> PathBuf {
-        let temp = Config::load().map(|c| c.workspace.temp).unwrap_or(false);
+        let temp = Config::load().is_ok_and(|c| c.workspace.temp);
         self.bare_clone_path_rooted(temp)
     }
 

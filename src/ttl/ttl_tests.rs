@@ -19,13 +19,13 @@ fn future(secs: u64) -> SystemTime {
 
 #[test]
 fn test_ttl_new_and_duration() {
-    let d = Duration::from_secs(3600);
+    let d = Duration::from_hours(1);
     assert_eq!(Ttl::new(d).duration(), d);
 }
 
 #[test]
 fn test_ttl_display_round_trips() {
-    let ttl = Ttl::new(Duration::from_secs(7 * 24 * 3600));
+    let ttl = Ttl::new(Duration::from_hours(7 * 24));
     let parsed: Ttl = ttl.to_string().parse().unwrap();
     assert_eq!(parsed.duration(), ttl.duration());
 }
@@ -33,7 +33,7 @@ fn test_ttl_display_round_trips() {
 #[test]
 fn test_ttl_parse_valid() {
     let ttl: Ttl = "1day".parse().unwrap();
-    assert_eq!(ttl.duration(), Duration::from_secs(86_400));
+    assert_eq!(ttl.duration(), Duration::from_hours(24));
 }
 
 #[test]
@@ -45,7 +45,7 @@ fn test_ttl_parse_invalid() {
 
 #[test]
 fn test_is_expired_when_age_exceeds_ttl() {
-    let ttl = Ttl::new(Duration::from_secs(60));
+    let ttl = Ttl::new(Duration::from_mins(1));
     let r = WorkspaceRecord {
         path: PathBuf::new(),
         created_at: past(120),
@@ -55,7 +55,7 @@ fn test_is_expired_when_age_exceeds_ttl() {
 
 #[test]
 fn test_is_not_expired_when_young() {
-    let ttl = Ttl::new(Duration::from_secs(3600));
+    let ttl = Ttl::new(Duration::from_hours(1));
     let r = WorkspaceRecord {
         path: PathBuf::new(),
         created_at: past(60),
@@ -65,7 +65,7 @@ fn test_is_not_expired_when_young() {
 
 #[test]
 fn test_is_not_expired_when_created_in_future() {
-    let ttl = Ttl::new(Duration::from_secs(60));
+    let ttl = Ttl::new(Duration::from_mins(1));
     let r = WorkspaceRecord {
         path: PathBuf::new(),
         created_at: future(30),

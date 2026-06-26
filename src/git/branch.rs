@@ -73,6 +73,5 @@ pub fn branch_exists_remote(bare: &Path, branch: &str) -> bool {
             &format!("refs/remotes/origin/{branch}"),
         ])
         .output()
-        .map(|o| o.status.success())
-        .unwrap_or(false)
+        .is_ok_and(|o| o.status.success())
 }

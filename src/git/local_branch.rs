@@ -49,6 +49,5 @@ pub fn branch_exists_local(repo: &Path, branch: &str) -> bool {
         .arg(repo)
         .args(["rev-parse", "--verify", &format!("refs/heads/{branch}")])
         .output()
-        .map(|o| o.status.success())
-        .unwrap_or(false)
+        .is_ok_and(|o| o.status.success())
 }
