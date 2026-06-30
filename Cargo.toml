@@ -49,3 +49,8 @@ dbg_macro = "deny"
 todo = "deny"
 # Forbid explicit `panic!` calls; unreachable arms belong in `unreachable!`
 panic = "deny"
+# Prevent panic!/todo!/unimplemented!/unreachable! inside Result/Option-returning
+# functions. When a function already signals fallibility via its return type,
+# any internal panic bypasses structured error propagation and crashes the
+# process instead of returning Err(_)/None for the caller to handle.
+panic_in_result_fn = "deny"
