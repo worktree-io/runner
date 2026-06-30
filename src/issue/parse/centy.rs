@@ -29,9 +29,9 @@ pub(super) fn find_centy_root(start: &Path) -> Option<PathBuf> {
 /// cannot be determined, or no `.centy/` directory is found in the current directory or
 /// any of its ancestors.
 pub(super) fn parse_centy(s: &str) -> Result<IssueRef> {
-    let id_str = s
-        .strip_prefix("centy:")
-        .expect("caller checked starts_with(\"centy:\")");
+    let Some(id_str) = s.strip_prefix("centy:") else {
+        unreachable!("caller checked starts_with(\"centy:\")")
+    };
     let Ok(display_number) = id_str.parse::<u32>() else {
         return Err(anyhow::anyhow!(
             "Invalid Centy issue number: {id_str:?} — expected a positive integer"

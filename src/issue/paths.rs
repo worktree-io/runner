@@ -29,6 +29,11 @@ impl IssueRef {
         let base = if temp {
             std::env::temp_dir()
         } else {
+            // Documented in `bare_clone_path`'s `# Panics` section: this is a
+            // narrow, path-building helper with no `Result` to propagate
+            // into, and a missing home directory is an unrecoverable
+            // environment problem for every caller.
+            #[allow(clippy::expect_used)]
             dirs::home_dir().expect("could not determine home directory")
         }
         .join("worktrees");

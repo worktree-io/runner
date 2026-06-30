@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use worktree_io::git::{create_worktree, git_worktree_prune};
 use worktree_io::ttl::WorkspaceRegistry;
 
@@ -12,7 +12,7 @@ use worktree_io::ttl::WorkspaceRegistry;
 /// automatically because the original project path is not stored in the
 /// registry; the user is asked to run `worktree open <issue-ref>` instead.
 pub fn cmd_restore() -> Result<()> {
-    let home = dirs::home_dir().expect("could not determine home directory");
+    let home = dirs::home_dir().context("could not determine home directory")?;
     let local_prefix = home.join("worktrees").join("local");
 
     let registry = WorkspaceRegistry::load()?;
@@ -47,6 +47,7 @@ pub fn cmd_restore() -> Result<()> {
         };
         // If file_name() returned Some, the path is not a root, so parent()
         // always returns Some here.
+        #[allow(clippy::expect_used)]
         let bare_path = path.parent().expect("non-root path must have a parent");
 
         if !bare_path.exists() {
