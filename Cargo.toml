@@ -49,3 +49,8 @@ dbg_macro = "deny"
 todo = "deny"
 # Forbid explicit `panic!` calls; unreachable arms belong in `unreachable!`
 panic = "deny"
+# Forbid `.expect()`: it aborts the process on an unexpected value instead of
+# surfacing a recoverable error. Call sites that print a stack trace by design
+# (invariants the caller already checked, intentionally documented panics)
+# carry a localized `#[allow]`; everywhere else propagate via `anyhow::Result`.
+expect_used = "deny"

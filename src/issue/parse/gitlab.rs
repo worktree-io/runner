@@ -68,9 +68,9 @@ pub(super) fn parse_gitlab_url(s: &str) -> Result<IssueRef> {
 /// determined, the `origin` remote URL cannot be read, or the URL is not a
 /// GitLab remote.
 pub(super) fn parse_gl(s: &str) -> Result<IssueRef> {
-    let num_str = s
-        .strip_prefix("gl:")
-        .expect("caller checked starts_with(\"gl:\")");
+    let Some(num_str) = s.strip_prefix("gl:") else {
+        unreachable!("caller checked starts_with(\"gl:\")")
+    };
     let Ok(number) = num_str.parse::<u64>() else {
         return Err(anyhow::anyhow!(
             "Invalid issue number for gl shorthand: {num_str:?} — expected a positive integer"

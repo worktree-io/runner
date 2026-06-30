@@ -47,13 +47,13 @@ pub fn create_multi_workspace(specs: &[MultiSpec], workspaces_root: &Path) -> Re
     Ok(root)
 }
 
-fn github_bare_path(owner: &str, repo: &str) -> PathBuf {
-    dirs::home_dir()
-        .expect("could not determine home directory")
+fn github_bare_path(owner: &str, repo: &str) -> Result<PathBuf> {
+    Ok(dirs::home_dir()
+        .context("could not determine home directory")?
         .join("worktrees")
         .join("github")
         .join(owner)
-        .join(repo)
+        .join(repo))
 }
 
 fn open_one(spec: &MultiSpec, root: &Path) -> Result<()> {
@@ -82,7 +82,7 @@ fn open_one_issue(issue: &IssueRef, root: &Path) -> Result<()> {
 }
 
 fn open_one_bare(owner: &str, repo: &str, root: &Path) -> Result<()> {
-    let bare_path = github_bare_path(owner, repo);
+    let bare_path = github_bare_path(owner, repo)?;
     let url = format!("https://github.com/{owner}/{repo}.git");
     if bare_path.exists() {
         eprintln!("Fetching origin for {}…", bare_path.display());
