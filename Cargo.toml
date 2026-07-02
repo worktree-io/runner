@@ -54,3 +54,6 @@ panic = "deny"
 # (invariants the caller already checked, intentionally documented panics)
 # carry a localized `#[allow]`; everywhere else propagate via `anyhow::Result`.
 expect_used = "deny"
+# Prevent panic!() inside Result/Option-returning functions; failures must be
+# returned as Err(_)/None so callers can handle them rather than crashing.
+panic_in_result_fn = "deny"
