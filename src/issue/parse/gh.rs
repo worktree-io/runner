@@ -30,9 +30,9 @@ pub(super) fn parse_github_remote_url(url: &str) -> Option<(String, String)> {
 /// determined, the `origin` remote URL cannot be read, or the URL is not a
 /// GitHub remote.
 pub(super) fn parse_gh(s: &str) -> Result<IssueRef> {
-    let num_str = s
-        .strip_prefix("gh:")
-        .expect("caller checked starts_with(\"gh:\")");
+    let Some(num_str) = s.strip_prefix("gh:") else {
+        unreachable!("caller checked starts_with(\"gh:\")")
+    };
     let Ok(number) = num_str.parse::<u64>() else {
         return Err(anyhow::anyhow!(
             "Invalid issue number for gh shorthand: {num_str:?} — expected a positive integer"
