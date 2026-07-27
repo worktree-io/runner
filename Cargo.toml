@@ -47,6 +47,16 @@ multiple_crate_versions = "allow"
 dbg_macro = "deny"
 # Forbid leftover `todo!` placeholders from reaching production
 todo = "deny"
+# Forbid explicit `panic!` calls; unreachable arms belong in `unreachable!`
+panic = "deny"
+# Forbid `.expect()`: it aborts the process on an unexpected value instead of
+# surfacing a recoverable error. Call sites that print a stack trace by design
+# (invariants the caller already checked, intentionally documented panics)
+# carry a localized `#[allow]`; everywhere else propagate via `anyhow::Result`.
+expect_used = "deny"
+# Prevent panic!() inside Result/Option-returning functions; failures must be
+# returned as Err(_)/None so callers can handle them rather than crashing.
+panic_in_result_fn = "deny"
 # Require every `#[allow(...)]` / `#![allow(...)]` attribute to carry a
 # `reason = "..."` string explaining WHY the lint is suppressed. Without a
 # reason, a suppression is opaque: a future reader can't tell whether the

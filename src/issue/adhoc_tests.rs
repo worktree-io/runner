@@ -9,7 +9,7 @@ fn parse_bare_owner_repo() {
             assert_eq!(repo, "api");
             assert!(name.contains('_'), "expected adjective_noun: {name}");
         }
-        other => panic!("expected Adhoc, got {other:?}"),
+        other => unreachable!("expected Adhoc, got {other:?}"),
     }
 }
 
@@ -22,7 +22,7 @@ fn parse_worktree_url_no_issue() {
             assert_eq!(repo, "api");
             assert!(name.contains('_'));
         }
-        other => panic!("expected Adhoc, got {other:?}"),
+        other => unreachable!("expected Adhoc, got {other:?}"),
     }
 }
 
@@ -35,7 +35,7 @@ fn parse_worktree_url_no_issue_with_editor() {
             assert_eq!(owner, "acme");
             assert_eq!(repo, "api");
         }
-        other => panic!("expected Adhoc, got {other:?}"),
+        other => unreachable!("expected Adhoc, got {other:?}"),
     }
     assert_eq!(opts.editor.as_deref(), Some("cursor"));
 }
@@ -95,6 +95,6 @@ fn parse_worktree_url_adhoc_param() {
             assert_eq!(repo, "api");
             assert_eq!(name, "my-session");
         }
-        other => panic!("expected Adhoc, got {other:?}"),
+        other => unreachable!("expected Adhoc, got {other:?}"),
     }
 }

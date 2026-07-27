@@ -1,4 +1,7 @@
 //! `worktree-io` — open GitHub, Linear, and local Centy issues as git worktree workspaces.
+// `.expect()` with a descriptive message is the idiomatic way to fail a test
+// fast on a broken fixture; only production code paths need to avoid it.
+#![cfg_attr(test, allow(clippy::expect_used))]
 
 /// Configuration loading and serialization.
 pub mod config;

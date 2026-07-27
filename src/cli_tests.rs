@@ -12,7 +12,7 @@ fn test_open_env_single() {
         Commands::Open { env, .. } => {
             assert_eq!(env, vec!["FOO=bar"]);
         }
-        _other => panic!("unexpected command variant"),
+        _other => unreachable!("unexpected command variant"),
     }
 }
 
@@ -30,7 +30,7 @@ fn test_open_env_multiple() {
         Commands::Open { env, .. } => {
             assert_eq!(env, vec!["FOO=bar", "BAZ=qux"]);
         }
-        _other => panic!("unexpected command variant"),
+        _other => unreachable!("unexpected command variant"),
     }
 }
 
@@ -41,7 +41,7 @@ fn test_open_env_empty_by_default() {
         Commands::Open { env, .. } => {
             assert!(env.is_empty());
         }
-        _other => panic!("unexpected command variant"),
+        _other => unreachable!("unexpected command variant"),
     }
 }
 
@@ -52,7 +52,7 @@ fn test_open_json_flag() {
         Commands::Open { json, .. } => {
             assert!(json);
         }
-        _other => panic!("unexpected command variant"),
+        _other => unreachable!("unexpected command variant"),
     }
 }
 
@@ -63,7 +63,7 @@ fn test_open_json_false_by_default() {
         Commands::Open { json, .. } => {
             assert!(!json);
         }
-        _other => panic!("unexpected command variant"),
+        _other => unreachable!("unexpected command variant"),
     }
 }
 
@@ -88,6 +88,6 @@ fn test_open_env_and_json_together() {
             assert!(json);
             assert!(headless);
         }
-        _other => panic!("unexpected command variant"),
+        _other => unreachable!("unexpected command variant"),
     }
 }
