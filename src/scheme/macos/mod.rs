@@ -57,7 +57,10 @@ pub fn uninstall() -> Result<()> {
 ///
 /// Always succeeds on macOS; the `Result` return type matches the platform
 /// abstraction in `scheme/mod.rs`.
-#[allow(clippy::unnecessary_wraps)]
+#[allow(
+    clippy::unnecessary_wraps,
+    reason = "macOS detection always succeeds synchronously, but the `Result` return type is required to match the cross-platform `scheme::status()` abstraction used on all platforms"
+)]
 pub fn status() -> Result<SchemeStatus> {
     let app = app_dir();
     if app.join("Contents").join("Info.plist").exists() {

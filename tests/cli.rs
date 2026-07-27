@@ -1,4 +1,7 @@
-#![allow(missing_docs)]
+#![allow(
+    missing_docs,
+    reason = "integration test crate — doc comments are not required for test helpers and fixtures"
+)]
 use std::path::{Path, PathBuf};
 use std::process::Command;
 

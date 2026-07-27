@@ -4,10 +4,14 @@
 //! the expected content and land at the expected paths.  Running them inside a
 //! clean Docker container (see `docker/Dockerfile.test`) eliminates host-state
 //! pollution and keeps the snapshots deterministic.
-#![allow(missing_docs)]
-// Integration test fixtures: `.expect()` with a descriptive message is the
-// idiomatic way to fail a test fast on a broken fixture.
-#![allow(clippy::expect_used)]
+#![allow(
+    missing_docs,
+    reason = "integration test crate — doc comments are not required for test helpers and fixtures"
+)]
+#![allow(
+    clippy::expect_used,
+    reason = "integration test fixtures: `.expect()` with a descriptive message is the idiomatic way to fail a test fast on a broken fixture"
+)]
 
 use worktree_io::repo_hooks_scaffold::SCAFFOLD;
 use worktree_io::{config::Config, ttl::WorkspaceRegistry};
