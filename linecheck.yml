@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/tupe12334/linecheck/main/schema/linecheck.schema.json
+
+rules:
+  - pattern: "tests/**/*.rs"
+    warn: 400
+    warn_message: "Integration test file is getting long — consider splitting by command"
+    error: 1000
+    error_message: "Test file is too large to navigate — split before merging"
+  - pattern: "**/*"
+    warn: 200
+    warn_message: "Getting long — consider splitting"
+    error: 400
+    error_message: "File exceeds the hard limit — split before merging"
+
+exclude:
+  - "Cargo.lock"
+  - "CHANGELOG.md"
+  - "**/package-lock.json"
+  - "**/pnpm-lock.yaml"
+  - "assets/**"
