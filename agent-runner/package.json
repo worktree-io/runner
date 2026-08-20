@@ -4,6 +4,12 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "eslint": "^9.39.4",
+    "eslint-config-agent": "^3.1.0",
+    "globals": "^16.0.0"
   }
 }

@@ -1,0 +1,10 @@
+# pnpm 11 requires an explicit decision on dependency build scripts, otherwise
+# `pnpm install` exits non-zero with ERR_PNPM_IGNORED_BUILDS. All three of these
+# arrive transitively through the lint toolchain and none of them need their
+# postinstall to run here: core-js's is a funding banner, and esbuild and
+# unrs-resolver both resolve their native binary from per-platform optional
+# packages rather than from the build script.
+allowBuilds:
+  core-js: false
+  esbuild: false
+  unrs-resolver: false
